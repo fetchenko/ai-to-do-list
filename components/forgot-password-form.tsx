@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState } from "react";
+import { ROUTES } from "@/lib/routes.config";
 
 export function ForgotPasswordForm({
   className,
@@ -90,7 +91,7 @@ export function ForgotPasswordForm({
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
                 <Link
-                  href="/auth/login"
+                  href={ROUTES.authLogin}
                   className="underline underline-offset-4"
                 >
                   Login

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ROUTES } from "@/lib/routes.config";
 
 export function SignUpForm({
   className,
@@ -108,7 +109,7 @@ export function SignUpForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
+              <Link href={ROUTES.authLogin} className="underline underline-offset-4">
                 Login
               </Link>
             </div>

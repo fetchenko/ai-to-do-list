@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DEFAULT_REDIRECTS, ROUTES } from "@/lib/routes.config";
 
 export function LoginForm({
   className,
@@ -38,8 +39,8 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+
+      router.push(DEFAULT_REDIRECTS.authenticated);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -74,7 +75,7 @@ export function LoginForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    href="/auth/forgot-password"
+                    href={ROUTES.authForgotPassword}
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
@@ -96,7 +97,7 @@ export function LoginForm({
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link
-                href="/auth/sign-up"
+                href={ROUTES.authSignup}
                 className="underline underline-offset-4"
               >
                 Sign up

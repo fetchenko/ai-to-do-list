@@ -2,10 +2,10 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { LogoutButton } from "./logout-button";
 import { ROUTES } from '@/lib/routes.config'
-import { getUserClaims } from "@/lib/supabase/services/user";
+import { getCachedUserClaims } from "@/lib/supabase/services/user";
 
 export async function AuthButton() {
-  const user = await getUserClaims();
+  const user = await getCachedUserClaims();
 
   return user ? (
     <div className="flex items-center gap-4">

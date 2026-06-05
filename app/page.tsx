@@ -1,9 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import Link from "next/link";
 import { Suspense } from "react";
-import { DEFAULT_REDIRECTS, ROUTES } from "@/lib/routes.config";
+import { DEFAULT_REDIRECTS } from "@/lib/routes.config";
 import { AuthButtonSkeleton } from "@/components/auth/auth-button-skeleton";
 import ContentSkeleton from "@/components/tasks/content-skeleton";
 import UserContent from "@/components/tasks/user-content";

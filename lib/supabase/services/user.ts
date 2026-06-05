@@ -7,11 +7,3 @@ export async function getUserClaims(): Promise<JwtPayload | undefined> {
 
   return data?.claims;
 }
-
-export async function getCachedUserClaims(): Promise<JwtPayload | undefined> {
-  const supabase = await createClient();
-  'use cache';
-  const { data } = await supabase.auth.getClaims();
-
-  return data?.claims;
-}

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
  * Uses Next.js 16+ 'use cache' directive for automatic deduplication
  * within the same request and caching across requests
  */
-export async function getCachedUserClaims() {
+export async function getUserClaims() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return data?.claims;

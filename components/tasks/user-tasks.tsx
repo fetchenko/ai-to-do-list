@@ -17,8 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InputTask } from "@/components/tasks/input-task";
 import { EditTask } from "@/components/tasks/edit-task";
-import { useQuery } from "@tanstack/react-query";
-import { fetchTasks } from "@/features/tasks/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchTasks, deleteTask } from "@/features/tasks/api";
 import { useTaskStore } from "@/store/useTaskStore";
 
 type Subtask = {
@@ -40,6 +40,17 @@ export default function UserTasks({ user }: { user: any }) {
   const [loadingSubtasksFor, setLoadingSubtasksFor] = useState<string | null>(null);
   const editingTaskId = useTaskStore(state => state.editingTaskId);
   const startEditing = useTaskStore(state => state.startEditing);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ taskId }: { taskId: String }) =>
+      deleteTask({ taskId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['tasks'],
+      });
+    },
+  })
 
   const { data: tasks = [], isPending, error } = useQuery({
     queryKey: ['tasks'],
@@ -48,7 +59,9 @@ export default function UserTasks({ user }: { user: any }) {
 
   const toggleDone = (id: string) => { };
 
-  const deleteTask = (id: string) => { };
+  const handleDeleteTask = (taskId: string) => {
+    mutation.mutate({ taskId })
+  };
 
   const generateSubtasks = async (taskId: string) => { };
 
@@ -88,6 +101,7 @@ export default function UserTasks({ user }: { user: any }) {
                         : <>
                           <div className="flex items-center gap-3">
                             <Checkbox
+                              disabled={mutation.isPending}
                               checked={task.completed}
                               onCheckedChange={() => toggleDone(task.id)}
                             />
@@ -117,7 +131,7 @@ export default function UserTasks({ user }: { user: any }) {
                                   onClick={() => editTask(task.id)}
                                 >Edit</DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => deleteTask(task.id)}
+                                  onClick={() => handleDeleteTask(task.id)}
                                   className="text-red-500"
                                 >
                                   Delete

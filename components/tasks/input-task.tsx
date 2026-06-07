@@ -12,7 +12,7 @@ type FormValues = {
 };
 
 export function InputTask() {
-  const { handleSubmit, register } = useForm<FormValues>({
+  const { handleSubmit, register, reset } = useForm<FormValues>({
     defaultValues: {
       task: "",
     },
@@ -27,6 +27,7 @@ export function InputTask() {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
       })
+      reset();
     },
   })
 

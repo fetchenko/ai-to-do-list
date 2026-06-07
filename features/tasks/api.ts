@@ -46,3 +46,18 @@ export async function updateTask({
 
   return data;
 }
+
+export async function deleteTask({ taskId }: { taskId: String }) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("id", taskId);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

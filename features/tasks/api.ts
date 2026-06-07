@@ -25,3 +25,24 @@ export async function fetchTasks() {
     throw new Error(error.message);
   }
 }
+
+export async function updateTask({
+  taskId,
+  title,
+}: {
+  taskId: String;
+  title: String;
+}) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .update({ title })
+    .eq("id", taskId);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

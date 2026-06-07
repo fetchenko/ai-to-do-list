@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,8 +16,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InputTask } from "@/components/tasks/input-task";
+import { EditTask } from "@/components/tasks/edit-task";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTasks } from "@/features/tasks/api";
+import { useTaskStore } from "@/store/useTaskStore";
 
 type Subtask = {
   id: string;
@@ -37,20 +38,25 @@ type Task = {
 
 export default function UserTasks({ user }: { user: any }) {
   const [loadingSubtasksFor, setLoadingSubtasksFor] = useState<string | null>(null);
-
+  const editingTaskId = useTaskStore(state => state.editingTaskId);
+  const startEditing = useTaskStore(state => state.startEditing);
 
   const { data: tasks = [], isPending, error } = useQuery({
     queryKey: ['tasks'],
     queryFn: fetchTasks,
   })
 
-  const toggleDone = (id: string) => {};
+  const toggleDone = (id: string) => { };
 
-  const deleteTask = (id: string) => {};
+  const deleteTask = (id: string) => { };
 
-  const generateSubtasks = async (taskId: string) => {};
+  const generateSubtasks = async (taskId: string) => { };
 
-  const updateSubtask = (taskId: string, subId: string, patch: Partial<Subtask>) => {};
+  const updateSubtask = (taskId: string, subId: string, patch: Partial<Subtask>) => { };
+
+  const editTask = (id: string) => {
+    startEditing(id);
+  }
 
   const filtered = (status: Task["status"]) =>
     tasks.filter((t) => t.status === status);
@@ -76,102 +82,110 @@ export default function UserTasks({ user }: { user: any }) {
                 {filtered(tab).map((task) => (
                   <Card key={task.id} className="p-4 space-y-3">
 
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={task.completed}
-                          onCheckedChange={() => toggleDone(task.id)}
-                        />
-                        <div>
-                          <p className="font-medium">{task.title}</p>
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between gap-3 w-full">
+                      {(editingTaskId && task.id === editingTaskId)
+                        ? <EditTask task={task} />
+                        : <>
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={task.completed}
+                              onCheckedChange={() => toggleDone(task.id)}
+                            />
+                            <div>
+                              <p className="font-medium">{task.title}</p>
+                              {task.description && (
+                                <p className="text-sm text-muted-foreground">
+                                  {task.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  Actions
+                                </Button>
+                              </DropdownMenuTrigger>
 
-                      <div className="flex gap-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              Actions
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => generateSubtasks(task.id)}
-                            >Gen subtask</DropdownMenuItem>
-                            <DropdownMenuItem>Archieve</DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => deleteTask(task.id)}
-                              className="text-red-500"
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => generateSubtasks(task.id)}
+                                >Gen subtask</DropdownMenuItem>
+                                <DropdownMenuItem>Archieve</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => editTask(task.id)}
+                                >Edit</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => deleteTask(task.id)}
+                                  className="text-red-500"
+                                >
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </>
+                      }
                     </div>
 
-                    {task.subtasks?.length > 0 && (
-                      <div className="pl-6 space-y-2">
-                        <Separator />
+                    {
+                      task.subtasks?.length > 0 && (
+                        <div className="pl-6 space-y-2">
+                          <Separator />
 
-                        {loadingSubtasksFor === task.id ? (
-                          <div className="space-y-2">
-                            <Skeleton className="h-6 w-full" />
-                            <Skeleton className="h-6 w-full" />
-                          </div>
-                        ) : (
-                          task.subtasks.map((sub) => (
-                            <div
-                              key={sub.id}
-                              className="flex items-center justify-between gap-2"
-                            >
-                              <Input
-                                value={sub.title}
-                                onChange={(e) =>
-                                  updateSubtask(task.id, sub.id, {
-                                    title: e.target.value,
-                                  })
-                                }
-                                className="h-8"
-                              />
-
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  onClick={() =>
-                                    updateSubtask(task.id, sub.id, {
-                                      status: "approved",
-                                    })
-                                  }
-                                >
-                                  Approve
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() =>
-                                    updateSubtask(task.id, sub.id, {
-                                      status: "rejected",
-                                    })
-                                  }
-                                >
-                                  Reject
-                                </Button>
-                              </div>
+                          {loadingSubtasksFor === task.id ? (
+                            <div className="space-y-2">
+                              <Skeleton className="h-6 w-full" />
+                              <Skeleton className="h-6 w-full" />
                             </div>
-                          ))
-                        )}
-                      </div>
-                    )}
+                          ) : (
+                            task.subtasks.map((sub) => (
+                              <div
+                                key={sub.id}
+                                className="flex items-center justify-between gap-2"
+                              >
+                                <Input
+                                  value={sub.title}
+                                  onChange={(e) =>
+                                    updateSubtask(task.id, sub.id, {
+                                      title: e.target.value,
+                                    })
+                                  }
+                                  className="h-8"
+                                />
+
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() =>
+                                      updateSubtask(task.id, sub.id, {
+                                        status: "approved",
+                                      })
+                                    }
+                                  >
+                                    Approve
+                                  </Button>
+
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() =>
+                                      updateSubtask(task.id, sub.id, {
+                                        status: "rejected",
+                                      })
+                                    }
+                                  >
+                                    Reject
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )
+                    }
                   </Card>
                 ))}
               </TabsContent>
@@ -181,7 +195,7 @@ export default function UserTasks({ user }: { user: any }) {
 
         </div>
       </div>
-    </div>
+    </div >
 
   )
 }

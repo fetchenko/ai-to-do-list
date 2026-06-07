@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createTask } from "@/features/tasks/api";
+import { addTask } from "@/features/tasks/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type FormValues = {
@@ -22,7 +22,7 @@ export function InputTask() {
 
   const mutation = useMutation({
     mutationFn: async ({ title }: { title: String }) =>
-      await createTask({ title }),
+      await addTask({ title }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],

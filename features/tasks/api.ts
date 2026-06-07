@@ -14,17 +14,14 @@ export async function addTask({ title }: { title: String }) {
   return data;
 }
 
-export async function fetchTasks () {
+export async function fetchTasks() {
   const supabase = createClient();
 
-  const response = await supabase
-    .from('tasks')
-    .select('*');
+  const { data, error } = await supabase.from("tasks").select("*");
 
-    if (!response.error) {
-    return response.data;
+  if (!error) {
+    return data;
   } else {
-    throw new Error(response.error.message);
+    throw new Error(error.message);
   }
-};
-
+}

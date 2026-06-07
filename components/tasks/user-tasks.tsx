@@ -17,6 +17,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InputTask } from "@/components/tasks/input-task";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTasks } from "@/features/tasks/api";
 
 type Subtask = {
   id: string;
@@ -33,86 +35,22 @@ type Task = {
   subtasks: Subtask[];
 };
 
-const mocks: Task[] = [
-  { id: '1', title: 'task 1', description: '', completed: false, status: 'active', subtasks: [] },
-  { id: '2', title: 'task 1', description: '', completed: false, status: 'active', subtasks: [] },
-  { id: '3', title: 'task 1', description: '', completed: false, status: 'active', subtasks: [] },
-]
-
 export default function UserTasks({ user }: { user: any }) {
-  const [tasks, setTasks] = useState<Task[]>([...mocks]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [loadingSubtasksFor, setLoadingSubtasksFor] = useState<string | null>(null);
 
-  const addTask = () => {
-    if (!title.trim()) return;
 
-    setTasks((prev) => [
-      {
-        id: crypto.randomUUID(),
-        title,
-        description,
-        completed: false,
-        status: "active",
-        subtasks: [],
-      },
-      ...prev,
-    ]);
+  const { data: tasks = [], isPending, error } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: fetchTasks,
+  })
 
-    setTitle("");
-    setDescription("");
-  };
+  const toggleDone = (id: string) => {};
 
-  const toggleDone = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, completed: !t.completed, status: t.completed ? "active" : "done" } : t
-      )
-    );
-  };
+  const deleteTask = (id: string) => {};
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
+  const generateSubtasks = async (taskId: string) => {};
 
-  const generateSubtasks = async (taskId: string) => {
-    setLoadingSubtasksFor(taskId);
-
-    // simulate API call
-    setTimeout(() => {
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId
-            ? {
-              ...t,
-              subtasks: [
-                { id: crypto.randomUUID(), title: "Subtask 1", status: "pending" },
-                { id: crypto.randomUUID(), title: "Subtask 2", status: "pending" },
-              ],
-            }
-            : t
-        )
-      );
-
-      setLoadingSubtasksFor(null);
-    }, 1500);
-  };
-
-  const updateSubtask = (taskId: string, subId: string, patch: Partial<Subtask>) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? {
-            ...t,
-            subtasks: t.subtasks.map((s) =>
-              s.id === subId ? { ...s, ...patch } : s
-            ),
-          }
-          : t
-      )
-    );
-  };
+  const updateSubtask = (taskId: string, subId: string, patch: Partial<Subtask>) => {};
 
   const filtered = (status: Task["status"]) =>
     tasks.filter((t) => t.status === status);
@@ -179,7 +117,7 @@ export default function UserTasks({ user }: { user: any }) {
                       </div>
                     </div>
 
-                    {task.subtasks.length > 0 && (
+                    {task.subtasks?.length > 0 && (
                       <div className="pl-6 space-y-2">
                         <Separator />
 

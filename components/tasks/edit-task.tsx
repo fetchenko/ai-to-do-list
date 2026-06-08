@@ -5,19 +5,11 @@ import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateTask } from "@/features/tasks/api";
+import { updateTask } from "@/features/tasks/tasks.api";
+import { Task } from "@/features/tasks/tasks.types";
 
-type Task = {
-  taskId: string;
-  title: string;
-};
-
-interface TaskItemProps {
+type TaskItemProps = {
   task: Task;
-}
-
-type IFormInput = {
-  title: string
 }
 
 export function EditTask({ task }: TaskItemProps) {
@@ -25,8 +17,8 @@ export function EditTask({ task }: TaskItemProps) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ title, taskId }: Task) =>
-      updateTask({ taskId, title }),
+    mutationFn: async (newTask: Task) =>
+      updateTask(newTask),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
@@ -35,7 +27,7 @@ export function EditTask({ task }: TaskItemProps) {
     },
   })
 
-  const { register, handleSubmit } = useForm<IFormInput>({
+  const { register, handleSubmit } = useForm<Task>({
     defaultValues: {
       title: task.title,
     },
@@ -45,8 +37,8 @@ export function EditTask({ task }: TaskItemProps) {
     stopEditing();
   };
 
-  const handleSave = (data: IFormInput) => {
-    mutation.mutate({ taskId: task.id, title: data.title })
+  const handleSave = (newTask: Task) => {
+    mutation.mutate(newTask)
   }
 
   return (

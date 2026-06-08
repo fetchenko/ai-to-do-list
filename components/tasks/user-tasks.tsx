@@ -15,36 +15,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { InputTask } from "@/components/tasks/input-task";
+import { AddTask } from "@/components/tasks/add-task";
 import { EditTask } from "@/components/tasks/edit-task";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchTasks, deleteTask } from "@/features/tasks/api";
+import { fetchTasks, deleteTask } from "@/features/tasks/tasks.api";
 import { useTaskStore } from "@/store/useTaskStore";
+import { Task } from "@/features/tasks/tasks.types";
 
-type Subtask = {
-  id: string;
-  title: string;
-  status: "pending" | "approved" | "rejected";
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  status: "active" | "done" | "archived";
-  subtasks: Subtask[];
-};
-
-export default function UserTasks({ user }: { user: any }) {
+export default function UserTasks() {
   const [loadingSubtasksFor, setLoadingSubtasksFor] = useState<string | null>(null);
   const editingTaskId = useTaskStore(state => state.editingTaskId);
   const startEditing = useTaskStore(state => state.startEditing);
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ taskId }: { taskId: String }) =>
-      deleteTask({ taskId }),
+    mutationFn: async (id: string) =>
+      deleteTask(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
@@ -59,8 +45,8 @@ export default function UserTasks({ user }: { user: any }) {
 
   const toggleDone = (id: string) => { };
 
-  const handleDeleteTask = (taskId: string) => {
-    mutation.mutate({ taskId })
+  const handleDeleteTask = (id: string) => {
+    mutation.mutate(id)
   };
 
   const generateSubtasks = async (taskId: string) => { };
@@ -80,7 +66,7 @@ export default function UserTasks({ user }: { user: any }) {
       <div className="space-y-6">
         <div className="max-w-3xl mx-auto p-6 space-y-6">
           <Card className="p-4 space-y-3">
-            <InputTask />
+            <AddTask />
           </Card>
 
           <Tabs defaultValue="active" className="w-full">
@@ -102,7 +88,7 @@ export default function UserTasks({ user }: { user: any }) {
                           <div className="flex items-center gap-3">
                             <Checkbox
                               disabled={mutation.isPending}
-                              checked={task.completed}
+                              checked={task.status === 'done'}
                               onCheckedChange={() => toggleDone(task.id)}
                             />
                             <div>

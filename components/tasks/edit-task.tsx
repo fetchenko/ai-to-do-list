@@ -11,14 +11,17 @@ import { Task } from "@/features/tasks/tasks.types";
 type TaskItemProps = {
   task: Task;
 }
+type EditTaskForm = {
+  title: string | null;
+}
 
 export function EditTask({ task }: TaskItemProps) {
   const { stopEditing } = useTaskStore()
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (newTask: Task) =>
-      updateTask(newTask),
+    mutationFn: async (newTask: EditTaskForm) =>
+      updateTask({ ...task, title: newTask.title }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
@@ -27,7 +30,7 @@ export function EditTask({ task }: TaskItemProps) {
     },
   })
 
-  const { register, handleSubmit } = useForm<Task>({
+  const { register, handleSubmit } = useForm<EditTaskForm>({
     defaultValues: {
       title: task.title,
     },
@@ -37,7 +40,7 @@ export function EditTask({ task }: TaskItemProps) {
     stopEditing();
   };
 
-  const handleSave = (newTask: Task) => {
+  const handleSave = (newTask: EditTaskForm) => {
     mutation.mutate(newTask)
   }
 

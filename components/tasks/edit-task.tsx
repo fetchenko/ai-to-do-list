@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTaskStore } from "@/store/useTaskStore";
+import { useTaskStore } from "@/store/use-task-store";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateTask } from "@/features/tasks/tasks.api";
@@ -16,7 +16,8 @@ type EditTaskForm = {
 }
 
 export function EditTask({ task }: TaskItemProps) {
-  const { stopEditing } = useTaskStore()
+  const resetTaskStore = useTaskStore(state => state.reset)
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -26,7 +27,7 @@ export function EditTask({ task }: TaskItemProps) {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
       });
-      stopEditing();
+      resetTaskStore();
     },
   })
 
@@ -37,7 +38,7 @@ export function EditTask({ task }: TaskItemProps) {
   })
 
   const handleCancel = () => {
-    stopEditing();
+    resetTaskStore();
   };
 
   const handleSave = (newTask: EditTaskForm) => {

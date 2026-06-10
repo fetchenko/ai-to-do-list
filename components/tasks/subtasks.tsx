@@ -18,7 +18,7 @@ interface TaskSubtasksProps {
 export function Subtasks({
   task
 }: TaskSubtasksProps) {
-  const subtasks = useSubtaskStore(state => state.subtasks);
+  const draftSubtasks = useSubtaskStore(state => state.subtasks);
   const setSubtasks = useSubtaskStore(state => state.setSubtasks);
   const activeSubtaskId = useSubtaskStore(state => state.activeSubtaskId);
   const setActiveSubastkId = useSubtaskStore(state => state.setActiveSubtaskId);
@@ -58,7 +58,7 @@ export function Subtasks({
     setDraftSubtask(subtask.title)
   };
 
-  const handleUpdateSubtask = () => {
+  const handleUpdateSubtask = (subtask: Task) => {
     if (activeSubtaskId) {
       updateSubtask(activeSubtaskId, { title: draftSubtask })
     }
@@ -75,14 +75,17 @@ export function Subtasks({
   }
 
   const handleSaveSubtasks = async () => {
-    mutation.mutate({ id: task.id, subtasks })
+    mutation.mutate({ id: task.id, subtasks: draftSubtasks })
   }
 
-  if (!subtasks.length) return null;
+  if (!subtasks.length && !task.subtasks.length) return null;
+
+  const resultSubtasks = (draftSubtasks && draftSubtasks.length)
+    ? draftSubtask : task.subtasks || []
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
-      {subtasks.map((subtask) => {
+      {resultSubtasks.map((subtask) => {
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (
@@ -103,7 +106,7 @@ export function Subtasks({
                     />
                     <div className="flex gap-2">
                       <Button variant="default" size="sm" type="submit"
-                        onClick={handleUpdateSubtask}
+                        onClick={() => handleUpdateSubtask(subtask)}
                       >
                         Save
                       </Button>

@@ -1,10 +1,5 @@
 import { taskToDbFieldMap } from "./task.constants";
-import {
-  DbTask,
-  Task,
-  TaskWithSubtasks,
-  TaskWithSubtasksDb,
-} from "./tasks.types";
+import { DbTask, Task } from "./tasks.types";
 
 export function mapDbTask(dbTask: DbTask): Task {
   return {
@@ -23,9 +18,7 @@ export function mapDbTask(dbTask: DbTask): Task {
   };
 }
 
-export function mapDbTasksWithSubtasks(
-  dbTasks: TaskWithSubtasksDb[],
-): TaskWithSubtasks[] {
+export function mapDbTasksWithSubtasks(dbTasks: DbTask[]): Task[] {
   return dbTasks.map((dbTask) => ({
     ...mapDbTask(dbTask),
     subtasks: (dbTask.subtasks ?? []).map(mapDbTask),

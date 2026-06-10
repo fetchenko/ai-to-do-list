@@ -10,6 +10,7 @@ import { Task } from "@/features/tasks/tasks.types";
 import { useForm } from "react-hook-form";
 import { saveSubtasks } from "@/features/tasks/tasks.api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 
 interface TaskSubtasksProps {
   task: Task
@@ -18,8 +19,9 @@ interface TaskSubtasksProps {
 export function Subtasks({
   task
 }: TaskSubtasksProps) {
-  const draftSubtasks = useSubtaskStore(state => state.subtasks);
-  const setSubtasks = useSubtaskStore(state => state.setSubtasks);
+  const updateTaskMutation = useUpdateTaskMutation()
+  const draftSubtasks = useSubtaskStore(state => state.generatedSubtasks);
+  const setGeneratedSubtasks = useSubtaskStore(state => state.setGeneratedSubtasks);
   const activeSubtaskId = useSubtaskStore(state => state.activeSubtaskId);
   const setActiveSubastkId = useSubtaskStore(state => state.setActiveSubtaskId);
   const updateSubtask = useSubtaskStore(state => state.updateSubtask);
@@ -28,6 +30,7 @@ export function Subtasks({
   const setDraftSubtask = useSubtaskStore(state => state.setDraftSubtask);
   const resetActiveSubtask = useSubtaskStore(state => state.resetActiveSubtask);
   const queryClient = useQueryClient();
+  const activeParentTaskId = useSubtaskStore((state) => state.activeParentTaskId);
 
   const mutation = useMutation({
     mutationFn: async ({ id, subtasks }: { id: string, subtasks: Task[] }) =>
@@ -36,7 +39,7 @@ export function Subtasks({
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
       });
-      // stopEditing();
+      setGeneratedSubtasks('', [])
     },
   })
 
@@ -58,9 +61,16 @@ export function Subtasks({
     setDraftSubtask(subtask.title)
   };
 
-  const handleUpdateSubtask = (subtask: Task) => {
-    if (activeSubtaskId) {
-      updateSubtask(activeSubtaskId, { title: draftSubtask })
+  const handleUpdateSubtask = (taskId: string, subtask: Task) => {
+    if (draftSubtasks && draftSubtasks.length) {
+      updateSubtask(taskId, { title: draftSubtask })
+    } else {
+      updateTaskMutation.mutate({
+        taskId: taskId,
+        updates: { title: draftSubtask },
+      }, {
+        onSuccess: () => { }
+      })
     }
 
     resetActiveSubtask()
@@ -78,10 +88,12 @@ export function Subtasks({
     mutation.mutate({ id: task.id, subtasks: draftSubtasks })
   }
 
-  if (!subtasks.length && !task.subtasks.length) return null;
+  const showDraftSubtasks = task.id === activeParentTaskId && draftSubtasks && draftSubtasks.length;
 
-  const resultSubtasks = (draftSubtasks && draftSubtasks.length)
-    ? draftSubtask : task.subtasks || []
+  const resultSubtasks = showDraftSubtasks
+    ? draftSubtasks : task.subtasks;
+
+  if (!resultSubtasks?.length) return null;
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
@@ -106,7 +118,7 @@ export function Subtasks({
                     />
                     <div className="flex gap-2">
                       <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask)}
+                        onClick={() => handleUpdateSubtask(subtask.id, subtask)}
                       >
                         Save
                       </Button>
@@ -148,21 +160,23 @@ export function Subtasks({
         );
       })}
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline"
-          disabled={mutation.isPending}
-          onClick={() => setSubtasks([])}
-        >
-          Reject All
-        </Button>
+      {showDraftSubtasks && (
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline"
+            disabled={mutation.isPending}
+            onClick={() => setGeneratedSubtasks('', [])}
+          >
+            Reject All
+          </Button>
 
-        <Button
-          disabled={mutation.isPending}
-          onClick={() => handleSaveSubtasks()}
-        >
-          Accept All
-        </Button>
-      </div>
+          <Button
+            disabled={mutation.isPending}
+            onClick={() => handleSaveSubtasks()}
+          >
+            Accept All
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

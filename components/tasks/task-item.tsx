@@ -32,9 +32,7 @@ export default function TaskItem({ task }: TaskItemProps) {
 
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
-  const activeParentTaskId = useSubtaskStore((state) => state.activeParentTaskId);
-  const setActiveParentTaskId = useSubtaskStore((state) => state.setActiveParentTaskId);
-  const setSubtasks = useSubtaskStore((state) => state.setSubtasks);
+  const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
 
   const queryClient = useQueryClient();
 
@@ -50,7 +48,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const mutationSubtasks = useMutation({
     mutationFn: async ({ id, title }: Partial<Task>) => generateSubtasks({ id, title }),
     onSuccess: (data: Task[]) => {
-      setSubtasks(data);
+      setGeneratedSubtasks(task.id, data);
     },
   });
 
@@ -89,7 +87,6 @@ export default function TaskItem({ task }: TaskItemProps) {
   };
 
   const handleGenerateSubtasks = (task: Task) => {
-    setActiveParentTaskId(task.id);
     mutationSubtasks.mutate({ id: task.id, title: task.title })
   };
 
@@ -160,6 +157,9 @@ export default function TaskItem({ task }: TaskItemProps) {
           </>
         )}
       </div>
+      {task.subtasks && (
+        <Subtasks task={task} />
+      )}
     </Card>
   );
 }

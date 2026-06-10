@@ -12,15 +12,12 @@ type SubtaskState = {
   activeParentTaskId: string | null;
   activeSubtaskId: string | null;
   draftSubtask: string | null;
-  subtasks: Task[];
-
-  setActiveParentTaskId: (id: string) => void;
-  resetActiveParentTaskId: () => void;
+  generatedSubtasks: Task[];
 
   setActiveSubtaskId: (id: string) => void;
   resetActiveSubtaskId: () => void;
 
-  setSubtasks: (tasks: Task[]) => void;
+  setGeneratedSubtasks: (parentTaskId: string, tasks: Task[]) => void;
   updateSubtask: (id: string, data: Partial<Task>) => void;
   deleteSubtask: (id: string) => void;
 
@@ -33,17 +30,9 @@ type SubtaskState = {
 export const useSubtaskStore = create<SubtaskState>((set, get) => ({
   activeParentTaskId: null,
   activeSubtaskId: null,
-  subtasks: [],
+  generatedSubtasks: [],
   draftSubtask: null,
 
-  setActiveParentTaskId: (id) =>
-    set({
-      activeParentTaskId: id,
-    }),
-  resetActiveParentTaskId: () =>
-    set({
-      activeParentTaskId: null,
-    }),
   setActiveSubtaskId: (id) =>
     set({
       activeSubtaskId: id,
@@ -53,19 +42,22 @@ export const useSubtaskStore = create<SubtaskState>((set, get) => ({
       activeSubtaskId: null,
     }),
 
-  setSubtasks: (subtasks: Task[]) =>
+  setGeneratedSubtasks: (parentTaskId: string, subtasks: Task[]) =>
     set({
-      subtasks: [...subtasks],
+      activeParentTaskId: parentTaskId,
+      generatedSubtasks: [...subtasks],
     }),
   updateSubtask: (id: string, data: Partial<Task>) =>
     set((state) => ({
-      subtasks: state.subtasks.map((subtask) =>
+      generatedSubtasks: state.generatedSubtasks.map((subtask) =>
         subtask.id === id ? { ...subtask, ...data } : subtask,
       ),
     })),
   deleteSubtask: (id: string) =>
     set((state) => ({
-      subtasks: state.subtasks.filter((subtask) => subtask.id !== id),
+      generatedSubtasks: state.generatedSubtasks.filter(
+        (subtask) => subtask.id !== id,
+      ),
     })),
 
   setDraftSubtask: (draftSubtask: string | null) =>

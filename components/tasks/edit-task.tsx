@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateTask } from "@/features/tasks/tasks.api";
 import { Task } from "@/features/tasks/tasks.types";
+import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 
 type TaskItemProps = {
   task: Task;
@@ -16,6 +17,8 @@ type EditTaskForm = {
 }
 
 export function EditTask({ task }: TaskItemProps) {
+  const updateTaskMutation = useUpdateTaskMutation()
+
   const resetTaskStore = useTaskStore(state => state.reset)
 
   const queryClient = useQueryClient();

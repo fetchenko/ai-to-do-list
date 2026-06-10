@@ -1,6 +1,8 @@
-import { Database, TaskStatus } from '@/types/supabase';
+import { Database, TaskStatus } from "@/types/supabase";
 
-export type DbTask = Database['public']['Tables']['tasks']['Row'];
+export type DbTask = Database["public"]["Tables"]["tasks"]["Row"] & {
+  subtasks?: DbTask[];
+};
 
 export type Task = {
   id: string;
@@ -15,4 +17,5 @@ export type Task = {
   title: string | null;
   updatedAt: string | null;
   userId: string;
+  subtasks?: Task[];
 };

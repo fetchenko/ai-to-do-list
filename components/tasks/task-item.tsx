@@ -19,6 +19,7 @@ import { useSubtaskStore } from '@/store/use-subtask-store';
 import { useForm } from 'react-hook-form';
 import { taskStatus } from '@/features/tasks/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
+import { DraftSubtasks } from './draft-subtasks';
 
 type TaskItemProps = {
   task: Task;
@@ -33,6 +34,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
+  const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
 
   const queryClient = useQueryClient();
 
@@ -69,15 +71,19 @@ export default function TaskItem({ task }: TaskItemProps) {
       taskId: task.id,
       updates: newTask,
     }, {
-      onSuccess: () => { }
+      onSuccess: () => {
+        setEditingTaskId('');
+      }
     })
   }
 
-  const toggleDone = (id: string) => {
+  const toggleDone = (checked: boolean) => {
+    const newStatus = checked ? taskStatus.done : taskStatus.active
+
     updateTaskMutation.mutate({
       taskId: task.id,
       updates: {
-        status: taskStatus.done
+        status: newStatus
       },
     }, { onSuccess: () => { } })
   };
@@ -122,7 +128,7 @@ export default function TaskItem({ task }: TaskItemProps) {
               <Checkbox
                 disabled={updateTaskMutation.isPending}
                 checked={task.status === 'done'}
-                onCheckedChange={() => toggleDone(task.id)}
+                onCheckedChange={(value) => toggleDone(value)}
               />
               <div>
                 <p className="font-medium">{task.title}</p>
@@ -160,6 +166,9 @@ export default function TaskItem({ task }: TaskItemProps) {
       {task.subtasks && (
         <Subtasks task={task} />
       )}
+      {generateSubtaskForTask && generateSubtaskForTask === task.id &&
+        <DraftSubtasks task={task} />
+      }
     </Card>
   );
 }

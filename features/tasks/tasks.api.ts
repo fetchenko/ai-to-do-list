@@ -25,7 +25,7 @@ export async function getTasksWithSubtasks() {
     .select(
       `
     *,
-    subtasks:tasks!tasks_parent_task_id_fkey(*)
+    subtasks:tasks!parent_task_id(*)
   `,
     )
     .is("parent_task_id", null)) as {

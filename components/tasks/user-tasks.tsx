@@ -20,18 +20,15 @@ export default function UserTasks() {
     <div className="flex-1 flex flex-col gap-6 px-4 w-full">
       <div className="space-y-6">
         <div className="max-w-3xl mx-auto p-6 space-y-6">
-          <Card className="p-4 space-y-3">
-            <AddTask />
-          </Card>
+          <AddTask />
 
           <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="done">Done</TabsTrigger>
-              <TabsTrigger value="archived">Archived</TabsTrigger>
             </TabsList>
 
-            {(['active', 'done', 'archived'] as const).map((tab) => (
+            {(['active', 'done'] as const).map((tab) => (
               <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
                 {filtered(tab).map((task) => (
                   <TaskItem key={task.id} task={task} />

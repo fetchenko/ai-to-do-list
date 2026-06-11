@@ -2,14 +2,14 @@ import { Task } from "@/features/tasks/tasks.types";
 import { create } from "zustand";
 
 const initialState = {
-  activeParentTaskId: null,
+  generateSubtaskForTask: null,
   activeSubtaskId: null,
   draftSubtask: null,
   subtasks: [],
 };
 
 type SubtaskState = {
-  activeParentTaskId: string | null;
+  generateSubtaskForTask: string | null;
   activeSubtaskId: string | null;
   draftSubtask: string | null;
   generatedSubtasks: Task[];
@@ -28,7 +28,7 @@ type SubtaskState = {
 };
 
 export const useSubtaskStore = create<SubtaskState>((set, get) => ({
-  activeParentTaskId: null,
+  generateSubtaskForTask: null,
   activeSubtaskId: null,
   generatedSubtasks: [],
   draftSubtask: null,
@@ -44,7 +44,7 @@ export const useSubtaskStore = create<SubtaskState>((set, get) => ({
 
   setGeneratedSubtasks: (parentTaskId: string, subtasks: Task[]) =>
     set({
-      activeParentTaskId: parentTaskId,
+      generateSubtaskForTask: parentTaskId,
       generatedSubtasks: [...subtasks],
     }),
   updateSubtask: (id: string, data: Partial<Task>) =>

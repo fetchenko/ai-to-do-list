@@ -6,9 +6,9 @@ import { API_ROUTES } from "@/lib/api-routes";
 export async function addTask(newTask: Task) {
   const supabase = createClient();
 
-  const { data, error } = await supabase.from("tasks").insert({
-    title: newTask.title,
-  });
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert(mapTaskUpdateToDb(newTask));
 
   if (error) {
     throw error;

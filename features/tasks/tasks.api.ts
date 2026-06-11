@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import { Task } from "./tasks.types";
-import { mapDbTasksWithSubtasks, mapTaskUpdateToDb } from "./tasks.mapper";
+import { DbTask, Task } from "./tasks.types";
+import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 
 export async function addTask(newTask: Task) {
@@ -20,21 +20,24 @@ export async function addTask(newTask: Task) {
 export async function getTasksWithSubtasks() {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from("tasks")
     .select(
       `
     *,
-    subtasks:tasks!parent_task_id (*)
+    subtasks:tasks!tasks_parent_task_id_fkey(*)
   `,
     )
-    .is("parent_task_id", null);
+    .is("parent_task_id", null)) as {
+    data: DbTask[] | null;
+    error: Error | null;
+  };
 
   if (error) {
     throw error;
   }
 
-  return mapDbTasksWithSubtasks(data);
+  return mapDbTasks(data);
 }
 
 export async function updateTask(id: string, newTask: Partial<Task>) {

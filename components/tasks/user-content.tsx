@@ -6,7 +6,7 @@ export default async function UserContent() {
   const user = await getUserClaims();
 
   return user ? (
-    <UserTasks user={user} />
+    <UserTasks />
   ) : (
     <Hero />
   );

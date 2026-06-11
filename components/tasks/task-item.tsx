@@ -20,6 +20,7 @@ import { useForm } from 'react-hook-form';
 import { taskStatus } from '@/features/tasks/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
+import { CheckedState } from '@radix-ui/react-checkbox';
 
 type TaskItemProps = {
   task: Task;
@@ -77,7 +78,7 @@ export default function TaskItem({ task }: TaskItemProps) {
     })
   }
 
-  const toggleDone = (checked: boolean) => {
+  const toggleDone = (checked: CheckedState) => {
     const newStatus = checked ? taskStatus.done : taskStatus.active
 
     updateTaskMutation.mutate({

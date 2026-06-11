@@ -18,14 +18,18 @@ export function mapDbTask(dbTask: DbTask): Task {
   };
 }
 
-export function mapDbTasksWithSubtasks(dbTasks: DbTask[]): Task[] {
-  return dbTasks.map((dbTask) => ({
-    ...mapDbTask(dbTask),
-    subtasks: (dbTask.subtasks ?? []).map(mapDbTask),
-  }));
+export function mapDbTasks(dbTasks: DbTask[] | null): Task[] {
+  return dbTasks
+    ? dbTasks.map((dbTask) => ({
+        ...mapDbTask(dbTask),
+        subtasks: (dbTask.subtasks ?? []).map(mapDbTask),
+      }))
+    : [];
 }
 
-export function mapTaskUpdateToDb(updates: Partial<Task>): Partial<DbTask> {
+export function mapTaskUpdateToDb(
+  updates: Partial<Task>,
+): Partial<Omit<DbTask, "subtasks">> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(updates)) {

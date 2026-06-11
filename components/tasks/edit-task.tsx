@@ -25,7 +25,7 @@ export function EditTask({ task }: TaskItemProps) {
 
   const mutation = useMutation({
     mutationFn: async (newTask: EditTaskForm) =>
-      updateTask({ ...task, title: newTask.title }),
+      updateTask(task.id, { ...task, title: newTask.title }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],

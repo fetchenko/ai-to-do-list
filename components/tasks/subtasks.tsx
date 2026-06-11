@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { Checkbox } from "../ui/checkbox";
 import { taskStatus } from "@/features/tasks/task.constants";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 interface TaskSubtasksProps {
   task: Task
@@ -95,7 +96,7 @@ export function Subtasks({
     mutationDelete.mutate(id);
   }
 
-  const toggleDone = (id: string, checked: boolean) => {
+  const toggleDone = (id: string, checked: CheckedState) => {
     const newStatus = (checked) ? taskStatus.done : taskStatus.active;
 
     updateTaskMutation.mutate({

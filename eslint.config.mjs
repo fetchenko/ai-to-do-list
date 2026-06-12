@@ -11,6 +11,22 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      "@next/next/no-html-link-for-pages": "off",
+      "react/display-name": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-types": [
+        "warn",
+        {
+          allowExpressions: true,
+        },
+      ],
+    },
+    ignores: ["node_modules", ".next", "dist"],
+  },
 ];
 
 export default eslintConfig;

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { addTask } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Task } from "@/features/tasks/tasks.types";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { useState } from "react";
@@ -62,7 +62,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
             <Input
               {...register("title")}
               disabled={mutation.isPending}
-              placeholder="Add a task..."
+              placeholder={`Add a ${isSubtask ? 'subtask' : 'task'}...`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSubmit(onSubmit)
               }}

@@ -9,7 +9,7 @@ export function makeQueryClient() {
         retry: 1,
       },
       mutations: {
-        retry: 0,
+        retry: 1,
       },
     },
   });

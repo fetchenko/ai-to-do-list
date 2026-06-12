@@ -2,10 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTaskStore } from "@/store/use-task-store";
+import { useTaskStore } from "@/stores/use-task-store";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateTask } from "@/features/tasks/tasks.api";
 import { Task } from "@/features/tasks/tasks.types";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 
@@ -21,19 +19,6 @@ export function EditTask({ task }: TaskItemProps) {
 
   const resetTaskStore = useTaskStore(state => state.reset)
 
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (newTask: EditTaskForm) =>
-      updateTask(task.id, { ...task, title: newTask.title }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tasks'],
-      });
-      resetTaskStore();
-    },
-  })
-
   const { register, handleSubmit } = useForm<EditTaskForm>({
     defaultValues: {
       title: task.title,
@@ -45,7 +30,11 @@ export function EditTask({ task }: TaskItemProps) {
   };
 
   const handleSave = (newTask: EditTaskForm) => {
-    mutation.mutate(newTask)
+    updateTaskMutation.mutate({ taskId: task.id, updates: newTask }, {
+      onSuccess: () => {
+        resetTaskStore();
+      }
+    })
   }
 
   return (
@@ -56,7 +45,7 @@ export function EditTask({ task }: TaskItemProps) {
       <Input
         {...register('title')}
         className="flex-1"
-        disabled={mutation.isPending}
+        disabled={updateTaskMutation.isPending}
       />
 
       <div className="flex gap-2">

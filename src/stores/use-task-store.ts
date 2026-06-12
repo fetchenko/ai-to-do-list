@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 const initialState = {
   editingTaskId: null,
@@ -11,7 +11,7 @@ type TaskState = {
   reset: () => void;
 };
 
-export const useTaskStore = create<TaskState>((set, get) => ({
+export const useTaskStore = create<TaskState>((set) => ({
   editingTaskId: null,
 
   setEditingTaskId: (id) =>

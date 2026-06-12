@@ -12,16 +12,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteTask, generateSubtasks } from '@/features/tasks/tasks.api';
-import { useTaskStore } from '@/store/use-task-store';
+import { useTaskStore } from '@/stores/use-task-store';
 import { Task } from '@/features/tasks/tasks.types';
 import { Subtasks } from './subtasks';
-import { useSubtaskStore } from '@/store/use-subtask-store';
+import { useSubtaskStore } from '@/stores/use-subtask-store';
 import { useForm } from 'react-hook-form';
 import { taskStatus } from '@/features/tasks/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
-import { useState } from 'react';
 import { AddTask } from './add-task';
 
 type TaskItemProps = {
@@ -38,7 +37,6 @@ export default function TaskItem({ task }: TaskItemProps) {
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
   const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
-  const [isAddSubtask, setIsAddSubtask] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -100,10 +98,6 @@ export default function TaskItem({ task }: TaskItemProps) {
     mutationSubtasks.mutate({ id: task.id, title: task.title })
   };
 
-  const handleAddSubtask = (task: Task) => {
-    setIsAddSubtask(true);
-  }
-
   const editTask = (id: string) => {
     setEditingTaskId(id);
   };
@@ -156,9 +150,6 @@ export default function TaskItem({ task }: TaskItemProps) {
                   <DropdownMenuItem onClick={() => handleGenerateSubtasks(task)}>
                     Gen subtask
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAddSubtask(task)}>
-                    add subtask
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => editTask(task.id)}>
                     Edit
                   </DropdownMenuItem>
@@ -174,11 +165,12 @@ export default function TaskItem({ task }: TaskItemProps) {
           </>
         )}
       </div>
-      {isAddSubtask && (
-        <AddTask isSubtask={true} parentTaskId={task.id} />
-      )}
+
       {task.subtasks && (
         <Subtasks task={task} />
+      )}
+      {(
+        <AddTask isSubtask={true} parentTaskId={task.id} />
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>

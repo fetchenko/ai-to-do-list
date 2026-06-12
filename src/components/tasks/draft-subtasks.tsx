@@ -1,28 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSubtaskStore } from "@/store/use-subtask-store";
+import { useSubtaskStore } from "@/stores/use-subtask-store";
 import { Task } from "@/features/tasks/tasks.types";
-import { useForm } from "react-hook-form";
-import { deleteTask, saveSubtasks } from "@/features/tasks/tasks.api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
-import { Checkbox } from "../ui/checkbox";
-import { taskStatus } from "@/features/tasks/task.constants";
-import { CheckedState } from "@radix-ui/react-checkbox";
+import { saveSubtasks } from "@/features/tasks/tasks.api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface TaskSubtasksProps {
   task: Task
 }
 
-export function Subtasks({
+export function DraftSubtasks({
   task
 }: TaskSubtasksProps) {
-  const updateTaskMutation = useUpdateTaskMutation()
   const draftSubtasks = useSubtaskStore(state => state.generatedSubtasks);
   const setGeneratedSubtasks = useSubtaskStore(state => state.setGeneratedSubtasks);
   const activeSubtaskId = useSubtaskStore(state => state.activeSubtaskId);
@@ -33,10 +26,9 @@ export function Subtasks({
   const setDraftSubtask = useSubtaskStore(state => state.setDraftSubtask);
   const resetActiveSubtask = useSubtaskStore(state => state.resetActiveSubtask);
   const queryClient = useQueryClient();
-  const generateSubtaskForTask = useSubtaskStore((state) => state.generateSubtaskForTask);
 
   const mutation = useMutation({
-    mutationFn: async ({ id, subtasks }: { id: string, subtasks: Task[] }) =>
+    mutationFn: async ({ subtasks }: { id: string, subtasks: Task[] }) =>
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -45,15 +37,6 @@ export function Subtasks({
       setGeneratedSubtasks('', [])
     },
   })
-
-  const mutationDelete = useMutation({
-    mutationFn: async (id: string) => deleteTask(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tasks'],
-      });
-    },
-  });
 
   if (mutation.isPending) {
     return (
@@ -73,18 +56,8 @@ export function Subtasks({
     setDraftSubtask(subtask.title)
   };
 
-  const handleUpdateSubtask = (taskId: string, subtask: Task) => {
-    if (draftSubtasks && draftSubtasks.length) {
-      updateSubtask(taskId, { title: draftSubtask })
-    } else {
-      updateTaskMutation.mutate({
-        taskId: taskId,
-        updates: { title: draftSubtask },
-      }, {
-        onSuccess: () => { }
-      })
-    }
-
+  const handleUpdateSubtask = (taskId: string) => {
+    updateSubtask(taskId, { title: draftSubtask })
     resetActiveSubtask()
   }
 
@@ -93,29 +66,18 @@ export function Subtasks({
   }
 
   const handleDeleteSubtask = (id: string) => {
-    mutationDelete.mutate(id);
+    deleteSubtask(id)
   }
 
-  const toggleDone = (id: string, checked: CheckedState) => {
-    const newStatus = (checked) ? taskStatus.done : taskStatus.active;
-
-    updateTaskMutation.mutate({
-      taskId: id,
-      updates: { status: newStatus },
-    }, {
-      onSuccess: () => { }
-    })
+  const handleSaveSubtasks = async () => {
+    mutation.mutate({ id: task.id, subtasks: draftSubtasks })
   }
 
-  const resultSubtasks = task.subtasks || [];
-
-  const sortedSubtasks = resultSubtasks.sort((a, b) => a.position.localeCompare(b.position));
-
-  if (!resultSubtasks?.length) return null;
+  if (!draftSubtasks?.length) return null;
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
-      {sortedSubtasks.map((subtask) => {
+      {draftSubtasks.map((subtask) => {
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (
@@ -136,7 +98,7 @@ export function Subtasks({
                     />
                     <div className="flex gap-2">
                       <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask.id, subtask)}
+                        onClick={() => handleUpdateSubtask(subtask.id)}
                       >
                         Save
                       </Button>
@@ -148,11 +110,6 @@ export function Subtasks({
 
                 ) : (
                   <div className="flex items-center gap-3">
-                    <Checkbox
-                      disabled={updateTaskMutation.isPending}
-                      checked={subtask.status === taskStatus.done}
-                      onCheckedChange={(value) => toggleDone(subtask.id, value)}
-                    />
                     <p className="text-sm text-muted-foreground">
                       {subtask.title}
                     </p>
@@ -169,6 +126,7 @@ export function Subtasks({
                   Edit
                 </Button>
               )}
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -183,6 +141,22 @@ export function Subtasks({
           </Card>
         );
       })}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <Button variant="outline"
+          disabled={mutation.isPending}
+          onClick={() => setGeneratedSubtasks('', [])}
+        >
+          Reject All
+        </Button>
+
+        <Button
+          disabled={mutation.isPending}
+          onClick={() => handleSaveSubtasks()}
+        >
+          Accept All
+        </Button>
+      </div>
     </div>
   );
 }

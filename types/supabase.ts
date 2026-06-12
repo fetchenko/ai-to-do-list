@@ -24,7 +24,7 @@ export type Database = {
           due_date: string | null;
           id: string;
           parent_task_id: string | null;
-          position: string | null;
+          position: string;
           priority: number | null;
           status: TaskStatus;
           title: string | null;

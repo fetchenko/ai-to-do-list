@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AddTask } from '@/components/tasks/add-task';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +13,11 @@ export default function UserTasks() {
     queryFn: getTasksWithSubtasks,
   })
 
-  const filtered = (status: Task['status']) => tasks.filter((t) => t.status === status);
+  const sortedTasks = tasks.sort(
+    (a, b) => a.position.localeCompare(b.position)
+  );
+
+  const filtered = (status: Task['status']) => sortedTasks.filter((t) => t.status === status);
 
   return (
     <div className="flex-1 flex flex-col gap-6 px-4 w-full">
@@ -22,6 +25,8 @@ export default function UserTasks() {
         <div className="max-w-3xl mx-auto p-6 space-y-6">
           <AddTask />
 
+          {isPending && <p>Loading Tasks</p>}
+          {error && <p>Failed to load tasks</p>}
           <Tabs defaultValue="active" className="w-full">
             <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="active">Active</TabsTrigger>

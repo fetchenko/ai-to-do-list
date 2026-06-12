@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSubtaskStore } from "@/store/use-subtask-store";
+import { useSubtaskStore } from "@/stores/use-subtask-store";
 import { Task } from "@/features/tasks/tasks.types";
-import { useForm } from "react-hook-form";
 import { deleteTask, saveSubtasks } from "@/features/tasks/tasks.api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { Checkbox } from "../ui/checkbox";
 import { taskStatus } from "@/features/tasks/task.constants";
@@ -28,15 +26,13 @@ export function Subtasks({
   const activeSubtaskId = useSubtaskStore(state => state.activeSubtaskId);
   const setActiveSubastkId = useSubtaskStore(state => state.setActiveSubtaskId);
   const updateSubtask = useSubtaskStore(state => state.updateSubtask);
-  const deleteSubtask = useSubtaskStore(state => state.deleteSubtask);
   const draftSubtask = useSubtaskStore(state => state.draftSubtask);
   const setDraftSubtask = useSubtaskStore(state => state.setDraftSubtask);
   const resetActiveSubtask = useSubtaskStore(state => state.resetActiveSubtask);
   const queryClient = useQueryClient();
-  const generateSubtaskForTask = useSubtaskStore((state) => state.generateSubtaskForTask);
 
   const mutation = useMutation({
-    mutationFn: async ({ id, subtasks }: { id: string, subtasks: Task[] }) =>
+    mutationFn: async ({ subtasks }: { subtasks: Task[] }) =>
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -73,7 +69,7 @@ export function Subtasks({
     setDraftSubtask(subtask.title)
   };
 
-  const handleUpdateSubtask = (taskId: string, subtask: Task) => {
+  const handleUpdateSubtask = (taskId: string) => {
     if (draftSubtasks && draftSubtasks.length) {
       updateSubtask(taskId, { title: draftSubtask })
     } else {
@@ -107,13 +103,15 @@ export function Subtasks({
     })
   }
 
-  const resultSubtasks = task.subtasks;
+  const resultSubtasks = task.subtasks || [];
+
+  const sortedSubtasks = resultSubtasks.sort((a, b) => a.position.localeCompare(b.position));
 
   if (!resultSubtasks?.length) return null;
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
-      {resultSubtasks.map((subtask) => {
+      {sortedSubtasks.map((subtask) => {
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (
@@ -134,7 +132,7 @@ export function Subtasks({
                     />
                     <div className="flex gap-2">
                       <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask.id, subtask)}
+                        onClick={() => handleUpdateSubtask(subtask.id)}
                       >
                         Save
                       </Button>

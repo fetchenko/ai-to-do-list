@@ -7,14 +7,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { addTask } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Task } from "@/features/tasks/tasks.types";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { useState } from "react";
 
 type AddTaskForm = Task;
 
-export function AddTask() {
+type AddTaskProps = {
+  isSubtask?: boolean;
+  parentTaskId?: string;
+}
+
+export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
   const [open, setOpen] = useState(false)
 
   const { handleSubmit, register, reset } = useForm<AddTaskForm>({
@@ -27,8 +32,13 @@ export function AddTask() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (newTask: Task) =>
-      await addTask(newTask),
+    mutationFn: async (newTask: Task) => {
+      if (isSubtask && parentTaskId) {
+        return addTask(parentTaskId, { ...newTask, parentTaskId: parentTaskId })
+      }
+
+      return await addTask(null, newTask)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
@@ -52,7 +62,7 @@ export function AddTask() {
             <Input
               {...register("title")}
               disabled={mutation.isPending}
-              placeholder="Add a task..."
+              placeholder={`Add a ${isSubtask ? 'subtask' : 'task'}...`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSubmit(onSubmit)
               }}

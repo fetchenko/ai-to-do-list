@@ -4,9 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSubtaskStore } from "@/store/use-subtask-store";
+import { useSubtaskStore } from "@/stores/use-subtask-store";
 import { Task } from "@/features/tasks/tasks.types";
-import { useForm } from "react-hook-form";
 import { saveSubtasks } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -29,7 +28,7 @@ export function DraftSubtasks({
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ id, subtasks }: { id: string, subtasks: Task[] }) =>
+    mutationFn: async ({ subtasks }: { id: string, subtasks: Task[] }) =>
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -57,7 +56,7 @@ export function DraftSubtasks({
     setDraftSubtask(subtask.title)
   };
 
-  const handleUpdateSubtask = (taskId: string, subtask: Task) => {
+  const handleUpdateSubtask = (taskId: string) => {
     updateSubtask(taskId, { title: draftSubtask })
     resetActiveSubtask()
   }
@@ -99,7 +98,7 @@ export function DraftSubtasks({
                     />
                     <div className="flex gap-2">
                       <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask.id, subtask)}
+                        onClick={() => handleUpdateSubtask(subtask.id)}
                       >
                         Save
                       </Button>

@@ -2,13 +2,18 @@ import { createClient } from "@/lib/supabase/client";
 import { DbTask, Task } from "./tasks.types";
 import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
+import { generateKeyBetween } from "fractional-indexing";
 
-export async function addTask(newTask: Task) {
+export async function addTask(parentTaskId: string | null, newTask: Task) {
   const supabase = createClient();
+
+  const lastPosition = await getLastPosition(parentTaskId);
+
+  const newPosition = generateKeyBetween(lastPosition ?? null, null);
 
   const { data, error } = await supabase
     .from("tasks")
-    .insert(mapTaskUpdateToDb(newTask));
+    .insert(mapTaskUpdateToDb({ ...newTask, position: newPosition }));
 
   if (error) {
     throw error;
@@ -101,13 +106,37 @@ export async function generateSubtasks({ title }: Partial<Task>) {
 export async function saveSubtasks(parentTaskId: string, subtasks: Task[]) {
   const supabase = createClient();
 
-  const { data, error } = await supabase.from("tasks").insert(
-    subtasks.map((subtask) => ({
+  const lastPosition = await getLastPosition(parentTaskId);
+
+  let prev = lastPosition ?? null;
+
+  const rows = subtasks.map((subtask) => {
+    const next = generateKeyBetween(prev, null);
+    prev = next;
+
+    return {
       title: subtask.title,
       description: subtask.description,
       parent_task_id: parentTaskId,
-    })),
-  );
+      position: next,
+    };
+  });
+
+  const { data, error } = await supabase.from("tasks").insert(rows);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getLastPosition(parentTaskId: string | null) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.rpc("get_last_position", {
+    p_parent_id: parentTaskId ?? undefined,
+  });
 
   if (error) {
     throw error;

@@ -27,7 +27,7 @@ type SubtaskState = {
   reset: () => void;
 };
 
-export const useSubtaskStore = create<SubtaskState>((set, get) => ({
+export const useSubtaskStore = create<SubtaskState>((set) => ({
   generateSubtaskForTask: null,
   activeSubtaskId: null,
   generatedSubtasks: [],

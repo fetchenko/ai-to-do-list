@@ -12,15 +12,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteTask, generateSubtasks } from '@/features/tasks/tasks.api';
-import { useTaskStore } from '@/store/use-task-store';
+import { useTaskStore } from '@/stores/use-task-store';
 import { Task } from '@/features/tasks/tasks.types';
 import { Subtasks } from './subtasks';
-import { useSubtaskStore } from '@/store/use-subtask-store';
+import { useSubtaskStore } from '@/stores/use-subtask-store';
 import { useForm } from 'react-hook-form';
 import { taskStatus } from '@/features/tasks/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
+import { AddTask } from './add-task';
 
 type TaskItemProps = {
   task: Task;
@@ -164,11 +165,18 @@ export default function TaskItem({ task }: TaskItemProps) {
           </>
         )}
       </div>
+
       {task.subtasks && (
         <Subtasks task={task} />
       )}
+      {(
+        <AddTask isSubtask={true} parentTaskId={task.id} />
+      )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
-        <DraftSubtasks task={task} />
+        <>
+          <p>generated subtasks</p>
+          <DraftSubtasks task={task} />
+        </>
       }
     </Card>
   );

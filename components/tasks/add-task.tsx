@@ -14,7 +14,12 @@ import { useState } from "react";
 
 type AddTaskForm = Task;
 
-export function AddTask() {
+type AddTaskProps = {
+  isSubtask?: boolean;
+  parentTaskId?: string;
+}
+
+export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
   const [open, setOpen] = useState(false)
 
   const { handleSubmit, register, reset } = useForm<AddTaskForm>({
@@ -27,8 +32,13 @@ export function AddTask() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (newTask: Task) =>
-      await addTask(newTask),
+    mutationFn: async (newTask: Task) => {
+      if (isSubtask && parentTaskId) {
+        return addTask(parentTaskId, { ...newTask, parentTaskId: parentTaskId })
+      }
+
+      return await addTask(null, newTask)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],

@@ -107,13 +107,15 @@ export function Subtasks({
     })
   }
 
-  const resultSubtasks = task.subtasks;
+  const resultSubtasks = task.subtasks || [];
+
+  const sortedSubtasks = resultSubtasks.sort((a, b) => a.position.localeCompare(b.position));
 
   if (!resultSubtasks?.length) return null;
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
-      {resultSubtasks.map((subtask) => {
+      {sortedSubtasks.map((subtask) => {
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (

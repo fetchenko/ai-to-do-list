@@ -21,6 +21,8 @@ import { taskStatus } from '@/features/tasks/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
+import { useState } from 'react';
+import { AddTask } from './add-task';
 
 type TaskItemProps = {
   task: Task;
@@ -36,6 +38,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
   const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
+  const [isAddSubtask, setIsAddSubtask] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -97,6 +100,10 @@ export default function TaskItem({ task }: TaskItemProps) {
     mutationSubtasks.mutate({ id: task.id, title: task.title })
   };
 
+  const handleAddSubtask = (task: Task) => {
+    setIsAddSubtask(true);
+  }
+
   const editTask = (id: string) => {
     setEditingTaskId(id);
   };
@@ -149,6 +156,9 @@ export default function TaskItem({ task }: TaskItemProps) {
                   <DropdownMenuItem onClick={() => handleGenerateSubtasks(task)}>
                     Gen subtask
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddSubtask(task)}>
+                    add subtask
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => editTask(task.id)}>
                     Edit
                   </DropdownMenuItem>
@@ -164,11 +174,17 @@ export default function TaskItem({ task }: TaskItemProps) {
           </>
         )}
       </div>
+      {isAddSubtask && (
+        <AddTask isSubtask={true} parentTaskId={task.id} />
+      )}
       {task.subtasks && (
         <Subtasks task={task} />
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
-        <DraftSubtasks task={task} />
+        <>
+          <p>generated subtasks</p>
+          <DraftSubtasks task={task} />
+        </>
       }
     </Card>
   );

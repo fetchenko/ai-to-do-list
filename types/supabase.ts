@@ -24,7 +24,7 @@ export type Database = {
           due_date: string | null;
           id: string;
           parent_task_id: string | null;
-          position: number;
+          position: string | null;
           priority: number | null;
           status: TaskStatus;
           title: string | null;
@@ -38,7 +38,7 @@ export type Database = {
           due_date?: string | null;
           id?: string;
           parent_task_id?: string | null;
-          position?: number;
+          position?: string | null;
           priority?: number | null;
           status?: string;
           title?: string | null;
@@ -52,21 +52,29 @@ export type Database = {
           due_date?: string | null;
           id?: string;
           parent_task_id?: string | null;
-          position?: number;
+          position?: string | null;
           priority?: number | null;
           status?: string;
           title?: string | null;
           updated_at?: string | null;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey";
+            columns: ["parent_task_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_last_position: { Args: { p_parent_id?: string }; Returns: string };
     };
     Enums: {
       task_status: "active" | "done" | "archived";

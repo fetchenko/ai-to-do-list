@@ -14,7 +14,11 @@ export default function UserTasks() {
     queryFn: getTasksWithSubtasks,
   })
 
-  const filtered = (status: Task['status']) => tasks.filter((t) => t.status === status);
+  const sortedTasks = tasks.sort(
+    (a, b) => a.position.localeCompare(b.position)
+  );
+
+  const filtered = (status: Task['status']) => sortedTasks.filter((t) => t.status === status);
 
   return (
     <div className="flex-1 flex flex-col gap-6 px-4 w-full">

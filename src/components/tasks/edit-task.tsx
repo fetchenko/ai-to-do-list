@@ -6,22 +6,24 @@ import { useTaskStore } from "@/stores/use-task-store";
 import { useForm } from "react-hook-form";
 import { Task } from "@/features/tasks/tasks.types";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
+import { taskSchema } from "@/lib/validation/task";
+import z from "zod";
 
 type TaskItemProps = {
   task: Task;
 }
-type EditTaskForm = {
-  title: string | null;
-}
+
+type TaskInput = z.infer<typeof taskSchema>;
+
 
 export function EditTask({ task }: TaskItemProps) {
   const updateTaskMutation = useUpdateTaskMutation()
 
   const resetTaskStore = useTaskStore(state => state.reset)
 
-  const { register, handleSubmit } = useForm<EditTaskForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<TaskInput>({
     defaultValues: {
-      title: task.title,
+      title: task.title || "",
     },
   })
 
@@ -29,7 +31,7 @@ export function EditTask({ task }: TaskItemProps) {
     resetTaskStore();
   };
 
-  const handleSave = (newTask: EditTaskForm) => {
+  const handleSave = (newTask: TaskInput) => {
     updateTaskMutation.mutate({ taskId: task.id, updates: newTask }, {
       onSuccess: () => {
         resetTaskStore();
@@ -47,7 +49,7 @@ export function EditTask({ task }: TaskItemProps) {
         className="flex-1"
         disabled={updateTaskMutation.isPending}
       />
-
+      {errors.title && <p className="text-red-500">{errors.title.message}</p>}
       <div className="flex gap-2">
         <Button variant="default" size="sm" type="submit">
           Save

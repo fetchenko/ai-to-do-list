@@ -4,7 +4,10 @@ import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
 
-export async function addTask(parentTaskId: string | null, newTask: Task) {
+export async function addTask(
+  parentTaskId: string | null,
+  newTask: Partial<Task>,
+) {
   const supabase = createClient();
 
   const lastPosition = await getLastPosition(parentTaskId);

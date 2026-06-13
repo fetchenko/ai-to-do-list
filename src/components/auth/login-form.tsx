@@ -26,7 +26,7 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
@@ -34,7 +34,7 @@ export function LoginForm() {
 
   const router = useRouter();
 
-  const { mutate, error } = useMutation({
+  const { mutate, error, isPending } = useMutation({
     mutationFn: async (data: LoginInput) => await signInWithPassword(data),
     onSuccess: () => {
       router.push(DEFAULT_REDIRECTS.authenticated);
@@ -86,8 +86,8 @@ export function LoginForm() {
                 <p className="text-red-500">{errors.password.message}</p>
               )}
               {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Logging in..." : "Login"}
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "Logging in..." : "Login"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

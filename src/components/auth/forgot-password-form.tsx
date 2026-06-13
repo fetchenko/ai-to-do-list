@@ -25,13 +25,13 @@ export function ForgotPasswordForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isSubmitSuccessful },
+    formState: { errors, isSubmitSuccessful },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     mode: "onBlur",
   });
 
-  const { mutate, error } = useMutation({
+  const { mutate, error, isPending } = useMutation({
     mutationFn: async (data: ResetPasswordInput) => await resetPasswordForEmail(data)
   },)
 
@@ -76,8 +76,8 @@ export function ForgotPasswordForm() {
                   {errors.email && <p className="text-red-500">{errors.email.message}</p>}
                   {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
                 </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Sending..." : "Send reset email"}
+                <Button type="submit" className="w-full" disabled={isPending}>
+                  {isPending ? "Sending..." : "Send reset email"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

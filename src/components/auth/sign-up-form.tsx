@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ROUTES } from "@/lib/routes.config";
+import { DEFAULT_REDIRECTS, ROUTES } from "@/lib/routes.config";
 import { signupSchema } from "@/lib/validation/auth";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUp } from "@/features/auth/auth.api";
+import { useMutation } from "@tanstack/react-query";
 
 export type SignupInput = z.infer<typeof signupSchema>;
 
@@ -25,7 +26,7 @@ export function SignUpForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors: errors },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     mode: "onBlur",
@@ -33,9 +34,15 @@ export function SignUpForm() {
 
   const router = useRouter();
 
-  const onSumbit = async (data: SignupInput) => {
-    await signUp(data);
-    router.push(ROUTES.authSignupSuccess);
+  const { mutate, error, isPending } = useMutation({
+    mutationFn: async (data: SignupInput) => await signUp(data),
+    onSuccess: () => {
+      router.push(DEFAULT_REDIRECTS.authenticated);
+    }
+  },)
+
+  const onSumbit = (data: SignupInput) => {
+    mutate(data);
   };
 
   return (
@@ -84,8 +91,9 @@ export function SignUpForm() {
                 />
               </div>
               {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Creating an account..." : "Sign up"}
+              {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "Creating an account..." : "Sign up"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

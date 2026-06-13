@@ -17,6 +17,7 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { resetPasswordForEmail } from "@/features/auth/auth.api";
+import { useMutation } from "@tanstack/react-query";
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
@@ -30,8 +31,12 @@ export function ForgotPasswordForm() {
     mode: "onBlur",
   });
 
+  const { mutate, error } = useMutation({
+    mutationFn: async (data: ResetPasswordInput) => await resetPasswordForEmail(data)
+  },)
+
   const onSubmit = async (data: ResetPasswordInput) => {
-    await resetPasswordForEmail(data);
+    mutate(data);
   };
 
   return (
@@ -69,6 +74,7 @@ export function ForgotPasswordForm() {
                     placeholder="Email"
                   />
                   {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+                  {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Sending..." : "Send reset email"}

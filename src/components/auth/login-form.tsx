@@ -18,6 +18,7 @@ import { loginSchema } from "@/lib/validation/auth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInWithPassword } from "@/features/auth/auth.api";
+import { useMutation } from "@tanstack/react-query";
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
@@ -33,9 +34,15 @@ export function LoginForm() {
 
   const router = useRouter();
 
+  const { mutate, error } = useMutation({
+    mutationFn: async (data: LoginInput) => await signInWithPassword(data),
+    onSuccess: () => {
+      router.push(DEFAULT_REDIRECTS.authenticated);
+    }
+  },)
+
   const onSubmit = async (data: LoginInput) => {
-    await signInWithPassword(data);
-    router.push(DEFAULT_REDIRECTS.authenticated);
+    mutate(data);
   };
 
   return (
@@ -78,6 +85,7 @@ export function LoginForm() {
               {errors.password && (
                 <p className="text-red-500">{errors.password.message}</p>
               )}
+              {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Logging in..." : "Login"}
               </Button>

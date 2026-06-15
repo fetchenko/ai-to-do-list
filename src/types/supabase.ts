@@ -93,7 +93,7 @@ export type Database = {
           parent_task_id: string | null;
           position: string;
           priority: number | null;
-          status: string;
+          status: TaskStatus;
           title: string | null;
           updated_at: string | null;
           user_id: string;

@@ -12,7 +12,7 @@ Your job is to break down a user-provided task into clear, actionable subtasks t
 - Avoid vague tasks like "improve UI" — be specific.
 - If the task is too vague, make reasonable assumptions and proceed.
 - Each subtask should be independently actionable.
-- Keep between 3 and 12 subtasks depending on complexity.
+- Keep between 3 and 5 subtasks depending on complexity.
 
 ## Output format (STRICT):
 {
@@ -20,7 +20,7 @@ Your job is to break down a user-provided task into clear, actionable subtasks t
   "subtasks": [
     {
       "title": "short action title",
-      "description": "clear detailed explanation of what needs to be done"
+      "description": "short clear detailed explanation of what needs to be done"
     }
   ]
 }

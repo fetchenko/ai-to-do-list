@@ -4,7 +4,7 @@ const email = z.string().email("Invalid email address");
 
 const password = z
   .string()
-  .min(8, "Password must be at least 8 characters")
+  .min(6, "Password must be at least 6 characters")
   .max(100)
   .regex(/[A-Z]/, "Must contain at least one uppercase letter")
   .regex(/[a-z]/, "Must contain at least one lowercase letter")

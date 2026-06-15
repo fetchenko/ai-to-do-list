@@ -22,6 +22,7 @@ import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { AddTask } from './add-task';
+import DraftSubtasksSkeleton from './draft-subtasks-skeleton';
 
 type TaskItemProps = {
   task: Task;
@@ -50,7 +51,12 @@ export default function TaskItem({ task }: TaskItemProps) {
   });
 
   const mutationSubtasks = useMutation({
-    mutationFn: async ({ id, title }: Partial<Task>) => generateSubtasks({ id, title }),
+    mutationFn: async ({ id }: Partial<Task>) => {
+      if (id) {
+        return await generateSubtasks({ id });
+      }
+      return null;
+    },
     onSuccess: (data: Task[]) => {
       setGeneratedSubtasks(task.id, data);
     },
@@ -147,7 +153,7 @@ export default function TaskItem({ task }: TaskItemProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleGenerateSubtasks(task)}>
+                  <DropdownMenuItem disabled={mutationSubtasks.isPending} onClick={() => handleGenerateSubtasks(task)}>
                     Gen subtask
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => editTask(task.id)}>
@@ -174,6 +180,7 @@ export default function TaskItem({ task }: TaskItemProps) {
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>
+          {mutationSubtasks.isPending && <DraftSubtasksSkeleton />}
           <p>generated subtasks</p>
           <DraftSubtasks task={task} />
         </>

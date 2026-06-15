@@ -3,6 +3,7 @@ import { DbTask, Task } from "./tasks.types";
 import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
+import { subtasksSchema } from "@/lib/validation/task";
 
 export async function addTask(
   parentTaskId: string | null,
@@ -75,24 +76,30 @@ export async function deleteTask(id: string) {
   return data;
 }
 
-export async function generateSubtasks({ title }: Partial<Task>) {
+export async function generateSubtasks({ id: taskId }: Partial<Task>) {
   try {
     const res = await fetch(API_ROUTES.generateSubtasks, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task: title }),
+      body: JSON.stringify({ taskId }),
     });
 
     if (!res.ok) {
       throw new Error(`API Error: ${res.status}`);
     }
 
-    const data = await res.json();
+    const { data } = await res.json();
 
-    if (!data?.subtasks || !Array.isArray(data.subtasks)) {
+    const parsed = subtasksSchema.safeParse(data);
+
+    if (!parsed.success) {
       throw new Error("Invalid AI response format");
+    }
+
+    if (data.subtasks && !data.subtasks.length) {
+      throw new Error("No meaningful subtasks could be generated.");
     }
 
     const subtasks = data.subtasks.map((subtask: Task) => ({

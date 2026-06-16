@@ -153,7 +153,9 @@ export default function TaskItem({ task }: TaskItemProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled={mutationSubtasks.isPending} onClick={() => handleGenerateSubtasks(task)}>
+                  <DropdownMenuItem
+                    // disabled={mutationSubtasks.isPending} 
+                    onClick={() => handleGenerateSubtasks(task)}>
                     Gen subtask
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => editTask(task.id)}>

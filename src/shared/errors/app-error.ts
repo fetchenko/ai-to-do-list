@@ -85,11 +85,11 @@ export class ResponseFormatError extends AppError {
   }
 }
 
-export class AiLockRequestError extends AppError {
+export class AiLockActiveError extends AppError {
   constructor(details: unknown) {
     super(
-      ErrorCode.AI_LOCK_REQUEST,
-      ErrorHttpStatus[ErrorCode.AI_LOCK_REQUEST],
+      ErrorCode.AI_LOCK_ACTIVE,
+      ErrorHttpStatus[ErrorCode.AI_LOCK_ACTIVE],
       "AI already running",
       details,
     );
@@ -102,6 +102,28 @@ export class AiUnvailableError extends AppError {
       ErrorCode.AI_UNAVAILABLE,
       ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
       "AI unavailable",
+      details,
+    );
+  }
+}
+
+export class AiLockRequestFailedError extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_LOCK_REQUEST_FAILED,
+      ErrorHttpStatus[ErrorCode.AI_LOCK_REQUEST_FAILED],
+      "Failed to request lock status",
+      details,
+    );
+  }
+}
+
+export class AiRequestLimitError extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_REQUEST_LIMIT,
+      ErrorHttpStatus[ErrorCode.AI_REQUEST_LIMIT],
+      "Reached limit of AI requests",
       details,
     );
   }

@@ -84,7 +84,6 @@ export type Database = {
       };
       tasks: {
         Row: {
-          ai_locked: boolean | null;
           completed_at: string | null;
           created_at: string | null;
           description: string | null;
@@ -93,13 +92,12 @@ export type Database = {
           parent_task_id: string | null;
           position: string;
           priority: number | null;
-          status: TaskStatus;
+          status: string;
           title: string | null;
           updated_at: string | null;
           user_id: string;
         };
         Insert: {
-          ai_locked?: boolean | null;
           completed_at?: string | null;
           created_at?: string | null;
           description?: string | null;
@@ -111,10 +109,9 @@ export type Database = {
           status?: string;
           title?: string | null;
           updated_at?: string | null;
-          user_id?: string;
+          user_id: string;
         };
         Update: {
-          ai_locked?: boolean | null;
           completed_at?: string | null;
           created_at?: string | null;
           description?: string | null;
@@ -144,6 +141,7 @@ export type Database = {
     };
     Functions: {
       get_last_position: { Args: { p_parent_id?: string }; Returns: string };
+      try_acquire_user_ai_lock: { Args: { user_id: string }; Returns: boolean };
     };
     Enums: {
       task_status: "active" | "done" | "archived";

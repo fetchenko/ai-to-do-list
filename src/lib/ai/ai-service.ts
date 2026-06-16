@@ -1,8 +1,8 @@
 import { getTaskForUser } from "../tasks/get-task";
-// import { lockTask, unlockTask } from "../tasks/task-lock";
 import { createAiLog } from "./logs/create-log";
 import { generateSubtasks } from "./generate-subtasks";
 import { updateAiLog } from "./logs/update-log";
+import { AiGenerationError } from "@/shared/errors/app-error";
 
 export async function generateSubtasksForTask({
   taskId,
@@ -16,9 +16,6 @@ export async function generateSubtasksForTask({
   const task = await getTaskForUser(taskId, userId);
   let result;
   let startedAt = Date.now();
-
-  // todo: implement lock generating subtasks request
-  // await lockTask(taskId);
 
   const aiLogId = await createAiLog({
     task_id: task.id,
@@ -44,8 +41,8 @@ export async function generateSubtasksForTask({
         total_tokens: result.parsedData.usage?.total_tokens,
       });
     }
-  } finally {
-    // await unlockTask(task.id);
+  } catch (err: unknown) {
+    throw new AiGenerationError(`Failed to generate subtasks ${err}`);
   }
 
   return { ...result, aiLogId };

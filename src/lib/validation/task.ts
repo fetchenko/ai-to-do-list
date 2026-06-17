@@ -15,11 +15,19 @@ export const taskSchema = z.object({
 
 export const subtasksSchema = z.object({
   subtasks: z.array(
-    z
-      .object({
-        title: z.string(),
-        description: z.string().optional(),
-      })
-      .strict(),
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+    }),
+  ),
+});
+
+export const SubtasksResponseSchema = z.object({
+  task_summary: z.string().optional(),
+  subtasks: z.array(
+    z.object({
+      title: z.string(),
+      description: z.string(),
+    }),
   ),
 });

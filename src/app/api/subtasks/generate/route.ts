@@ -3,10 +3,12 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { generateSubtasksForTask } from "@/lib/ai/ai-service";
 import {
   parseAiRequest,
-  handleAiError,
+  normalizeAiError,
   checkRequestLock,
   checkAiQuotaLimit,
+  getFailedAiLogs,
 } from "@/lib/ai/ai.helpers";
+import { updateAiLog } from "@/lib/ai/logs/update-log";
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;
@@ -27,21 +29,23 @@ export async function POST(request: Request) {
       signal: controller.signal,
     });
 
-    const { parsedData } = result;
     aiLogId = result.aiLogId;
 
     return NextResponse.json(
       {
         success: true,
-        data: { subtasks: parsedData.subtasks },
+        data: { subtasks: result.data.subtasks },
       },
       {
         status: 200,
       },
     );
   } catch (err: any) {
-    const { status, ...error } = await handleAiError(err, aiLogId);
+    const { status, ...error } = await normalizeAiError(err);
 
+    if (aiLogId) {
+      await updateAiLog(aiLogId, getFailedAiLogs(err));
+    }
     return NextResponse.json(error, { status });
   } finally {
     clearTimeout(timeout);

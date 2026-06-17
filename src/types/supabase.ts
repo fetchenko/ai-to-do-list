@@ -19,9 +19,12 @@ export type Database = {
     Tables: {
       ai_generations: {
         Row: {
+          cache_hit_tokens: number | null;
+          cache_miss_tokens: number | null;
           duration_ms: number | null;
           error_code: string | null;
           feature: string | null;
+          finish_reason: string | null;
           finished_at: string | null;
           id: string;
           input_tokens: number | null;
@@ -29,6 +32,8 @@ export type Database = {
           output_tokens: number | null;
           prompt: string | null;
           prompt_version: string | null;
+          provider_generation_id: string | null;
+          reasoning_tokens: number | null;
           response: string | null;
           started_at: string | null;
           status: string | null;
@@ -37,9 +42,12 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
           duration_ms?: number | null;
           error_code?: string | null;
           feature?: string | null;
+          finish_reason?: string | null;
           finished_at?: string | null;
           id?: string;
           input_tokens?: number | null;
@@ -47,6 +55,8 @@ export type Database = {
           output_tokens?: number | null;
           prompt?: string | null;
           prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
           response?: string | null;
           started_at?: string | null;
           status?: string | null;
@@ -55,9 +65,12 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
           duration_ms?: number | null;
           error_code?: string | null;
           feature?: string | null;
+          finish_reason?: string | null;
           finished_at?: string | null;
           id?: string;
           input_tokens?: number | null;
@@ -65,6 +78,8 @@ export type Database = {
           output_tokens?: number | null;
           prompt?: string | null;
           prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
           response?: string | null;
           started_at?: string | null;
           status?: string | null;

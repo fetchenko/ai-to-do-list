@@ -1,0 +1,33 @@
+import { z } from "zod";
+
+export const taskSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Title must be at least 3 characters")
+    .max(100, "Title is too long"),
+
+  description: z
+    .string()
+    .max(1000, "Description is too long")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const subtasksSchema = z.object({
+  subtasks: z.array(
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+    }),
+  ),
+});
+
+export const SubtasksResponseSchema = z.object({
+  task_summary: z.string().optional(),
+  subtasks: z.array(
+    z.object({
+      title: z.string(),
+      description: z.string(),
+    }),
+  ),
+});

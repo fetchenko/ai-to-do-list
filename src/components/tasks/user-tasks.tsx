@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AddTask } from '@/components/tasks/add-task';
 import { useQuery } from '@tanstack/react-query';
 import { getTasksWithSubtasks } from '@/features/tasks/tasks.api';
-import { Task } from '@/features/tasks/tasks.types';
+import { Task } from '@/types/tasks';
 import TaskItem from './task-item';
 
 export default function UserTasks() {

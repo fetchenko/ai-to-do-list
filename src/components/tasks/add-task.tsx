@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { addTask } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Task } from "@/features/tasks/tasks.types";
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { useState } from "react";
+import { taskSchema } from "@/lib/validation/task";
+import { z } from "zod";
 
-type AddTaskForm = Task;
+type TaskInput = z.infer<typeof taskSchema>;
 
 type AddTaskProps = {
   isSubtask?: boolean;
@@ -22,17 +23,12 @@ type AddTaskProps = {
 export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
   const [open, setOpen] = useState(false)
 
-  const { handleSubmit, register, reset } = useForm<AddTaskForm>({
-    defaultValues: {
-      title: "",
-      description: '',
-    },
-  });
+  const { handleSubmit, register, reset, formState: { errors }, } = useForm<TaskInput>();
 
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (newTask: Task) => {
+    mutationFn: async (newTask: TaskInput) => {
       if (isSubtask && parentTaskId) {
         return addTask(parentTaskId, { ...newTask, parentTaskId: parentTaskId })
       }
@@ -48,7 +44,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
     },
   })
 
-  const onSubmit = (values: AddTaskForm) => {
+  const onSubmit = (values: TaskInput) => {
     mutation.mutate(values)
   };
 
@@ -67,7 +63,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
                 if (e.key === "Enter") handleSubmit(onSubmit)
               }}
             />
-
+            {errors.title && <p className="text-red-500">{errors.title.message}</p>}
             <Button type="submit">
               Add
             </Button>
@@ -90,6 +86,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
                 placeholder="Add more details about this task..."
                 className="resize-none"
               />
+              {errors.description && <p className="text-red-500">{errors.description.message}</p>}
             </CollapsibleContent>
           </Collapsible>
 

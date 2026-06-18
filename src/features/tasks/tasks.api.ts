@@ -1,10 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
-import { DbTask, Task } from "./tasks.types";
+import { DbTask, Task, TaskUpdate } from "../../types/tasks";
 import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
+import { subtasksSchema } from "@/lib/validation/task";
 
-export async function addTask(parentTaskId: string | null, newTask: Task) {
+export async function addTask(
+  parentTaskId: string | null,
+  newTask: TaskUpdate,
+) {
   const supabase = createClient();
 
   const lastPosition = await getLastPosition(parentTaskId);
@@ -45,7 +49,7 @@ export async function getTasksWithSubtasks() {
   return mapDbTasks(data);
 }
 
-export async function updateTask(id: string, newTask: Partial<Task>) {
+export async function updateTask(id: string, newTask: TaskUpdate) {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -72,24 +76,30 @@ export async function deleteTask(id: string) {
   return data;
 }
 
-export async function generateSubtasks({ title }: Partial<Task>) {
+export async function generateSubtasks({ id: taskId }: Partial<Task>) {
   try {
     const res = await fetch(API_ROUTES.generateSubtasks, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task: title }),
+      body: JSON.stringify({ taskId }),
     });
 
     if (!res.ok) {
       throw new Error(`API Error: ${res.status}`);
     }
 
-    const data = await res.json();
+    const { data } = await res.json();
 
-    if (!data?.subtasks || !Array.isArray(data.subtasks)) {
+    const parsed = subtasksSchema.safeParse(data);
+
+    if (!parsed.success) {
       throw new Error("Invalid AI response format");
+    }
+
+    if (data.subtasks && !data.subtasks.length) {
+      throw new Error("No meaningful subtasks could be generated.");
     }
 
     const subtasks = data.subtasks.map((subtask: Task) => ({

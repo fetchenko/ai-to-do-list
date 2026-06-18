@@ -7,6 +7,7 @@ export type Json =
   | Json[];
 
 export type TaskStatus = Database["public"]["Enums"]["task_status"];
+export type AiGeneration = Database["public"]["Tables"]["ai_generations"];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -16,6 +17,86 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_generations: {
+        Row: {
+          cache_hit_tokens: number | null;
+          cache_miss_tokens: number | null;
+          duration_ms: number | null;
+          error_code: string | null;
+          feature: string | null;
+          finish_reason: string | null;
+          finished_at: string | null;
+          id: string;
+          input_tokens: number | null;
+          model: string | null;
+          output_tokens: number | null;
+          prompt: string | null;
+          prompt_version: string | null;
+          provider_generation_id: string | null;
+          reasoning_tokens: number | null;
+          response: string | null;
+          started_at: string | null;
+          status: string | null;
+          task_id: string;
+          total_tokens: number | null;
+          user_id: string | null;
+        };
+        Insert: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
+          duration_ms?: number | null;
+          error_code?: string | null;
+          feature?: string | null;
+          finish_reason?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          prompt?: string | null;
+          prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
+          response?: string | null;
+          started_at?: string | null;
+          status?: string | null;
+          task_id: string;
+          total_tokens?: number | null;
+          user_id?: string | null;
+        };
+        Update: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
+          duration_ms?: number | null;
+          error_code?: string | null;
+          feature?: string | null;
+          finish_reason?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          prompt?: string | null;
+          prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
+          response?: string | null;
+          started_at?: string | null;
+          status?: string | null;
+          task_id?: string;
+          total_tokens?: number | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_generations_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "tasks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           completed_at: string | null;
@@ -26,7 +107,7 @@ export type Database = {
           parent_task_id: string | null;
           position: string;
           priority: number | null;
-          status: TaskStatus;
+          status: string;
           title: string | null;
           updated_at: string | null;
           user_id: string;
@@ -38,7 +119,7 @@ export type Database = {
           due_date?: string | null;
           id?: string;
           parent_task_id?: string | null;
-          position?: string | null;
+          position?: string;
           priority?: number | null;
           status?: string;
           title?: string | null;
@@ -52,7 +133,7 @@ export type Database = {
           due_date?: string | null;
           id?: string;
           parent_task_id?: string | null;
-          position?: string | null;
+          position?: string;
           priority?: number | null;
           status?: string;
           title?: string | null;
@@ -75,6 +156,7 @@ export type Database = {
     };
     Functions: {
       get_last_position: { Args: { p_parent_id?: string }; Returns: string };
+      try_acquire_user_ai_lock: { Args: { user_id: string }; Returns: boolean };
     };
     Enums: {
       task_status: "active" | "done" | "archived";

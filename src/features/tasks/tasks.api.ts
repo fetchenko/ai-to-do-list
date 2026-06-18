@@ -37,6 +37,7 @@ export async function getTasksWithSubtasks() {
     subtasks:tasks!parent_task_id(*)
   `,
     )
+    .order("position")
     .is("parent_task_id", null)) as {
     data: DbTask[] | null;
     error: Error | null;

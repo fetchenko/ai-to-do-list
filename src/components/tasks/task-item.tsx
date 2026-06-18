@@ -22,7 +22,7 @@ import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { AddTask } from './add-task';
-import DraftSubtasksSkeleton from './draft-subtasks-skeleton';
+import TasksSkeleton from './tasks-skeleton';
 
 type TaskItemProps = {
   task: Task;
@@ -182,7 +182,7 @@ export default function TaskItem({ task }: TaskItemProps) {
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>
-          {mutationSubtasks.isPending && <DraftSubtasksSkeleton />}
+          {mutationSubtasks.isPending && <TasksSkeleton />}
           <p>generated subtasks</p>
           <DraftSubtasks task={task} />
         </>

@@ -8,9 +8,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function LogoutButton() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const logout = async () => {
-    const queryClient = useQueryClient();
 
     const supabase = createClient();
     await supabase.auth.signOut({ scope: 'local' });

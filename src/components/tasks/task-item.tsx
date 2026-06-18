@@ -13,7 +13,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteTask, generateSubtasks } from '@/features/tasks/tasks.api';
 import { useTaskStore } from '@/stores/use-task-store';
-import { Task } from '@/features/tasks/tasks.types';
+import { Task } from '@/types/tasks';
 import { Subtasks } from './subtasks';
 import { useSubtaskStore } from '@/stores/use-subtask-store';
 import { useForm } from 'react-hook-form';

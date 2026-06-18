@@ -1,4 +1,4 @@
-import { Task } from "@/features/tasks/tasks.types";
+import { Task } from "@/types/tasks";
 import { create } from "zustand";
 
 const initialState = {

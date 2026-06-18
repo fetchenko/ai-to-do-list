@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubtaskStore } from "@/stores/use-subtask-store";
-import { Task } from "@/features/tasks/tasks.types";
+import { Task } from "@/types/tasks";
 import { deleteTask, saveSubtasks } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";

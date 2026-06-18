@@ -1,5 +1,25 @@
-import { taskToDbFieldMap } from "./task.constants";
-import { DbTask, Task } from "./tasks.types";
+import { DbTask, DbTaskUpdate, Task, TaskUpdate } from "@/types/tasks";
+
+export const taskKeyMap = {
+  id: "id",
+  completed_at: "completedAt",
+  created_at: "createdAt",
+  description: "description",
+  due_date: "dueDate",
+  parent_task_id: "parentTaskId",
+  position: "position",
+  priority: "priority",
+  status: "status",
+  title: "title",
+  updated_at: "updatedAt",
+  user_id: "userId",
+} as const;
+
+export const taskKeyMapReverse = Object.fromEntries(
+  Object.entries(taskKeyMap).map(([db, fe]) => [fe, db]),
+) as {
+  [K in keyof typeof taskKeyMap as (typeof taskKeyMap)[K]]: K;
+};
 
 export function mapDbTask(dbTask: DbTask): Task {
   return {
@@ -11,7 +31,7 @@ export function mapDbTask(dbTask: DbTask): Task {
     parentTaskId: dbTask.parent_task_id,
     position: dbTask.position,
     priority: dbTask.priority,
-    status: dbTask.status,
+    status: dbTask.status as Task["status"],
     title: dbTask.title,
     updatedAt: dbTask.updated_at,
     userId: dbTask.user_id,
@@ -27,16 +47,17 @@ export function mapDbTasks(dbTasks: DbTask[] | null): Task[] {
     : [];
 }
 
-export function mapTaskUpdateToDb(
-  updates: Partial<Task>,
-): Partial<Omit<DbTask, "subtasks">> {
+export function mapTaskUpdateToDb(task: TaskUpdate): DbTaskUpdate {
   const result: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(updates)) {
-    const dbKey = taskToDbFieldMap[key as keyof typeof taskToDbFieldMap] ?? key;
+  for (const [feKey, value] of Object.entries(task)) {
+    const dbKey =
+      taskKeyMapReverse[feKey as keyof typeof taskKeyMapReverse] ?? feKey;
 
-    result[dbKey] = value;
+    if (value !== undefined) {
+      result[dbKey] = value;
+    }
   }
 
-  return result as Partial<DbTask>;
+  return result;
 }

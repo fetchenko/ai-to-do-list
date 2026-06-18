@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/stores/use-task-store";
 import { useForm } from "react-hook-form";
-import { Task } from "@/features/tasks/tasks.types";
+import { Task } from "@/types/tasks";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { taskSchema } from "@/lib/validation/task";
 import z from "zod";

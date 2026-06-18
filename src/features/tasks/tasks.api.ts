@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import { DbTask, Task } from "./tasks.types";
+import { DbTask, Task, TaskUpdate } from "../../types/tasks";
 import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
@@ -7,7 +7,7 @@ import { subtasksSchema } from "@/lib/validation/task";
 
 export async function addTask(
   parentTaskId: string | null,
-  newTask: Partial<Task>,
+  newTask: TaskUpdate,
 ) {
   const supabase = createClient();
 
@@ -49,7 +49,7 @@ export async function getTasksWithSubtasks() {
   return mapDbTasks(data);
 }
 
-export async function updateTask(id: string, newTask: Partial<Task>) {
+export async function updateTask(id: string, newTask: TaskUpdate) {
   const supabase = createClient();
 
   const { data, error } = await supabase

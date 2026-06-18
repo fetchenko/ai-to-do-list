@@ -124,7 +124,7 @@ export type Database = {
           status?: string;
           title?: string | null;
           updated_at?: string | null;
-          user_id: string;
+          user_id?: string;
         };
         Update: {
           completed_at?: string | null;

@@ -1,5 +1,5 @@
 import { AIProvider } from "../ai-provider";
-import { checkAndParseResponseJson } from "../../ai.helpers";
+import { parseResponseJson } from "../../ai.helpers";
 import { CombinedAiResponse } from "../../ai.types";
 import { DeepSeekResponseSchema } from "./deepseek.validation";
 import { ResponseFormatError } from "@/shared/errors/app-error";
@@ -26,7 +26,7 @@ export class DeepSeekProvider implements AIProvider {
       signal,
     });
 
-    const parsedResponse = await checkAndParseResponseJson(response);
+    const parsedResponse = await parseResponseJson(response);
 
     const { data, success } = DeepSeekResponseSchema.safeParse(parsedResponse);
 

@@ -47,7 +47,7 @@ export async function normalizeAiError(err: AppError) {
   return error;
 }
 
-export async function checkAndParseResponseJson(response: Response) {
+export async function parseResponseJson(response: Response) {
   let raw;
   try {
     raw = await response.json();

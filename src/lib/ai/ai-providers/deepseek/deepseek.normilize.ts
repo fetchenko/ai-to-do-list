@@ -8,7 +8,7 @@ export function normalizeDeepseekResponse(
   const choice = response.choices?.[0];
 
   return {
-    data: SubtasksResponseSchema.parse(response.choices[0].message.content),
+    data: SubtasksResponseSchema.parse(JSON.parse(choice.message.content)),
 
     aiLogs: {
       model: response.model ?? null,

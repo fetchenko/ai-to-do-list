@@ -39,7 +39,7 @@ export function Subtasks({
         queryKey: ['tasks'],
       });
       setGeneratedSubtasks('', [])
-    },
+    }
   })
 
   const mutationDelete = useMutation({

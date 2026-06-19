@@ -1,6 +1,6 @@
 import { subtasksSchema } from "@/lib/validation/task";
 import { AIProvider } from "../ai-provider";
-import { checkAndParseResponseJson } from "../../ai.helpers";
+import { parseResponseJson } from "../../ai.helpers";
 import { normalizeOllamaResponse } from "./ollama.normilize";
 import { CombinedAiResponse } from "../../ai.types";
 import { OllamaChatResponseSchema } from "./ollama.validation";
@@ -25,7 +25,7 @@ export class OllamaProvider implements AIProvider {
       }),
     });
 
-    const parsedResponse = await checkAndParseResponseJson(response);
+    const parsedResponse = await parseResponseJson(response);
 
     const { data, success } =
       OllamaChatResponseSchema.safeParse(parsedResponse);

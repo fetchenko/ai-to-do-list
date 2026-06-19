@@ -7,6 +7,7 @@ import { getTasksWithSubtasks } from '@/features/tasks/tasks.api';
 import { Task } from '@/types/tasks';
 import TaskItem from './task-item';
 import TasksSkeleton from './tasks-skeleton';
+import { getFriendlyErrorMessage } from '@/lib/errors/error-messages';
 
 export default function UserTasks() {
   const { data: tasks = [], isPending, error } = useQuery({
@@ -26,7 +27,7 @@ export default function UserTasks() {
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="done">Done</TabsTrigger>
             </TabsList>
-            {error && <p>Failed to load tasks</p>}
+            {error && <p>{getFriendlyErrorMessage(error)}</p>}
             {(['active', 'done'] as const).map((tab) => (
               <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
                 {isPending

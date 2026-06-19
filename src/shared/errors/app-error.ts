@@ -39,7 +39,7 @@ export class AiTimeoutError extends AppError {
   constructor() {
     super(
       ErrorCode.AI_TIMEOUT,
-      504,
+      ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
       "Subtasks generation timed out",
       undefined,
       true,

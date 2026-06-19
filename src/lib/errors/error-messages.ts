@@ -1,7 +1,3 @@
-// lib/errors/friendly-messages.ts
-// import { AppError } from "./classes";
-// import { ErrorCode } from "./code";
-
 import { AppError } from "@/shared/errors/app-error";
 import { ErrorCode } from "@/shared/errors/code";
 

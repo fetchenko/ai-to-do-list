@@ -49,12 +49,14 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <Card className="p-3">
-        <CardContent className="p-0 space-y-3">
-          <div className="flex gap-2">
+
+    <Card className="p-3">
+      <CardContent className="p-0 space-y-3">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+
+        >
+          <fieldset disabled={mutation.isPending} className="flex gap-2">
             <Input
               {...register("title")}
               disabled={mutation.isPending}
@@ -67,13 +69,13 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
             <Button type="submit">
               Add
             </Button>
-          </div>
+          </fieldset>
 
           <Collapsible open={open} onOpenChange={setOpen}>
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="text-sm text-muted-foreground hover:underline"
+                className="text-sm text-muted-foreground ml-2 hover:underline"
               >
                 {open ? "Hide description" : "Add description"}
               </button>
@@ -89,9 +91,8 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
               {errors.description && <p className="text-red-500">{errors.description.message}</p>}
             </CollapsibleContent>
           </Collapsible>
-
-        </CardContent>
-      </Card>
-    </form>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

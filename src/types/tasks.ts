@@ -29,6 +29,7 @@ export type Task = {
   subtasks?: Task[];
 };
 
+export type TaskInsert = Partial<Omit<Task, "subtasks">>;
 export type TaskUpdate = Partial<Omit<Task, "subtasks">>;
 
-export type AiTask = Partial<Task>;
+export type AiTask = Partial<Task> & Required<Pick<Task, "id" | "title">>;

@@ -47,7 +47,7 @@ export function mapDbTasks(dbTasks: DbTask[] | null): Task[] {
     : [];
 }
 
-export function mapTaskUpdateToDb(task: TaskUpdate): DbTaskUpdate {
+export function mapTaskToDb(task: TaskUpdate): DbTaskUpdate {
   const result: Record<string, unknown> = {};
 
   for (const [feKey, value] of Object.entries(task)) {

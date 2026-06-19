@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubtaskStore } from "@/stores/use-subtask-store";
-import { Task } from "@/types/tasks";
+import { AiTask, Task, TaskInsert } from "@/types/tasks";
 import { saveSubtasks } from "@/features/tasks/tasks.api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -28,7 +28,7 @@ export function DraftSubtasks({
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ subtasks }: { id: string, subtasks: Task[] }) =>
+    mutationFn: async ({ subtasks }: { id: string, subtasks: TaskInsert[] }) =>
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -51,7 +51,7 @@ export function DraftSubtasks({
     );
   }
 
-  const startEditSubtask = (subtask: Task) => {
+  const startEditSubtask = (subtask: AiTask) => {
     setActiveSubastkId(subtask.id);
     setDraftSubtask(subtask.title)
   };

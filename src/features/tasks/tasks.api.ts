@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import { AiTask, DbTask, Task, TaskUpdate } from "../../types/tasks";
-import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
+import { AiTask, DbTask, TaskInsert, TaskUpdate } from "../../types/tasks";
+import { mapDbTasks, mapTaskToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
 import { subtasksSchema } from "@/lib/validation/task";
@@ -12,7 +12,7 @@ import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
 
 export async function addTask(
   parentTaskId: string | null,
-  newTask: TaskUpdate,
+  newTask: TaskInsert,
 ) {
   const supabase = createClient();
 
@@ -22,7 +22,7 @@ export async function addTask(
 
   const { data, error } = await supabase
     .from("tasks")
-    .insert(mapTaskUpdateToDb({ ...newTask, position: newPosition }));
+    .insert(mapTaskToDb({ ...newTask, position: newPosition }));
 
   if (error) {
     throw fromSupabaseError(error);
@@ -60,7 +60,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
 
   const { data, error } = await supabase
     .from("tasks")
-    .update(mapTaskUpdateToDb(newTask))
+    .update(mapTaskToDb(newTask))
     .eq("id", id);
 
   if (error) {
@@ -129,7 +129,10 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   return subtasks;
 }
 
-export async function saveSubtasks(parentTaskId: string, subtasks: Task[]) {
+export async function saveSubtasks(
+  parentTaskId: string,
+  subtasks: TaskInsert[],
+) {
   const supabase = createClient();
 
   const lastPosition = await getLastPosition(parentTaskId);
@@ -140,12 +143,7 @@ export async function saveSubtasks(parentTaskId: string, subtasks: Task[]) {
     const next = generateKeyBetween(prev, null);
     prev = next;
 
-    return {
-      title: subtask.title,
-      description: subtask.description,
-      parent_task_id: parentTaskId,
-      position: next,
-    };
+    return mapTaskToDb(subtask);
   });
 
   const { data, error } = await supabase.from("tasks").insert(rows);

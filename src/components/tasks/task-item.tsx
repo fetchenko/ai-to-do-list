@@ -10,10 +10,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { toast } from "sonner"
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteTask, generateSubtasks } from '@/features/tasks/tasks.api';
 import { useTaskStore } from '@/stores/use-task-store';
-import { Task } from '@/types/tasks';
+import { AiTask, Task } from '@/types/tasks';
 import { Subtasks } from './subtasks';
 import { useSubtaskStore } from '@/stores/use-subtask-store';
 import { useForm } from 'react-hook-form';
@@ -23,6 +24,9 @@ import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { AddTask } from './add-task';
 import TasksSkeleton from './tasks-skeleton';
+import { AppError } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
+import { getFriendlyErrorMessage } from '@/lib/errors/error-messages';
 
 type TaskItemProps = {
   task: Task;
@@ -38,7 +42,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
   const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
-
+  const setGeneratedSubtasksForTask = useSubtaskStore(state => state.setGeneratedSubtasksForTask)
   const queryClient = useQueryClient();
 
   const mutationDelete = useMutation({
@@ -51,15 +55,21 @@ export default function TaskItem({ task }: TaskItemProps) {
   });
 
   const mutationSubtasks = useMutation({
-    mutationFn: async ({ id }: Partial<Task>) => {
-      if (id) {
-        return await generateSubtasks({ id });
-      }
-      return null;
+    mutationFn: async (id: string) => {
+      if (!id) throw new AppError(ErrorCode.INVALID_REQUEST, 400, "Missing task id");
+
+      return await generateSubtasks(id);
     },
-    onSuccess: (data: Task[]) => {
+    onSuccess: (data: AiTask[]) => {
       setGeneratedSubtasks(task.id, data);
     },
+    onError: (error) => {
+      setGeneratedSubtasksForTask(null)
+      if (error instanceof AppError) {
+        toast.info(getFriendlyErrorMessage(error));
+        return;
+      }
+    }
   });
 
   const resetTaskStore = useTaskStore(state => state.reset)
@@ -100,8 +110,9 @@ export default function TaskItem({ task }: TaskItemProps) {
     mutationDelete.mutate(id);
   };
 
-  const handleGenerateSubtasks = (task: Task) => {
-    mutationSubtasks.mutate({ id: task.id, title: task.title })
+  const handleGenerateSubtasks = (id: string) => {
+    setGeneratedSubtasksForTask(id);
+    mutationSubtasks.mutate(id)
   };
 
   const editTask = (id: string) => {
@@ -155,7 +166,7 @@ export default function TaskItem({ task }: TaskItemProps) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     disabled={mutationSubtasks.isPending}
-                    onClick={() => handleGenerateSubtasks(task)}>
+                    onClick={() => handleGenerateSubtasks(task.id)}>
                     Gen subtask
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => editTask(task.id)}>
@@ -182,8 +193,8 @@ export default function TaskItem({ task }: TaskItemProps) {
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>
+          <p>generating subtasks</p>
           {mutationSubtasks.isPending && <TasksSkeleton />}
-          <p>generated subtasks</p>
           <DraftSubtasks task={task} />
         </>
       }

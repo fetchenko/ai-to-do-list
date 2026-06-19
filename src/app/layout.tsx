@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Providers from "./providers";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -30,6 +31,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <Toaster />
       </body>
     </html>
   );

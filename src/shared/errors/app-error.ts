@@ -37,7 +37,13 @@ export class AuthorizationError extends AppError {
 
 export class AiTimeoutError extends AppError {
   constructor() {
-    super("AI_TIMEOUT", 504, "Subtasks generation timed out", undefined, true);
+    super(
+      ErrorCode.AI_TIMEOUT,
+      504,
+      "Subtasks generation timed out",
+      undefined,
+      true,
+    );
   }
 }
 
@@ -46,7 +52,7 @@ export class DatabaseError extends AppError {
     super(
       ErrorCode.DATABASE_ERROR,
       ErrorHttpStatus[ErrorCode.DATABASE_ERROR],
-      "Failded database request",
+      "Failed database request",
       details,
     );
   }
@@ -96,7 +102,7 @@ export class AiLockActiveError extends AppError {
   }
 }
 
-export class AiUnvailableError extends AppError {
+export class AiUnavailableError extends AppError {
   constructor(details: unknown) {
     super(
       ErrorCode.AI_UNAVAILABLE,

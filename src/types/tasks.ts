@@ -30,3 +30,5 @@ export type Task = {
 };
 
 export type TaskUpdate = Partial<Omit<Task, "subtasks">>;
+
+export type AiTask = Partial<Task>;

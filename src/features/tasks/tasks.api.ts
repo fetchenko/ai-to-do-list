@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import { DbTask, Task, TaskUpdate } from "../../types/tasks";
+import { AiTask, DbTask, Task, TaskUpdate } from "../../types/tasks";
 import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
@@ -77,41 +77,38 @@ export async function deleteTask(id: string) {
   return data;
 }
 
-export async function generateSubtasks({ id: taskId }: Partial<Task>) {
-  try {
-    const res = await fetch(API_ROUTES.generateSubtasks, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ taskId }),
-    });
+export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
+  const res = await fetch(API_ROUTES.generateSubtasks, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ taskId }),
+  });
 
-    if (!res.ok) {
-      throw new Error(`API Error: ${res.status}`);
-    }
-
-    const { data } = await res.json();
-
-    const parsed = subtasksSchema.safeParse(data);
-
-    if (!parsed.success) {
-      throw new Error("Invalid AI response format");
-    }
-
-    if (data.subtasks && !data.subtasks.length) {
-      throw new Error("No meaningful subtasks could be generated.");
-    }
-
-    const subtasks = data.subtasks.map((subtask: Task) => ({
-      ...subtask,
-      id: crypto.randomUUID(),
-    }));
-
-    return subtasks;
-  } catch (err: any) {
-    console.error("generateSubtasks failed:", err);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body.error);
   }
+
+  const { data } = await res.json();
+
+  const { data: parsed, success } = subtasksSchema.safeParse(data);
+
+  if (!success) {
+    throw new Error("Invalid AI response format");
+  }
+
+  if (parsed.subtasks && !parsed.subtasks.length) {
+    throw new Error("No meaningful subtasks could be generated.");
+  }
+
+  const subtasks = parsed.subtasks.map((subtask) => ({
+    ...subtask,
+    id: crypto.randomUUID(),
+  }));
+
+  return subtasks;
 }
 
 export async function saveSubtasks(parentTaskId: string, subtasks: Task[]) {

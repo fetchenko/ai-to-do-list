@@ -1,4 +1,4 @@
-import { Task } from "@/types/tasks";
+import { AiTask, TaskUpdate } from "@/types/tasks";
 import { create } from "zustand";
 
 const initialState = {
@@ -12,13 +12,14 @@ type SubtaskState = {
   generateSubtaskForTask: string | null;
   activeSubtaskId: string | null;
   draftSubtask: string | null;
-  generatedSubtasks: Task[];
+  generatedSubtasks: AiTask[];
 
   setActiveSubtaskId: (id: string) => void;
   resetActiveSubtaskId: () => void;
 
-  setGeneratedSubtasks: (parentTaskId: string, tasks: Task[]) => void;
-  updateSubtask: (id: string, data: Partial<Task>) => void;
+  setGeneratedSubtasksForTask: (parentTaskId: string | null) => void;
+  setGeneratedSubtasks: (parentTaskId: string, tasks: AiTask[]) => void;
+  updateSubtask: (id: string, data: TaskUpdate) => void;
   deleteSubtask: (id: string) => void;
 
   setDraftSubtask: (title: string | null) => void;
@@ -42,12 +43,16 @@ export const useSubtaskStore = create<SubtaskState>((set) => ({
       activeSubtaskId: null,
     }),
 
-  setGeneratedSubtasks: (parentTaskId: string, subtasks: Task[]) =>
+  setGeneratedSubtasksForTask: (parentTaskId: string | null) =>
+    set({
+      generateSubtaskForTask: parentTaskId,
+    }),
+  setGeneratedSubtasks: (parentTaskId: string, subtasks: AiTask[]) =>
     set({
       generateSubtaskForTask: parentTaskId,
       generatedSubtasks: [...subtasks],
     }),
-  updateSubtask: (id: string, data: Partial<Task>) =>
+  updateSubtask: (id: string, data: TaskUpdate) =>
     set((state) => ({
       generatedSubtasks: state.generatedSubtasks.map((subtask) =>
         subtask.id === id ? { ...subtask, ...data } : subtask,

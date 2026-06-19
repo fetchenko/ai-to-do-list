@@ -41,7 +41,8 @@ export async function normalizeAiError(err: AppError) {
           success: false,
           status: err.status || ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
           code: err.code || ErrorCode.AI_GENERATION_FAILED,
-          error: err.details || `Failed to generate subtasks: ${err.message} `,
+          // todo: check if no sensitive data send
+          // error: err.details || `Failed to generate subtasks: ${err.message} `,
         };
 
   return error;

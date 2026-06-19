@@ -4,6 +4,11 @@ import { mapDbTasks, mapTaskUpdateToDb } from "./tasks.mapper";
 import { API_ROUTES } from "@/lib/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
 import { subtasksSchema } from "@/lib/validation/task";
+import { AppError } from "@/shared/errors/app-error";
+import { ErrorCode } from "@/shared/errors/code";
+import { fromSupabaseError } from "@/lib/errors/from-supabase-error";
+import { PostgrestError } from "@supabase/supabase-js";
+import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
 
 export async function addTask(
   parentTaskId: string | null,
@@ -20,7 +25,7 @@ export async function addTask(
     .insert(mapTaskUpdateToDb({ ...newTask, position: newPosition }));
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return data;
@@ -40,11 +45,11 @@ export async function getTasksWithSubtasks() {
     .order("position")
     .is("parent_task_id", null)) as {
     data: DbTask[] | null;
-    error: Error | null;
+    error: PostgrestError | null;
   };
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return mapDbTasks(data);
@@ -59,7 +64,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .eq("id", id);
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return data;
@@ -71,7 +76,7 @@ export async function deleteTask(id: string) {
   const { data, error } = await supabase.from("tasks").delete().eq("id", id);
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return data;
@@ -88,7 +93,13 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body.error);
+    throw new AppError(
+      body?.error?.code ?? ErrorCode.UNKNOWN,
+      res.status,
+      body?.error?.message ?? "Failed to generate subtasks",
+      body?.error?.details,
+      body?.error?.retryable,
+    );
   }
 
   const { data } = await res.json();
@@ -96,11 +107,18 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const { data: parsed, success } = subtasksSchema.safeParse(data);
 
   if (!success) {
-    throw new Error("Invalid AI response format");
+    throw new AppError(
+      ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+      ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
+      "Invalid AI response format",
+    );
   }
-
-  if (parsed.subtasks && !parsed.subtasks.length) {
-    throw new Error("No meaningful subtasks could be generated.");
+  if (!parsed.subtasks?.length) {
+    throw new AppError(
+      ErrorCode.AI_EMPTY_RESPONSE,
+      ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
+      "No meaningful subtasks could be generated.",
+    );
   }
 
   const subtasks = parsed.subtasks.map((subtask) => ({
@@ -133,7 +151,7 @@ export async function saveSubtasks(parentTaskId: string, subtasks: Task[]) {
   const { data, error } = await supabase.from("tasks").insert(rows);
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return data;
@@ -147,7 +165,7 @@ export async function getLastPosition(parentTaskId: string | null) {
   });
 
   if (error) {
-    throw error;
+    throw fromSupabaseError(error);
   }
 
   return data;

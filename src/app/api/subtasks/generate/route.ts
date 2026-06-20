@@ -40,11 +40,11 @@ export async function POST(request: Request) {
         status: 200,
       },
     );
-  } catch (err: any) {
-    const { status, ...error } = await normalizeAiError(err);
+  } catch (err: unknown) {
+    const { status, ...error } = normalizeAiError(err);
 
     if (aiLogId) {
-      await updateAiLog(aiLogId, getFailedAiLogs(err));
+      await updateAiLog(aiLogId, getFailedAiLogs(error));
     }
     return NextResponse.json(error, { status });
   } finally {

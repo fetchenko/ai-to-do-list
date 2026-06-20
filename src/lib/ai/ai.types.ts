@@ -1,6 +1,7 @@
 import { SubtasksResponse } from "@/types/tasks";
+import { ErrorCode } from "@/shared/errors/code";
 
-export type CombinedAiResponse = NormilizedAiResponse & { raw: any };
+export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
 
 export type AiLogs = {
   model: string | null;
@@ -22,3 +23,9 @@ export type NormilizedAiResponse = {
   data: SubtasksResponse;
   aiLogs: AiLogs;
 };
+export interface AiErrorResult {
+  success: false;
+  code: ErrorCode;
+  status: number;
+  error?: string;
+}

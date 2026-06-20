@@ -3,13 +3,14 @@ import { ErrorHttpStatus } from "./http-status-map";
 
 export class AppError extends Error {
   constructor(
-    public code: string,
+    public code: ErrorCode,
     public status: number,
     message: string,
     public details?: unknown,
     public retryable?: boolean,
   ) {
     super(message);
+    this.name = "AppError";
   }
 }
 

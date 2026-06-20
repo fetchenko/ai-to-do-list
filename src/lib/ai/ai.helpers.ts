@@ -43,6 +43,8 @@ export function normalizeAiError(err: unknown): AiErrorResult {
       success: false,
       status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
       code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
+      // todo: check if no sensitive data send
+      // error: err.details || `Failed to generate subtasks: ${err.message} `,
     };
   }
 

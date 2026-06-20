@@ -10,7 +10,7 @@ import { requestGenSubtasksSchema } from "../validation/request";
 import { ErrorCode } from "@/shared/errors/code";
 import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
 import { createClient } from "../supabase/server";
-import { AiLogs } from "./ai.types";
+import { AiErrorResult, AiLogs } from "./ai.types";
 
 const MAX_AI_REQUESTS_PER_USER = 10;
 
@@ -28,24 +28,31 @@ export async function parseAiRequest(request: Request) {
   return data;
 }
 
-export async function normalizeAiError(err: AppError) {
-  const error =
-    err instanceof Error && err.name === "AbortError"
-      ? {
-          success: false,
-          code: ErrorCode.AI_TIMEOUT,
-          error: "AI request timed out",
-          status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
-        }
-      : {
-          success: false,
-          status: err.status || ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
-          code: err.code || ErrorCode.AI_GENERATION_FAILED,
-          // todo: check if no sensitive data send
-          // error: err.details || `Failed to generate subtasks: ${err.message} `,
-        };
+export function normalizeAiError(err: unknown): AiErrorResult {
+  if (err instanceof Error && err.name === "AbortError") {
+    return {
+      success: false,
+      code: ErrorCode.AI_TIMEOUT,
+      error: "AI request timed out",
+      status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
+    };
+  }
 
-  return error;
+  if (err instanceof AppError) {
+    return {
+      success: false,
+      status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
+      code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
+      // todo: check if no sensitive data send
+      // error: err.details || `Failed to generate subtasks: ${err.message} `,
+    };
+  }
+
+  return {
+    success: false,
+    status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
+    code: ErrorCode.AI_GENERATION_FAILED,
+  };
 }
 
 export async function parseResponseJson(response: Response) {
@@ -108,7 +115,7 @@ export function getInitialAiLog(userId: string, taskId: string) {
   };
 }
 
-export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: any) {
+export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: string) {
   return {
     ...aiLogUpdates,
     response: raw,
@@ -117,10 +124,10 @@ export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: any) {
   };
 }
 
-export function getFailedAiLogs(error: AppError) {
+export function getFailedAiLogs(error: Omit<AiErrorResult, "status">) {
   return {
     status: "failed",
-    error_code: error.code,
     finished_at: new Date().toISOString(),
+    error_code: error.code,
   };
 }

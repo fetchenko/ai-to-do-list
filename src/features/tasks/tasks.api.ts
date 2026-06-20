@@ -139,11 +139,15 @@ export async function saveSubtasks(
 
   let prev = lastPosition ?? null;
 
-  const rows = subtasks.map((subtask) => {
+  const rows = subtasks.map(({ id, ...subtask }) => {
     const next = generateKeyBetween(prev, null);
     prev = next;
 
-    return mapTaskToDb(subtask);
+    return mapTaskToDb({
+      ...subtask,
+      position: next,
+      parentTaskId,
+    });
   });
 
   const { data, error } = await supabase.from("tasks").insert(rows);

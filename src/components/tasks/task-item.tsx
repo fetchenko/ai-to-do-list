@@ -193,7 +193,7 @@ export default function TaskItem({ task }: TaskItemProps) {
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>
-          <p>generating subtasks</p>
+          {mutationSubtasks.isPending && <p>generating subtasks</p>}
           {mutationSubtasks.isPending && <TasksSkeleton />}
           <DraftSubtasks task={task} />
         </>

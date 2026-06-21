@@ -4,7 +4,7 @@ import { normalizeOllamaResponse } from "./ollama.normilize";
 import { CombinedAiResponse } from "../../types/ai.types";
 import { ollamaChatResponseSchema } from "./ollama.validation";
 import { ResponseFormatError } from "@/shared/errors/app-error";
-import { subtasksSchema } from "@/shared/validation/subtasks.validation";
+import { subtasksResponseSchema } from "@/shared/validation/subtasks.validation";
 
 export class OllamaProvider implements AIProvider {
   async generate(
@@ -21,7 +21,7 @@ export class OllamaProvider implements AIProvider {
         prompt,
         model: "qwen2.5-coder:1.5b",
         stream: false,
-        format: subtasksSchema.toJSONSchema(),
+        format: subtasksResponseSchema.toJSONSchema(),
       }),
     });
 

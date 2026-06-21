@@ -8,7 +8,7 @@ import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
 import { getLastPosition } from "../repository/tasks.repository";
 import { AiTask, TaskInsert } from "../types/tasks.types";
 import { mapTaskToDb } from "../mappers/tasks.mapper";
-import { subtasksSchema } from "@/shared/validation/subtasks.validation";
+import { subtasksResponseSchema } from "@/shared/validation/subtasks.validation";
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks, {
@@ -32,7 +32,7 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
 
   const { data } = await res.json();
 
-  const { data: parsed, success } = subtasksSchema.safeParse(data);
+  const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
 
   if (!success) {
     throw new AppError(

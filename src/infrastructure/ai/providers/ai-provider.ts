@@ -1,5 +1,5 @@
 import { CombinedAiResponse } from "@/infrastructure/ai/types/ai.types";
-import { DeepSeekProvider } from "./deepseek/deekseek.provider";
+import { DeepSeekProvider } from "./deepseek/deepseek.provider";
 import { OllamaProvider } from "./ollama/ollama.provider";
 
 export interface AIProvider {

@@ -16,6 +16,7 @@ export async function getTasksWithSubtasks() {
   `,
     )
     .order("position")
+    .order("position", { referencedTable: "subtasks", ascending: true })
     .is("parent_task_id", null)) as {
     data: DbTask[] | null;
     error: PostgrestError | null;

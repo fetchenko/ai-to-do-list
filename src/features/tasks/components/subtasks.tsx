@@ -104,15 +104,11 @@ export function Subtasks({
     })
   }
 
-  const resultSubtasks = task.subtasks || [];
-
-  const sortedSubtasks = resultSubtasks.sort((a, b) => a.position.localeCompare(b.position));
-
-  if (!resultSubtasks?.length) return null;
+  if (!task.subtasks?.length) return null;
 
   return (
     <div className="mt-4 border-l pl-4 space-y-3">
-      {sortedSubtasks.map((subtask) => {
+      {task.subtasks.map((subtask) => {
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (
@@ -122,6 +118,7 @@ export function Subtasks({
                 {isEditing ? (
                   <form
                     className="flex items-center justify-between gap-3 w-full"
+                    onSubmit={() => handleUpdateSubtask(subtask.id)}
                   >
                     <Input
                       autoFocus
@@ -132,9 +129,7 @@ export function Subtasks({
                       className="flex-1"
                     />
                     <div className="flex gap-2">
-                      <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask.id)}
-                      >
+                      <Button variant="default" size="sm" type="submit">
                         Save
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleCancelEditSubtask}>

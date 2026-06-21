@@ -5,7 +5,7 @@ const initialState = {
   generateSubtaskForTask: null,
   activeSubtaskId: null,
   draftSubtask: null,
-  subtasks: [],
+  generatedSubtasks: [],
 };
 
 type SubtaskState = {

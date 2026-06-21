@@ -3,7 +3,7 @@ import { parseResponseJson } from "@/infrastructure/ai/helpers/ai.helpers";
 import { CombinedAiResponse } from "@/infrastructure/ai/types/ai.types";
 import { deepSeekResponseSchema } from "./deepseek.validation";
 import { ResponseFormatError } from "@/shared/errors/app-error";
-import { normalizeDeepseekResponse } from "./deepseek.normilize";
+import { normalizeDeepseekResponse } from "./deepseek.normalize";
 
 export class DeepSeekProvider implements AIProvider {
   async generate(

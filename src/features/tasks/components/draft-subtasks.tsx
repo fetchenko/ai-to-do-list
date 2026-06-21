@@ -87,6 +87,7 @@ export function DraftSubtasks({
                 {isEditing ? (
                   <form
                     className="flex items-center justify-between gap-3 w-full"
+                    onSubmit={() => handleUpdateSubtask(subtask.id)}
                   >
                     <Input
                       autoFocus
@@ -97,9 +98,7 @@ export function DraftSubtasks({
                       className="flex-1"
                     />
                     <div className="flex gap-2">
-                      <Button variant="default" size="sm" type="submit"
-                        onClick={() => handleUpdateSubtask(subtask.id)}
-                      >
+                      <Button variant="default" size="sm" type="submit">
                         Save
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleCancelEditSubtask}>

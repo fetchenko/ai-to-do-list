@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeOllamaResponse } from "@/infrastructure/ai/providers/ollama/ollama.normilize";
+import { normalizeOllamaResponse } from "@/infrastructure/ai/providers/ollama/ollama.normalize";
 import { mockOllamaResponse } from "@tests/fixtures/ollama.response";
 
 describe("normalizeOllamaResponse", () => {

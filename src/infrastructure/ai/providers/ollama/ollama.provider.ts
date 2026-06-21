@@ -1,6 +1,6 @@
 import { AIProvider } from "../ai-provider";
 import { parseResponseJson } from "@/infrastructure/ai/helpers/ai.helpers";
-import { normalizeOllamaResponse } from "./ollama.normilize";
+import { normalizeOllamaResponse } from "./ollama.normalize";
 import { CombinedAiResponse } from "../../types/ai.types";
 import { ollamaChatResponseSchema } from "./ollama.validation";
 import { ResponseFormatError } from "@/shared/errors/app-error";

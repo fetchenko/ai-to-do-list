@@ -1,4 +1,7 @@
 {
+  "name": "ai-to-do-list",
+  "description": "to do list with ai subtasks generation",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

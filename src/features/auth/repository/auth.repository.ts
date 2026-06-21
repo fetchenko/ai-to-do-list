@@ -6,14 +6,6 @@ import {
   SignupInput,
   UpdatePasswordInput,
 } from "../types/auth.types";
-import { JwtPayload } from "@supabase/supabase-js";
-
-export async function getUserClaims(): Promise<JwtPayload | undefined> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-
-  return data?.claims;
-}
 
 export async function signInWithPassword({ email, password }: LoginInput) {
   const supabase = createClient();

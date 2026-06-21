@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient as createServerClient } from "@/infrastructure/supabase/server";
 import { AuthorizationError } from "@/shared/errors/app-error";
+import { JwtPayload } from "@supabase/supabase-js";
 
 export async function getCurrentUser() {
   const supabase = await createServerClient();
@@ -16,4 +17,11 @@ export async function getCurrentUser() {
   }
 
   return { user };
+}
+
+export async function getUserClaims(): Promise<JwtPayload | undefined> {
+  const supabase = await createServerClient();
+  const { data } = await supabase.auth.getClaims();
+
+  return data?.claims;
 }

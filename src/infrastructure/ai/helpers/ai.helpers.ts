@@ -43,8 +43,6 @@ export function normalizeAiError(err: unknown): AiErrorResult {
       success: false,
       status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
       code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
-      // todo: check if no sensitive data send
-      // error: err.details || `Failed to generate subtasks: ${err.message} `,
     };
   }
 
@@ -55,7 +53,7 @@ export function normalizeAiError(err: unknown): AiErrorResult {
   };
 }
 
-export async function parseResponseJson(response: Response) {
+export async function parseResponseJson(response: Response): Promise<string> {
   let raw;
   try {
     raw = await response.json();

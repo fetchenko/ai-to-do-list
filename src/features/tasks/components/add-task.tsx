@@ -12,6 +12,7 @@ import { useState } from "react";
 import { taskSchema } from "@/features/tasks/validation/tasks";
 import { z } from "zod";
 import { addTask } from "../services/tasks.service";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type TaskInput = z.infer<typeof taskSchema>;
 
@@ -23,7 +24,11 @@ type AddTaskProps = {
 export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
   const [open, setOpen] = useState(false)
 
-  const { handleSubmit, register, reset, formState: { errors }, } = useForm<TaskInput>();
+  const { handleSubmit, register, reset, formState: { errors }, } = useForm<TaskInput>(
+    {
+      resolver: zodResolver(taskSchema),
+    }
+  );
 
   const queryClient = useQueryClient();
 

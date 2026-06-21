@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/features/auth/repository/auth.server.repository";
-import { generateSubtasksForTask } from "@/infrastructure/ai/services/generate-subtasks";
+import { generateSubtasksForTask } from "@/infrastructure/ai/services/subtasks.service";
 import {
   parseAiRequest,
   normalizeAiError,

@@ -1,11 +1,11 @@
-import { AuthButton } from "@/components/auth/auth-button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { AuthButton } from "@/features/auth/components/auth-button";
+import { ThemeSwitcher } from "@/features/theme/theme-switcher";
 import Link from "next/link";
 import { Suspense } from "react";
-import { DEFAULT_REDIRECTS } from "@/lib/routes.config";
-import { AuthButtonSkeleton } from "@/components/auth/auth-button-skeleton";
-import ContentSkeleton from "@/components/tasks/content-skeleton";
-import UserContent from "@/components/tasks/user-content";
+import { DEFAULT_REDIRECTS } from "@/app/config/routes.config";
+import { AuthButtonSkeleton } from "@/features/auth/components/auth-button-skeleton";
+import ContentSkeleton from "@/features/home/components/content-skeleton";
+import UserContent from "@/features/home/components/user-content";
 
 export default async function Home() {
 

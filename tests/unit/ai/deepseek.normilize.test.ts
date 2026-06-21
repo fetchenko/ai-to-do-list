@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeDeepseekResponse } from "@/lib/ai/ai-providers/deepseek/deepseek.normilize";
+import { normalizeDeepseekResponse } from "@/infrastructure/ai/providers/deepseek/deepseek.normilize";
 import { deepseekResponse } from "@tests/fixtures/deepseek.response";
 
 describe("normalizeDeepseekResponse", () => {

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { generateSubtasksForTask } from "@/lib/ai/ai-service";
+import { getCurrentUser } from "@/features/auth/repository/auth.server.repository";
+import { generateSubtasksForTask } from "@/infrastructure/ai/services/generate-subtasks";
 import {
   parseAiRequest,
   normalizeAiError,
   checkRequestLock,
   checkAiQuotaLimit,
   getFailedAiLogs,
-} from "@/lib/ai/ai.helpers";
-import { updateAiLog } from "@/lib/ai/logs/update-log";
+} from "@/infrastructure/ai/helpers/ai.helpers";
+import { updateAiLog } from "@/infrastructure/ai/ai-logs/update-ai-log";
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;
@@ -17,8 +17,9 @@ export async function POST(request: Request) {
   const timeout = setTimeout(() => controller.abort(), 60000);
 
   try {
-    const req = await parseAiRequest(request);
     const { user } = await getCurrentUser();
+
+    const req = await parseAiRequest(request);
 
     await checkRequestLock(user.id);
     await checkAiQuotaLimit(user.id);

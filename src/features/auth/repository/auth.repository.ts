@@ -1,0 +1,75 @@
+import { DEFAULT_REDIRECTS, ROUTES } from "@/app/config/routes.config";
+import { createClient } from "@/infrastructure/supabase/client";
+import {
+  LoginInput,
+  ResetPasswordInput,
+  SignupInput,
+  UpdatePasswordInput,
+} from "../types/auth.types";
+import { JwtPayload } from "@supabase/supabase-js";
+
+export async function getUserClaims(): Promise<JwtPayload | undefined> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+
+  return data?.claims;
+}
+
+export async function signInWithPassword({ email, password }: LoginInput) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function resetPasswordForEmail({ email }: ResetPasswordInput) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}${ROUTES.authUpdatePassword}`,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function signUp({ email, password }: SignupInput) {
+  const supabase = createClient();
+
+  const { error, data } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}${DEFAULT_REDIRECTS.authenticated}`,
+    },
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updatePassword({ password }: UpdatePasswordInput) {
+  const supabase = createClient();
+
+  const { error, data } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

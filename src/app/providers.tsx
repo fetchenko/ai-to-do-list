@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { makeQueryClient } from "@/lib/query-client";
+import { makeQueryClient } from "@/infrastructure/react-query/query-client";
 import { ThemeProvider } from "next-themes";
 
 export default function Providers({ children }: { children: ReactNode }) {

@@ -81,7 +81,7 @@ export function DraftSubtasks({
         const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
 
         return (
-          <Card key={subtask.id} className="p-3">
+          <Card data-testid="draft-subtask" data-subtask-title={subtask.title} key={subtask.id} className="p-3">
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 {isEditing ? (

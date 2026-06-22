@@ -63,6 +63,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
         >
           <fieldset disabled={mutation.isPending} className="flex gap-2">
             <Input
+              data-testid="add-task-input"
               {...register("title")}
               disabled={mutation.isPending}
               placeholder={`Add a ${isSubtask ? 'subtask' : 'task'}...`}

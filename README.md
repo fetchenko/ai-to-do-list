@@ -1,3 +1,4 @@
+
 # AI To-Do List
 
 A task manager where any task can be broken down into actionable subtasks by AI.
@@ -9,7 +10,7 @@ per-user rate limiting — not just CRUD.
 
 [🔗 **Live demo:** 📸](https://ai-to-do-list-gilt.vercel.app)
 
-!["generate subtasks"]()
+<img src="https://github.com/user-attachments/assets/c7e81998-bcab-468b-8959-a0d7a8d4e5ca" alt="Demo of AI subtask generation" width="600" />
 
 ## Why this project
 

@@ -33,7 +33,7 @@ type TaskItemProps = {
   task: Task;
 }
 type EditTaskForm = {
-  title: string | null;
+  title: string;
 }
 
 export default function TaskItem({ task }: TaskItemProps) {

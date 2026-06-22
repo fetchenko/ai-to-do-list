@@ -4,14 +4,14 @@ import { create } from "zustand";
 const initialState = {
   generateSubtaskForTask: null,
   activeSubtaskId: null,
-  draftSubtask: null,
+  draftSubtask: "",
   generatedSubtasks: [],
 };
 
 type SubtaskState = {
   generateSubtaskForTask: string | null;
   activeSubtaskId: string | null;
-  draftSubtask: string | null;
+  draftSubtask: string;
   generatedSubtasks: AiTask[];
 
   setActiveSubtaskId: (id: string) => void;
@@ -22,7 +22,7 @@ type SubtaskState = {
   updateSubtask: (id: string, data: TaskUpdate) => void;
   deleteSubtask: (id: string) => void;
 
-  setDraftSubtask: (title: string | null) => void;
+  setDraftSubtask: (title: string) => void;
 
   resetActiveSubtask: () => void;
   reset: () => void;
@@ -32,7 +32,7 @@ export const useSubtaskStore = create<SubtaskState>((set) => ({
   generateSubtaskForTask: null,
   activeSubtaskId: null,
   generatedSubtasks: [],
-  draftSubtask: null,
+  draftSubtask: "",
 
   setActiveSubtaskId: (id) =>
     set({
@@ -65,12 +65,12 @@ export const useSubtaskStore = create<SubtaskState>((set) => ({
       ),
     })),
 
-  setDraftSubtask: (draftSubtask: string | null) =>
+  setDraftSubtask: (draftSubtask: string) =>
     set({
       draftSubtask,
     }),
 
   reset: () => set(initialState),
   resetActiveSubtask: () =>
-    set((state) => ({ ...state, activeSubtaskId: null, draftSubtask: null })),
+    set((state) => ({ ...state, activeSubtaskId: null, draftSubtask: "" })),
 }));

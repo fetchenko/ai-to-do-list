@@ -21,13 +21,13 @@ export type Task = {
   position: string;
   priority: number | null;
   status: TaskStatus;
-  title: string | null;
+  title: string;
   updatedAt: string | null;
   userId: string;
   subtasks?: Task[];
 };
 
-export type TaskInsert = Partial<Omit<Task, "subtasks">>;
+export type TaskInsert = Partial<Task> & Required<Pick<Task, "title">>;
 export type TaskUpdate = Partial<Omit<Task, "subtasks">>;
 
 export type AiTask = Partial<Task> & Required<Pick<Task, "id" | "title">>;

@@ -1,3 +1,4 @@
+import z from "zod";
 import { createClient } from "@/infrastructure/supabase/client";
 import { API_ROUTES } from "@/app/config/api-routes";
 import { generateKeyBetween } from "fractional-indexing";
@@ -7,8 +8,9 @@ import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
 import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
 import { getLastPosition } from "../repository/tasks.repository";
 import { AiTask, TaskInsert } from "../types/tasks.types";
-import { mapTaskToDb } from "../mappers/tasks.mapper";
+import { mapTaskInsertToDb } from "../mappers/tasks.mapper";
 import { subtasksResponseSchema } from "@/shared/validation/subtasks.validation";
+import { taskSchema } from "../validation/tasks";
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks, {
@@ -68,11 +70,26 @@ export async function saveSubtasks(
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
+    const {
+      data: parsedSubtask,
+      success,
+      error,
+    } = taskSchema.safeParse(subtask);
+
+    if (!success) {
+      throw new AppError(
+        ErrorCode.INVALID_REQUEST,
+        ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
+        "Each subtask must have a valid title",
+        z.treeifyError(error),
+      );
+    }
+
     const next = generateKeyBetween(prev, null);
     prev = next;
 
-    return mapTaskToDb({
-      ...subtask,
+    return mapTaskInsertToDb({
+      ...parsedSubtask,
       position: next,
       parentTaskId,
     });

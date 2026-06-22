@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { useSubtaskStore } from "@/features/tasks/stores/use-subtask-store";
-import { Task } from "@/features/tasks/types/tasks.types";
+import { Task, TaskInsert } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { taskStatus } from "@/features/tasks/constants/task.constants";
@@ -33,7 +33,7 @@ export function Subtasks({
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ subtasks }: { subtasks: Task[] }) =>
+    mutationFn: async ({ subtasks }: { subtasks: TaskInsert[] }) =>
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({

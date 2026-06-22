@@ -3,7 +3,7 @@ import { generateKeyBetween } from "fractional-indexing";
 import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
 import { getLastPosition } from "../repository/tasks.repository";
 import { TaskInsert } from "../types/tasks.types";
-import { mapTaskToDb } from "../mappers/tasks.mapper";
+import { mapTaskInsertToDb } from "../mappers/tasks.mapper";
 
 export async function addTask(
   parentTaskId: string | null,
@@ -17,7 +17,7 @@ export async function addTask(
 
   const { data, error } = await supabase
     .from("tasks")
-    .insert(mapTaskToDb({ ...newTask, position: newPosition }));
+    .insert(mapTaskInsertToDb({ ...newTask, position: newPosition }));
 
   if (error) {
     throw fromSupabaseError(error);

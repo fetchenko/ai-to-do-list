@@ -1,7 +1,9 @@
 import {
   DbTask,
+  DbTaskInsert,
   DbTaskUpdate,
   Task,
+  TaskInsert,
   TaskUpdate,
 } from "@/features/tasks/types/tasks.types";
 
@@ -52,7 +54,7 @@ export function mapDbTasks(dbTasks: DbTask[] | null): Task[] {
     : [];
 }
 
-export function mapTaskToDb(task: TaskUpdate): DbTaskUpdate {
+function mapTaskBase(task: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
 
   for (const [feKey, value] of Object.entries(task)) {
@@ -65,4 +67,12 @@ export function mapTaskToDb(task: TaskUpdate): DbTaskUpdate {
   }
 
   return result;
+}
+
+export function mapTaskInsertToDb(task: TaskInsert): DbTaskInsert {
+  return mapTaskBase(task) as DbTaskInsert;
+}
+
+export function mapTaskUpdateToDb(task: TaskUpdate): DbTaskUpdate {
+  return mapTaskBase(task) as DbTaskUpdate;
 }

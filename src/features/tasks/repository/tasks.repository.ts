@@ -1,7 +1,7 @@
 import { createClient } from "@/infrastructure/supabase/client";
 import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
 import { PostgrestError } from "@supabase/supabase-js";
-import { mapDbTasks, mapTaskToDb } from "../mappers/tasks.mapper";
+import { mapDbTasks, mapTaskUpdateToDb } from "../mappers/tasks.mapper";
 import { DbTask, TaskUpdate } from "../types/tasks.types";
 
 export async function getTasksWithSubtasks() {
@@ -34,7 +34,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
 
   const { data, error } = await supabase
     .from("tasks")
-    .update(mapTaskToDb(newTask))
+    .update(mapTaskUpdateToDb(newTask))
     .eq("id", id);
 
   if (error) {

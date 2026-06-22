@@ -11,6 +11,7 @@ import {
   checkRequestLock,
   updateAiLog,
 } from "@/infrastructure/ai/services/ai-log.admin.service";
+import { getTaskForUser } from "@/features/tasks/repository/tasks.admin.repository";
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;
@@ -21,13 +22,15 @@ export async function POST(request: Request) {
   try {
     const { user } = await getCurrentUser();
 
-    const req = await parseAiRequest(request);
-
     await checkRequestLock(user.id);
     await checkAiQuotaLimit(user.id);
 
+    const { taskId } = await parseAiRequest(request);
+
+    const task = await getTaskForUser(taskId, user.id);
+
     const result = await generateSubtasksForTask({
-      taskId: req.taskId,
+      task,
       userId: user.id,
       signal: controller.signal,
     });

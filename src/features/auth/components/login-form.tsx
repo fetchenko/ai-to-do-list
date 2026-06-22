@@ -58,6 +58,7 @@ export function LoginForm() {
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  id="email"
                   type="email"
                   {...register("email")}
                   placeholder="Email"
@@ -75,6 +76,7 @@ export function LoginForm() {
                   </Link>
                 </div>
                 <Input
+                  id="password"
                   type="password"
                   {...register("password")}
                   placeholder="Password"

@@ -33,7 +33,7 @@ type TaskItemProps = {
   task: Task;
 }
 type EditTaskForm = {
-  title: string | null;
+  title: string;
 }
 
 export default function TaskItem({ task }: TaskItemProps) {
@@ -121,7 +121,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   };
 
   return (
-    <Card key={task.id} className="p-4 space-y-3">
+    <Card data-testid='task-item' data-task-title={task.title} key={task.id} className="p-4 space-y-3">
       <div className="flex items-center justify-between gap-3 w-full">
         {editingTaskId && task.id === editingTaskId ? (
           <form
@@ -146,6 +146,7 @@ export default function TaskItem({ task }: TaskItemProps) {
           <>
             <div className="flex items-center gap-3">
               <Checkbox
+                data-testid="task-checkbox"
                 disabled={updateTaskMutation.isPending}
                 checked={task.status === 'done'}
                 onCheckedChange={(value) => toggleDone(value)}
@@ -159,13 +160,14 @@ export default function TaskItem({ task }: TaskItemProps) {
             </div>
             <div className="flex gap-2">
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger data-testid="task-actions-trigger" asChild>
                   <Button variant="outline" size="sm">
                     Actions
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
+                    data-testid="generate-subtasks-button"
                     disabled={mutationSubtasks.isPending}
                     onClick={() => handleGenerateSubtasks(task.id)}>
                     Gen subtask
@@ -174,6 +176,7 @@ export default function TaskItem({ task }: TaskItemProps) {
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    data-testid="delete-task-button"
                     onClick={() => handleDeleteTask(task.id)}
                     className="text-red-500"
                   >

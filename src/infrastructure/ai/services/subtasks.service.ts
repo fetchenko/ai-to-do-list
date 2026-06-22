@@ -4,23 +4,21 @@ import {
 } from "@/infrastructure/ai/helpers/ai.helpers";
 import { taskDecomposerPrompt } from "../prompts/task-decomposer";
 import { getAIProvider } from "@/infrastructure/ai/providers/ai-provider";
-import { getTaskForUser } from "@/features/tasks/repository/tasks.admin.repository";
 import {
   createAiLog,
   updateAiLog,
 } from "@/infrastructure/ai/services/ai-log.admin.service";
+import { TaskPreview } from "@/features/tasks/types/tasks.types";
 
 export async function generateSubtasksForTask({
-  taskId,
+  task,
   userId,
   signal,
 }: {
-  taskId: string;
+  task: TaskPreview;
   userId: string;
   signal: AbortSignal;
 }) {
-  const task = await getTaskForUser(taskId, userId);
-
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
 
   const prompt = taskDecomposerPrompt(task.title);

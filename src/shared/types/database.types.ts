@@ -108,7 +108,7 @@ export type Database = {
           position: string;
           priority: number | null;
           status: string;
-          title: string | null;
+          title: string;
           updated_at: string | null;
           user_id: string;
         };
@@ -122,7 +122,7 @@ export type Database = {
           position?: string;
           priority?: number | null;
           status?: string;
-          title?: string | null;
+          title: string;
           updated_at?: string | null;
           user_id?: string;
         };
@@ -136,7 +136,7 @@ export type Database = {
           position?: string;
           priority?: number | null;
           status?: string;
-          title?: string | null;
+          title?: string;
           updated_at?: string | null;
           user_id?: string;
         };

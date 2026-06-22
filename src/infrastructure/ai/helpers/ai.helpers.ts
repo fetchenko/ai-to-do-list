@@ -1,7 +1,4 @@
 import {
-  AiLockActiveError,
-  AiLockRequestFailedError,
-  AiRequestLimitError,
   AppError,
   ResponseFormatError,
   ValidationRequestError,
@@ -9,10 +6,7 @@ import {
 import { requestGenSubtasksSchema } from "@/infrastructure/ai/validation/ai.request";
 import { ErrorCode } from "@/shared/errors/code";
 import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
-import { createClient } from "@/infrastructure/supabase/server";
 import { AiErrorResult, AiLogs } from "@/infrastructure/ai/types/ai.types";
-
-const MAX_AI_REQUESTS_PER_USER = 10;
 
 export async function parseAiRequest(request: Request) {
   const { data, success: parsed } = requestGenSubtasksSchema.safeParse(
@@ -62,45 +56,6 @@ export async function parseResponseJson(response: Response): Promise<string> {
   }
 
   return raw;
-}
-
-export async function checkRequestLock(userId: string) {
-  const supabase = await createClient();
-
-  const { data: lockAcquired, error } = await supabase.rpc(
-    "try_acquire_user_ai_lock",
-    { user_id: userId },
-  );
-
-  if (error) {
-    throw new AiLockRequestFailedError(error);
-  }
-
-  if (!lockAcquired) {
-    throw new AiLockActiveError(
-      "Another AI generation is already running for this user",
-    );
-  }
-}
-
-export async function checkAiQuotaLimit(userId: string) {
-  const supabase = await createClient();
-
-  const { count } = await supabase
-    .from("ai_generations")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("user_id", userId)
-    .eq("feature", "generate-subtasks")
-    .eq("status", "success");
-
-  if ((count ?? 0) >= MAX_AI_REQUESTS_PER_USER) {
-    throw new AiRequestLimitError(
-      `Reached maximum AI requests per user (${MAX_AI_REQUESTS_PER_USER}`,
-    );
-  }
 }
 
 export function getInitialAiLog(userId: string, taskId: string) {

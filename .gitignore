@@ -47,3 +47,7 @@ next-env.d.ts
 
 settings.json
 launch.json
+
+/test-results/
+/playwright-report/
+/playwright/.auth/

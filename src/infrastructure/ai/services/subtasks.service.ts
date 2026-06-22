@@ -1,5 +1,3 @@
-import { createAiLog } from "@/infrastructure/ai/ai-logs/create-ai-log";
-import { updateAiLog } from "@/infrastructure/ai/ai-logs/update-ai-log";
 import {
   getInitialAiLog,
   getSuccessAiLogs,
@@ -7,6 +5,10 @@ import {
 import { taskDecomposerPrompt } from "../prompts/task-decomposer";
 import { getAIProvider } from "@/infrastructure/ai/providers/ai-provider";
 import { getTaskForUser } from "@/features/tasks/repository/tasks.admin.repository";
+import {
+  createAiLog,
+  updateAiLog,
+} from "@/infrastructure/ai/services/ai-log.admin.service";
 
 export async function generateSubtasksForTask({
   taskId,

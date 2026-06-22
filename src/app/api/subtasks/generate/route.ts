@@ -4,11 +4,13 @@ import { generateSubtasksForTask } from "@/infrastructure/ai/services/subtasks.s
 import {
   parseAiRequest,
   normalizeAiError,
-  checkRequestLock,
-  checkAiQuotaLimit,
   getFailedAiLogs,
 } from "@/infrastructure/ai/helpers/ai.helpers";
-import { updateAiLog } from "@/infrastructure/ai/ai-logs/update-ai-log";
+import {
+  checkAiQuotaLimit,
+  checkRequestLock,
+  updateAiLog,
+} from "@/infrastructure/ai/services/ai-log.admin.service";
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;

@@ -63,6 +63,9 @@ shadcn/ui, Zustand
 The codebase is organized as a feature-sliced architecture rather than a flat
 `components/lib` split:
 
+<details>
+<summary><b>Full directory structure</b></summary>
+
 ```
 proxy.ts                      # thin Next.js middleware entry point —
                                # delegates to infrastructure/supabase/proxy.ts
@@ -118,6 +121,8 @@ tests/
   unit/                       # AI response normalization & validation
   fixtures/, mocks/
 ```
+
+</details>
 
 **Within each feature**, the flow is `repository` (talks to Supabase, knows
 nothing about business rules) → `service` (business logic, e.g. computing the

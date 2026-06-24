@@ -11,8 +11,8 @@ import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { taskStatus } from "@/features/tasks/constants/task.constants";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { saveSubtasks } from "../services/subtasks.service";
-import { deleteTask } from "../repository/tasks.repository";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { useDeleteTaskWithUndo } from "../hooks/use-delete-task-with-undo";
 
 interface TaskSubtasksProps {
   task: Task
@@ -31,6 +31,7 @@ export function Subtasks({
   const setDraftSubtask = useSubtaskStore(state => state.setDraftSubtask);
   const resetActiveSubtask = useSubtaskStore(state => state.resetActiveSubtask);
   const queryClient = useQueryClient();
+  const { deleteWithUndo } = useDeleteTaskWithUndo();
 
   const mutation = useMutation({
     mutationFn: async ({ subtasks }: { subtasks: TaskInsert[] }) =>
@@ -42,15 +43,6 @@ export function Subtasks({
       setGeneratedSubtasks('', [])
     }
   })
-
-  const mutationDelete = useMutation({
-    mutationFn: async (id: string) => deleteTask(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tasks'],
-      });
-    },
-  });
 
   if (mutation.isPending) {
     return (
@@ -87,10 +79,6 @@ export function Subtasks({
 
   const handleCancelEditSubtask = () => {
     resetActiveSubtask();
-  }
-
-  const handleDeleteSubtask = (id: string) => {
-    mutationDelete.mutate(id);
   }
 
   const toggleDone = (id: string, checked: CheckedState) => {
@@ -165,9 +153,7 @@ export function Subtasks({
                 variant="ghost"
                 size="sm"
                 className="text-destructive"
-                onClick={() =>
-                  handleDeleteSubtask(subtask.id)
-                }
+                onClick={() => deleteWithUndo(subtask)}
               >
                 Delete
               </Button>

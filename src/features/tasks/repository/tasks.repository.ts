@@ -44,16 +44,8 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
   return data;
 }
 
-export async function deleteTask(id: string) {
-  const supabase = createClient();
-
-  const { data, error } = await supabase.from("tasks").delete().eq("id", id);
-
-  if (error) {
-    throw fromSupabaseError(error);
-  }
-
-  return data;
+export async function softDeleteTask(id: string) {
+  await updateTask(id, { deletedAt: new Date().toISOString() });
 }
 
 export async function getLastPosition(parentTaskId: string | null) {

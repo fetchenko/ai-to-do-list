@@ -11,6 +11,7 @@ export const taskKeyMap = {
   id: "id",
   completed_at: "completedAt",
   created_at: "createdAt",
+  deleted_at: "deletedAt",
   description: "description",
   due_date: "dueDate",
   parent_task_id: "parentTaskId",

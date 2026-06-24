@@ -15,6 +15,7 @@ export type Task = {
   id: string;
   completedAt: string | null;
   createdAt: string | null;
+  deletedAt: string | null;
   description: string | null;
   dueDate: string | null;
   parentTaskId: string | null;

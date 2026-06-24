@@ -6,13 +6,14 @@ import { Task } from '@/features/tasks/types/tasks.types';
 import TaskItem from './task-item';
 import TasksSkeleton from './tasks-skeleton';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { getTasksWithSubtasks } from '../repository/tasks.repository';
 import { AddTask } from './add-task';
+import { taskKeys } from '../constants/task.constants';
+import { getUserTasks } from '../services/tasks.service';
 
 export default function UserTasks() {
   const { data: tasks = [], isPending, error } = useQuery({
-    queryKey: ['tasks'],
-    queryFn: getTasksWithSubtasks,
+    queryKey: taskKeys.all,
+    queryFn: getUserTasks,
   })
 
   const filtered = (status: Task['status']) => tasks.filter((t) => t.status === status);

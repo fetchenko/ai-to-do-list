@@ -13,6 +13,7 @@ import { taskSchema } from "@/features/tasks/validation/tasks";
 import { z } from "zod";
 import { addTask } from "../services/tasks.service";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { taskKeys } from "../constants/task.constants";
 
 type TaskInput = z.infer<typeof taskSchema>;
 
@@ -42,7 +43,7 @@ export function AddTask({ isSubtask, parentTaskId }: AddTaskProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks'],
+        queryKey: taskKeys.all,
       })
       reset();
       setOpen(false);

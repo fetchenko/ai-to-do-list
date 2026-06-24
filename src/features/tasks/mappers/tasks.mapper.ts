@@ -33,6 +33,7 @@ export function mapDbTask(dbTask: DbTask): Task {
   return {
     id: dbTask.id,
     completedAt: dbTask.completed_at,
+    deletedAt: dbTask.deleted_at,
     createdAt: dbTask.created_at,
     description: dbTask.description,
     dueDate: dbTask.due_date,

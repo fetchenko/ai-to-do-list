@@ -4,46 +4,17 @@ import { softDeleteTask } from "../repository/tasks.repository";
 import { Task } from "../types/tasks.types";
 import { getFriendlyErrorMessage } from "@/shared/errors/error-messages";
 import { taskKeys } from "../constants/task.constants";
+import { removeFromCache, restoreToCache } from "../utils/tasks-cache";
 
 const UNDO_WINDOW_MS = 8000;
-
-function removeFromCache(tasks: Task[], task: Task): Task[] {
-  if (!task.parentTaskId) {
-    return tasks.filter((t) => t.id !== task.id);
-  }
-  return tasks.map((t) =>
-    t.id === task.parentTaskId
-      ? { ...t, subtasks: (t.subtasks || []).filter((s) => s.id !== task.id) }
-      : t,
-  );
-}
-
-function restoreToCache(tasks: Task[], task: Task): Task[] {
-  if (!task.parentTaskId) {
-    return [...tasks, task].sort((a, b) =>
-      a.position.localeCompare(b.position),
-    );
-  }
-  return tasks.map((t) =>
-    t.id === task.parentTaskId
-      ? {
-          ...t,
-          subtasks: [...(t.subtasks || []), task].sort((a, b) =>
-            a.position.localeCompare(b.position),
-          ),
-        }
-      : t,
-  );
-}
 
 export function useDeleteTaskWithUndo() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (id: string) => softDeleteTask(id),
-    onError: (error, _id, _ctx) => {
+    onError: (error) => {
       toast.error(getFriendlyErrorMessage(error));
-
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
   });

@@ -8,6 +8,7 @@ import { useSubtaskStore } from "@/features/tasks/stores/use-subtask-store";
 import { AiTask, Task, TaskInsert } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveSubtasks } from "../services/subtasks.service";
+import { taskKeys } from "../constants/task.constants";
 
 interface TaskSubtasksProps {
   task: Task
@@ -32,7 +33,7 @@ export function DraftSubtasks({
       saveSubtasks(task.id, subtasks),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['tasks'],
+        queryKey: taskKeys.all,
       });
       setGeneratedSubtasks('', [])
     },

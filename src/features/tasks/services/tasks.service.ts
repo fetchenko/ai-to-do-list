@@ -1,9 +1,10 @@
 import { createClient } from "@/infrastructure/supabase/client";
 import { generateKeyBetween } from "fractional-indexing";
 import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
-import { getLastPosition } from "../repository/tasks.repository";
+import { getLastPosition, fetchTasks } from "../repository/tasks.repository";
 import { TaskInsert } from "../types/tasks.types";
 import { mapTaskInsertToDb } from "../mappers/tasks.mapper";
+import { filterDeletedSubtasks } from "../utils/tasks";
 
 export async function addTask(
   parentTaskId: string | null,
@@ -24,4 +25,10 @@ export async function addTask(
   }
 
   return data;
+}
+
+export async function getUserTasks() {
+  const tasks = await fetchTasks();
+
+  return filterDeletedSubtasks(tasks);
 }

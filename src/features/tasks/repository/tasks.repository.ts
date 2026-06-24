@@ -4,7 +4,7 @@ import { PostgrestError } from "@supabase/supabase-js";
 import { mapDbTasks, mapTaskUpdateToDb } from "../mappers/tasks.mapper";
 import { DbTask, TaskUpdate } from "../types/tasks.types";
 
-export async function getTasksWithSubtasks() {
+export async function fetchTasks() {
   const supabase = createClient();
 
   const { data, error } = (await supabase
@@ -17,7 +17,8 @@ export async function getTasksWithSubtasks() {
     )
     .order("position")
     .order("position", { referencedTable: "subtasks", ascending: true })
-    .is("parent_task_id", null)) as {
+    .is("parent_task_id", null)
+    .is("deleted_at", null)) as {
     data: DbTask[] | null;
     error: PostgrestError | null;
   };
@@ -44,16 +45,8 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
   return data;
 }
 
-export async function deleteTask(id: string) {
-  const supabase = createClient();
-
-  const { data, error } = await supabase.from("tasks").delete().eq("id", id);
-
-  if (error) {
-    throw fromSupabaseError(error);
-  }
-
-  return data;
+export async function softDeleteTask(id: string) {
+  await updateTask(id, { deletedAt: new Date().toISOString() });
 }
 
 export async function getLastPosition(parentTaskId: string | null) {

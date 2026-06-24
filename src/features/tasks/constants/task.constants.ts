@@ -19,3 +19,8 @@ export const taskToDbFieldMap = {
   updatedAt: "updated_at",
   userId: "user_id",
 } as const;
+
+export const taskKeys = {
+  all: ["tasks"] as const,
+  detail: (id: string) => [...taskKeys.all, "detail", id] as const,
+};

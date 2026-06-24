@@ -11,6 +11,7 @@ export const taskKeyMap = {
   id: "id",
   completed_at: "completedAt",
   created_at: "createdAt",
+  deleted_at: "deletedAt",
   description: "description",
   due_date: "dueDate",
   parent_task_id: "parentTaskId",
@@ -32,6 +33,7 @@ export function mapDbTask(dbTask: DbTask): Task {
   return {
     id: dbTask.id,
     completedAt: dbTask.completed_at,
+    deletedAt: dbTask.deleted_at,
     createdAt: dbTask.created_at,
     description: dbTask.description,
     dueDate: dbTask.due_date,

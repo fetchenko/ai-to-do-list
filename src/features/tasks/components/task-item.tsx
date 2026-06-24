@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
 } from '@/shared/ui/dropdown-menu';
 import { toast } from "sonner"
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
@@ -25,9 +25,9 @@ import TasksSkeleton from './tasks-skeleton';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { deleteTask } from '../repository/tasks.repository';
 import { generateSubtasks } from '../services/subtasks.service';
 import { Subtasks } from './subtasks';
+import { useDeleteTaskWithUndo } from '../hooks/use-delete-task-with-undo';
 
 type TaskItemProps = {
   task: Task;
@@ -44,16 +44,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
   const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
   const setGeneratedSubtasksForTask = useSubtaskStore(state => state.setGeneratedSubtasksForTask)
-  const queryClient = useQueryClient();
-
-  const mutationDelete = useMutation({
-    mutationFn: async (id: string) => deleteTask(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tasks'],
-      });
-    },
-  });
+  const { deleteWithUndo } = useDeleteTaskWithUndo();
 
   const mutationSubtasks = useMutation({
     mutationFn: async (id: string) => {
@@ -105,10 +96,6 @@ export default function TaskItem({ task }: TaskItemProps) {
         status: newStatus
       },
     }, { onSuccess: () => { } })
-  };
-
-  const handleDeleteTask = (id: string) => {
-    mutationDelete.mutate(id);
   };
 
   const handleGenerateSubtasks = (id: string) => {
@@ -177,7 +164,7 @@ export default function TaskItem({ task }: TaskItemProps) {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     data-testid="delete-task-button"
-                    onClick={() => handleDeleteTask(task.id)}
+                    onClick={() => deleteWithUndo(task)}
                     className="text-red-500"
                   >
                     Delete

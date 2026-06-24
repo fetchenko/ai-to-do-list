@@ -101,6 +101,7 @@ export type Database = {
         Row: {
           completed_at: string | null;
           created_at: string | null;
+          deleted_at: string | null;
           description: string | null;
           due_date: string | null;
           id: string;
@@ -115,6 +116,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null;
           created_at?: string | null;
+          deleted_at?: string | null;
           description?: string | null;
           due_date?: string | null;
           id?: string;
@@ -124,11 +126,12 @@ export type Database = {
           status?: string;
           title: string;
           updated_at?: string | null;
-          user_id?: string;
+          user_id: string;
         };
         Update: {
           completed_at?: string | null;
           created_at?: string | null;
+          deleted_at?: string | null;
           description?: string | null;
           due_date?: string | null;
           id?: string;

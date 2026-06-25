@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Providers from "./providers";
 import { Toaster } from "@/shared/ui/sonner"
+import { GoogleAnalytics } from "@next/third-parties/google";
+
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -32,6 +34,8 @@ export default function RootLayout({
           {children}
         </Providers>
         <Toaster />
+
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID!} />
       </body>
     </html>
   );

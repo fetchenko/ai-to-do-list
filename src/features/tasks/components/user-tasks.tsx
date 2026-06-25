@@ -19,9 +19,9 @@ export default function UserTasks() {
   const filtered = (status: Task['status']) => tasks.filter((t) => t.status === status);
 
   return (
-    <div className="flex-1 flex flex-col gap-6 px-4 w-full">
+    <div className="flex-1 flex flex-col gap-6 px-4 w-full sm:px-0">
       <div className="space-y-6">
-        <div className="max-w-3xl mx-auto p-6 space-y-6">
+        <div className="max-w-3xl mx-auto p-6 space-y-6 sm:p-0">
           <AddTask />
           <Tabs defaultValue="active" className="w-full">
             <TabsList className="grid grid-cols-2 w-full">

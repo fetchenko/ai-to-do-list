@@ -2,6 +2,7 @@ import { updateTask } from "@/features/tasks/repository/tasks.repository";
 import { Task, TaskUpdate } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskKeys } from "../constants/task.constants";
+import { updateTaskInCache } from "../utils/tasks-cache";
 
 export function useUpdateTaskMutation() {
   const queryClient = useQueryClient();
@@ -20,19 +21,17 @@ export function useUpdateTaskMutation() {
         queryKey: taskKeys.all,
       });
 
-      const previous = queryClient.getQueryData<Task[]>(["tasks"]);
+      const previous = queryClient.getQueryData<Task[]>(taskKeys.all);
 
-      queryClient.setQueryData(["tasks"], (old: Task[] = []) =>
-        old.map((task) =>
-          task.id === taskId ? { ...task, ...updates } : task,
-        ),
+      queryClient.setQueryData(taskKeys.all, (old: Task[] = []) =>
+        updateTaskInCache(old, taskId, updates),
       );
 
       return { previous };
     },
 
     onError: (_, __, context) => {
-      queryClient.setQueryData(["tasks"], context?.previous);
+      queryClient.setQueryData(taskKeys.all, context?.previous);
     },
 
     onSettled: () => {

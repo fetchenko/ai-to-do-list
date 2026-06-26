@@ -1,9 +1,9 @@
 "use client";
 
-import { Card } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSubtaskStore } from "@/features/tasks/stores/use-subtask-store";
 import { AiTask, Task, TaskInsert } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

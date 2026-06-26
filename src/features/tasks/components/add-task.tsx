@@ -2,12 +2,12 @@
 
 import { useForm } from "react-hook-form";
 
-import { Button } from "@/shared/ui/button";
-import { Textarea } from "@/shared/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/shared/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { taskSchema } from "@/features/tasks/validation/tasks";
 import { z } from "zod";

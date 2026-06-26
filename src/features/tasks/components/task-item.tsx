@@ -1,15 +1,15 @@
 'use client';
 
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Card } from '@/shared/ui/card';
-import { Checkbox } from '@/shared/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/shared/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import { toast } from "sonner"
 import { useMutation } from '@tanstack/react-query';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';

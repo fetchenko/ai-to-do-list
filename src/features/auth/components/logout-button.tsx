@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/infrastructure/supabase/client";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/app/config/routes.config";
 import { useQueryClient } from '@tanstack/react-query';

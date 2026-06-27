@@ -1,9 +1,9 @@
 "use client";
 
-import { Card } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSubtaskStore } from "@/features/tasks/stores/use-subtask-store";
 import { Task, TaskInsert } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
 import { taskKeys, taskStatus } from "@/features/tasks/constants/task.constants";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { saveSubtasks } from "../services/subtasks.service";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useDeleteTaskWithUndo } from "../hooks/use-delete-task-with-undo";
 
 interface TaskSubtasksProps {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { LogoutButton } from "./logout-button";
 import { ROUTES } from '@/app/config/routes.config'
 import { getUserClaims } from "../repository/auth.server.repository";

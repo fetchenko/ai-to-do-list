@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+
+# next
+.next
+out
+
+# build
+dist
+coverage
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+
+# lockfiles (optional)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+
+# generated
+supabase/.temp
+playwright-report
+test-results
+
+# misc
+.vscode
+.idea

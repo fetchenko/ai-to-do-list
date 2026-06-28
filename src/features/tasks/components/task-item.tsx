@@ -20,7 +20,7 @@ import { taskStatus } from '@/features/tasks/constants/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
-import { AddTaskForm as AddTask } from './add-task-form';
+import { AddTaskForm } from './add-task-form';
 import TasksSkeleton from './tasks-skeleton';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
@@ -183,7 +183,7 @@ export default function TaskItem({ task }: TaskItemProps) {
         <Subtasks task={task} />
       )}
       {(
-        <AddTask
+        <AddTaskForm
           error={createTaskError}
           onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
         />

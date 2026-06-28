@@ -1,23 +1,21 @@
-import { createClient } from "@/infrastructure/supabase/client";
-import { generateKeyBetween } from "fractional-indexing";
-import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
-import { getLastPosition, fetchTasks } from "../repository/tasks.repository";
-import { TaskInsert } from "../types/tasks.types";
-import { mapTaskInsertToDb } from "../mappers/tasks.mapper";
-import { filterDeletedSubtasks } from "../utils/tasks";
+import { createClient } from '@/infrastructure/supabase/client';
+import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
+import { generateKeyBetween } from 'fractional-indexing';
 
-export async function addTask(
-  parentTaskId: string | null,
-  newTask: TaskInsert,
-) {
+import { mapTaskInsertToDb } from '../mappers/tasks.mapper';
+import { fetchTasks, getLastPosition } from '../repository/tasks.repository';
+import { TaskInsert } from '../types/tasks.types';
+import { filterDeletedSubtasks } from '../utils/tasks';
+
+export async function addTask(newTask: TaskInsert) {
   const supabase = createClient();
 
-  const lastPosition = await getLastPosition(parentTaskId);
+  const lastPosition = await getLastPosition(newTask.parentTaskId);
 
   const newPosition = generateKeyBetween(lastPosition ?? null, null);
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from('tasks')
     .insert(mapTaskInsertToDb({ ...newTask, position: newPosition }));
 
   if (error) {

@@ -20,7 +20,7 @@ import { taskStatus } from '@/features/tasks/constants/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { DraftSubtasks } from './draft-subtasks';
 import { CheckedState } from '@radix-ui/react-checkbox';
-import { AddTask } from './add-task';
+import { AddTaskForm } from './add-task-form';
 import TasksSkeleton from './tasks-skeleton';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
@@ -28,6 +28,7 @@ import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { generateSubtasks } from '../services/subtasks.service';
 import { Subtasks } from './subtasks';
 import { useDeleteTaskWithUndo } from '../hooks/use-delete-task-with-undo';
+import { useCreateTask } from '../hooks/use-create-task';
 
 type TaskItemProps = {
   task: Task;
@@ -45,6 +46,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
   const setGeneratedSubtasksForTask = useSubtaskStore(state => state.setGeneratedSubtasksForTask)
   const { deleteWithUndo } = useDeleteTaskWithUndo();
+  const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
   const mutationSubtasks = useMutation({
     mutationFn: async (id: string) => {
@@ -63,6 +65,7 @@ export default function TaskItem({ task }: TaskItemProps) {
       }
     }
   });
+
 
   const resetTaskStore = useTaskStore(state => state.reset)
 
@@ -180,7 +183,10 @@ export default function TaskItem({ task }: TaskItemProps) {
         <Subtasks task={task} />
       )}
       {(
-        <AddTask isSubtask={true} parentTaskId={task.id} />
+        <AddTaskForm
+          error={createTaskError}
+          onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
+        />
       )}
       {generateSubtaskForTask && generateSubtaskForTask === task.id &&
         <>

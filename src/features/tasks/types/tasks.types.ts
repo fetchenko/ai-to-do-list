@@ -1,15 +1,20 @@
-import { Database, TaskStatus } from "@/shared/types/database.types";
+import { Database, TaskStatus } from '@/shared/types/database.types';
+import z from 'zod';
 
-export type DbTaskRow = Database["public"]["Tables"]["tasks"]["Row"];
+import { taskSchema } from '../validation/tasks';
+
+export type CreateTaskInput = z.infer<typeof taskSchema>;
+
+export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
 
 export type DbTask = DbTaskRow & {
   subtasks?: DbTask[];
 };
 
-export type DbTaskInsert = Database["public"]["Tables"]["tasks"]["Insert"];
-export type DbTaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
+export type DbTaskInsert = Database['public']['Tables']['tasks']['Insert'];
+export type DbTaskUpdate = Database['public']['Tables']['tasks']['Update'];
 
-export type TaskPreview = Pick<DbTask, "id" | "user_id" | "title">;
+export type TaskPreview = Pick<DbTask, 'id' | 'user_id' | 'title'>;
 
 export type Task = {
   id: string;
@@ -28,7 +33,7 @@ export type Task = {
   subtasks?: Task[];
 };
 
-export type TaskInsert = Partial<Task> & Required<Pick<Task, "title">>;
-export type TaskUpdate = Partial<Omit<Task, "subtasks">>;
+export type TaskInsert = Partial<Task> & Required<Pick<Task, 'title'>>;
+export type TaskUpdate = Partial<Omit<Task, 'subtasks'>>;
 
-export type AiTask = Partial<Task> & Required<Pick<Task, "id" | "title">>;
+export type AiTask = Partial<Task> & Required<Pick<Task, 'id' | 'title'>>;

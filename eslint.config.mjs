@@ -16,19 +16,7 @@ const eslintConfig = defineConfig([
         'error',
         { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['./*', '../*'],
-              message:
-                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
-            },
-          ],
-        },
-      ],
+      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }]
     },
   },
   {

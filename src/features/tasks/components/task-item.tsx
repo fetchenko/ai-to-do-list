@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,19 +15,18 @@ import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
 import { useForm } from 'react-hook-form';
-import { taskStatus } from '@/features/tasks/constants/task.constants';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
-import { DraftSubtasks } from './draft-subtasks';
-import { CheckedState } from '@radix-ui/react-checkbox';
-import { AddTaskForm } from './add-task-form';
-import TasksSkeleton from './tasks-skeleton';
+import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
+import { AddTaskForm } from '@/features/tasks/components/add-task-form';
+import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { generateSubtasks } from '../services/subtasks.service';
-import { Subtasks } from './subtasks';
-import { useDeleteTaskWithUndo } from '../hooks/use-delete-task-with-undo';
-import { useCreateTask } from '../hooks/use-create-task';
+import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
+import { Subtasks } from '@/features/tasks/components/subtasks';
+import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
+import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
+import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 
 type TaskItemProps = {
   task: Task;
@@ -66,7 +64,6 @@ export default function TaskItem({ task }: TaskItemProps) {
     }
   });
 
-
   const resetTaskStore = useTaskStore(state => state.reset)
 
   const { register, handleSubmit } = useForm<EditTaskForm>({
@@ -89,17 +86,6 @@ export default function TaskItem({ task }: TaskItemProps) {
       }
     })
   }
-
-  const toggleDone = (checked: CheckedState) => {
-    const newStatus = checked ? taskStatus.done : taskStatus.active
-
-    updateTaskMutation.mutate({
-      taskId: task.id,
-      updates: {
-        status: newStatus
-      },
-    }, { onSuccess: () => { } })
-  };
 
   const handleGenerateSubtasks = (id: string) => {
     setGeneratedSubtasksForTask(id);
@@ -135,12 +121,7 @@ export default function TaskItem({ task }: TaskItemProps) {
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <Checkbox
-                data-testid="task-checkbox"
-                disabled={updateTaskMutation.isPending}
-                checked={task.status === 'done'}
-                onCheckedChange={(value) => toggleDone(value)}
-              />
+              <TaskCheckbox task={task} />
               <div>
                 <p className="font-medium">{task.title}</p>
                 {task.description && (

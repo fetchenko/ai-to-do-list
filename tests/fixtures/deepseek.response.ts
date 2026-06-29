@@ -1,23 +1,22 @@
 export const deepseekResponse = {
-  id: "43f08761-8160-4580-95e7-829fb8ec21cc",
-  model: "deepseek-v4-flash",
+  id: '43f08761-8160-4580-95e7-829fb8ec21cc',
+  model: 'deepseek-v4-flash',
   choices: [
     {
-      finish_reason: "stop",
+      finish_reason: 'stop',
       message: {
         content: JSON.stringify({
-          task_summary:
-            "Prompt the user to enter input through a user interface",
+          task_summary: 'Prompt the user to enter input through a user interface',
           subtasks: [
             {
-              title: "Build input form UI",
+              title: 'Build input form UI',
               description:
-                "Create an HTML form with a text input field and a submit button, styled appropriately for the application context.",
+                'Create an HTML form with a text input field and a submit button, styled appropriately for the application context.',
             },
             {
-              title: "Implement input capture and validation",
+              title: 'Implement input capture and validation',
               description:
-                "Write JavaScript to attach a submit event listener, capture the input value, perform basic validation (e.g., non-empty), and output the result (e.g., console.log or display on the page).",
+                'Write JavaScript to attach a submit event listener, capture the input value, perform basic validation (e.g., non-empty), and output the result (e.g., console.log or display on the page).',
             },
           ],
         }),

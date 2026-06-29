@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Task } from "@/features/tasks/types/tasks.types";
-import { cn } from "@/shared/utils/classnames";
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToggleTask } from '@/features/tasks/hooks/use-toggle-task';
+import { Task } from '@/features/tasks/types/tasks.types';
+import { cn } from '@/shared/utils/classnames';
 
 interface TaskCheckboxProps {
   task: Task;
@@ -19,10 +19,8 @@ export function TaskCheckbox({ task, className }: TaskCheckboxProps) {
       checked={checked}
       disabled={isPending}
       onCheckedChange={toggle}
-      aria-label={
-        checked ? `Mark "${task.title}" as not done` : `Mark "${task.title}" as done`
-      }
-      className={cn("mt-1", className)}
+      aria-label={checked ? `Mark "${task.title}" as not done` : `Mark "${task.title}" as done`}
+      className={cn('mt-1', className)}
     />
   );
 }

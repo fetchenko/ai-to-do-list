@@ -1,11 +1,11 @@
-import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { generateKeyBetween } from 'fractional-indexing';
 
-import { mapTaskInsertToDb } from '../mappers/tasks.mapper';
-import { fetchTasks, getLastPosition } from '../repository/tasks.repository';
-import { TaskInsert } from '../types/tasks.types';
-import { filterDeletedSubtasks } from '../utils/tasks';
+import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
+import { fetchTasks, getLastPosition } from '@/features/tasks/repository/tasks.repository';
+import { TaskInsert } from '@/features/tasks/types/tasks.types';
+import { filterDeletedSubtasks } from '@/features/tasks/utils/tasks';
+import { createClient } from '@/infrastructure/supabase/client';
+import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 
 export async function addTask(newTask: TaskInsert) {
   const supabase = createClient();

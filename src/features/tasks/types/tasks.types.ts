@@ -1,7 +1,7 @@
-import { Database, TaskStatus } from '@/shared/types/database.types';
 import z from 'zod';
 
-import { taskSchema } from '../validation/tasks';
+import { taskSchema } from '@/features/tasks/validation/tasks';
+import { Database, TaskStatus } from '@/shared/types/database.types';
 
 export type CreateTaskInput = z.infer<typeof taskSchema>;
 

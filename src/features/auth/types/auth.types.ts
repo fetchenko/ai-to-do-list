@@ -1,10 +1,11 @@
-import z from "zod";
+import z from 'zod';
+
 import {
   loginSchema,
-  updatePasswordSchema,
   resetPasswordSchema,
   signupSchema,
-} from "../validation/auth";
+  updatePasswordSchema,
+} from '@/features/auth/validation/auth';
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

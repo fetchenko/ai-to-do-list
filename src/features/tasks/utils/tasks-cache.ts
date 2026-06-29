@@ -1,5 +1,5 @@
-import { Task } from "../types/tasks.types";
-import { byPosition, updateParentSubtasks } from "./tasks";
+import { Task } from '@/features/tasks/types/tasks.types';
+import { byPosition, updateParentSubtasks } from '@/features/tasks/utils/tasks';
 
 export function findTask(tasks: Task[], id: string): Task | undefined {
   return (
@@ -8,16 +8,12 @@ export function findTask(tasks: Task[], id: string): Task | undefined {
   );
 }
 
-export function updateTaskInCache(
-  tasks: Task[],
-  id: string,
-  patch: Partial<Task>,
-): Task[] {
+export function updateTaskInCache(tasks: Task[], id: string, patch: Partial<Task>): Task[] {
   return tasks.map((task) => {
     if (task.id === id) return { ...task, ...patch };
 
     const subtasks = task.subtasks?.map((subtask) =>
-      subtask.id === id ? { ...subtask, ...patch } : subtask,
+      subtask.id === id ? { ...subtask, ...patch } : subtask
     );
 
     const changed = subtasks?.some((s, i) => s !== task.subtasks?.[i]);
@@ -30,7 +26,7 @@ export function removeFromCache(tasks: Task[], task: Task): Task[] {
   if (!task.parentTaskId) return tasks.filter((t) => t.id !== task.id);
 
   return updateParentSubtasks(tasks, task.parentTaskId, (subtasks) =>
-    subtasks.filter((s) => s.id !== task.id),
+    subtasks.filter((s) => s.id !== task.id)
   );
 }
 
@@ -40,6 +36,6 @@ export function restoreToCache(tasks: Task[], task: Task): Task[] {
   }
 
   return updateParentSubtasks(tasks, task.parentTaskId, (subtasks) =>
-    [...subtasks, task].sort(byPosition),
+    [...subtasks, task].sort(byPosition)
   );
 }

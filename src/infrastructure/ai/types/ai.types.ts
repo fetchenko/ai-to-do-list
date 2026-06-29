@@ -1,5 +1,5 @@
-import { ErrorCode } from "@/shared/errors/code";
-import { SubtasksResponse } from "@/shared/types/subtasks.types";
+import { ErrorCode } from '@/shared/errors/code';
+import { SubtasksResponse } from '@/shared/types/subtasks.types';
 
 export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
 

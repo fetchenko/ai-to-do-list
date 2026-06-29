@@ -1,4 +1,4 @@
-import { ErrorCode } from "./code";
+import { ErrorCode } from '@/shared/errors/code';
 
 export const ErrorHttpStatus: Record<ErrorCode, number> = {
   INVALID_REQUEST: 400,

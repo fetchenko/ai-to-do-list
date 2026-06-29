@@ -1,11 +1,11 @@
-import { DEFAULT_REDIRECTS, ROUTES } from "@/app/config/routes.config";
-import { createClient } from "@/infrastructure/supabase/client";
+import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
 import {
   LoginInput,
   ResetPasswordInput,
   SignupInput,
   UpdatePasswordInput,
-} from "../types/auth.types";
+} from '@/features/auth/types/auth.types';
+import { createClient } from '@/infrastructure/supabase/client';
 
 export async function signInWithPassword({ email, password }: LoginInput) {
   const supabase = createClient();

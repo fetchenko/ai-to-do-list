@@ -1,17 +1,18 @@
-import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/features/auth/repository/auth.server.repository";
-import { generateSubtasksForTask } from "@/infrastructure/ai/services/subtasks.service";
+import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/features/auth/repository/auth.server.repository';
+import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import {
-  parseAiRequest,
-  normalizeAiError,
   getFailedAiLogs,
-} from "@/infrastructure/ai/helpers/ai.helpers";
+  normalizeAiError,
+  parseAiRequest,
+} from '@/infrastructure/ai/helpers/ai.helpers';
 import {
   checkAiQuotaLimit,
   checkRequestLock,
   updateAiLog,
-} from "@/infrastructure/ai/services/ai-log.admin.service";
-import { getTaskForUser } from "@/features/tasks/repository/tasks.admin.repository";
+} from '@/infrastructure/ai/services/ai-log.admin.service';
+import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
       },
       {
         status: 200,
-      },
+      }
     );
   } catch (err: unknown) {
     const { status, ...error } = normalizeAiError(err);

@@ -1,24 +1,20 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { DEFAULT_REDIRECTS, ROUTES } from "@/app/config/routes.config";
-import { signupSchema } from "@/features/auth/validation/auth";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { signUp } from "@/features/auth/repository/auth.repository";
-import { useMutation } from "@tanstack/react-query";
-import { SignupInput } from "../types/auth.types";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+
+import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { signUp } from '@/features/auth/repository/auth.repository';
+import { SignupInput } from '@/features/auth/types/auth.types';
+import { signupSchema } from '@/features/auth/validation/auth';
 
 export function SignUpForm() {
   const {
@@ -27,7 +23,7 @@ export function SignUpForm() {
     formState: { errors: errors },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   const router = useRouter();
@@ -36,8 +32,8 @@ export function SignUpForm() {
     mutationFn: async (data: SignupInput) => await signUp(data),
     onSuccess: () => {
       router.push(DEFAULT_REDIRECTS.authenticated);
-    }
-  },)
+    },
+  });
 
   const onSumbit = (data: SignupInput) => {
     mutate(data);
@@ -55,12 +51,7 @@ export function SignUpForm() {
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email")}
-                  placeholder="Email"
-                />
+                <Input id="email" type="email" {...register('email')} placeholder="Email" />
                 {errors.email && <p className="text-red-500">{errors.email.message}</p>}
               </div>
               <div className="grid gap-2">
@@ -70,12 +61,10 @@ export function SignUpForm() {
                 <Input
                   id="password"
                   type="password"
-                  {...register("password")}
+                  {...register('password')}
                   placeholder="Password"
                 />
-                {errors.password && (
-                  <p className="text-red-500">{errors.password.message}</p>
-                )}
+                {errors.password && <p className="text-red-500">{errors.password.message}</p>}
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
@@ -84,18 +73,20 @@ export function SignUpForm() {
                 <Input
                   id="repeat-password"
                   type="password"
-                  {...register("confirmPassword")}
+                  {...register('confirmPassword')}
                   placeholder="Confirm password"
                 />
               </div>
-              {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              )}
               {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Creating an account..." : "Sign up"}
+                {isPending ? 'Creating an account...' : 'Sign up'}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link href={ROUTES.authLogin} className="underline underline-offset-4">
                 Login
               </Link>

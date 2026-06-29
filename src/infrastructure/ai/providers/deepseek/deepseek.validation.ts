@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export const deepSeekResponseSchema = z.object({
   id: z.string().optional(),
@@ -11,7 +11,7 @@ export const deepSeekResponseSchema = z.object({
       message: z.object({
         content: z.string(),
       }),
-    }),
+    })
   ),
 
   usage: z

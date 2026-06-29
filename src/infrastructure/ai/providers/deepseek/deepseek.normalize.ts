@@ -1,10 +1,8 @@
-import { subtasksResponseSchema } from "@/shared/validation/subtasks.validation";
-import { DeepSeekResponse } from "./deepseek.types";
-import { NormilizedAiResponse } from "@/infrastructure/ai/types/ai.types";
+import { DeepSeekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.types';
+import { NormilizedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
 
-export function normalizeDeepseekResponse(
-  response: DeepSeekResponse,
-): NormilizedAiResponse {
+export function normalizeDeepseekResponse(response: DeepSeekResponse): NormilizedAiResponse {
   const choice = response.choices?.[0];
 
   return {
@@ -22,8 +20,7 @@ export function normalizeDeepseekResponse(
       finish_reason: choice?.finish_reason ?? null,
       provider_generation_id: response.id ?? null,
 
-      reasoning_tokens:
-        response.usage?.completion_tokens_details?.reasoning_tokens ?? 0,
+      reasoning_tokens: response.usage?.completion_tokens_details?.reasoning_tokens ?? 0,
 
       cache_hit_tokens: response.usage?.prompt_cache_hit_tokens ?? 0,
 

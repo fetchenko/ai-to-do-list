@@ -1,19 +1,13 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type TaskStatus = Database["public"]["Enums"]["task_status"];
-export type AiGeneration = Database["public"]["Tables"]["ai_generations"];
+export type TaskStatus = Database['public']['Enums']['task_status'];
+export type AiGeneration = Database['public']['Tables']['ai_generations'];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: '14.5';
   };
   public: {
     Tables: {
@@ -89,11 +83,11 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "ai_generations_task_id_fkey";
-            columns: ["task_id"];
+            foreignKeyName: 'ai_generations_task_id_fkey';
+            columns: ['task_id'];
             isOneToOne: false;
-            referencedRelation: "tasks";
-            referencedColumns: ["id"];
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -145,11 +139,11 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "tasks_parent_task_id_fkey";
-            columns: ["parent_task_id"];
+            foreignKeyName: 'tasks_parent_task_id_fkey';
+            columns: ['parent_task_id'];
             isOneToOne: false;
-            referencedRelation: "tasks";
-            referencedColumns: ["id"];
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -162,7 +156,7 @@ export type Database = {
       try_acquire_user_ai_lock: { Args: { user_id: string }; Returns: boolean };
     };
     Enums: {
-      task_status: "active" | "done" | "archived";
+      task_status: 'active' | 'done' | 'archived';
     };
     CompositeTypes: {
       [_ in never]: never;

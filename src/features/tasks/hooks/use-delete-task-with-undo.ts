@@ -1,10 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { softDeleteTask } from "../repository/tasks.repository";
-import { Task } from "../types/tasks.types";
-import { getFriendlyErrorMessage } from "@/shared/errors/error-messages";
-import { taskKeys } from "../constants/task.constants";
-import { removeFromCache, restoreToCache } from "../utils/tasks-cache";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { softDeleteTask } from '@/features/tasks/repository/tasks.repository';
+import { Task } from '@/features/tasks/types/tasks.types';
+import { removeFromCache, restoreToCache } from '@/features/tasks/utils/tasks-cache';
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 const UNDO_WINDOW_MS = 8000;
 
@@ -21,7 +22,7 @@ export function useDeleteTaskWithUndo() {
 
   function deleteWithUndo(task: Task) {
     queryClient.setQueryData<Task[]>(taskKeys.all, (old) =>
-      old ? removeFromCache(old, task) : old,
+      old ? removeFromCache(old, task) : old
     );
 
     let undone = false;
@@ -32,12 +33,12 @@ export function useDeleteTaskWithUndo() {
     toast(`"${task.title}" deleted`, {
       duration: UNDO_WINDOW_MS,
       action: {
-        label: "Undo",
+        label: 'Undo',
         onClick: () => {
           undone = true;
           clearTimeout(timeoutId);
           queryClient.setQueryData<Task[]>(taskKeys.all, (old) =>
-            old ? restoreToCache(old, task) : old,
+            old ? restoreToCache(old, task) : old
           );
         },
       },

@@ -1,4 +1,3 @@
-
 # AI To-Do List
 
 A task manager where any task can be broken down into actionable subtasks by AI.

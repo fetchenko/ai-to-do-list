@@ -1,12 +1,11 @@
-import { Task } from "../types/tasks.types";
+import { Task } from '@/features/tasks/types/tasks.types';
 
-export const byPosition = (a: Task, b: Task) =>
-  a.position.localeCompare(b.position);
+export const byPosition = (a: Task, b: Task) => a.position.localeCompare(b.position);
 
 export function updateParentSubtasks(
   tasks: Task[],
   parentId: string,
-  updater: (subtasks: Task[]) => Task[],
+  updater: (subtasks: Task[]) => Task[]
 ): Task[] {
   return tasks.map((task) =>
     task.id === parentId
@@ -14,7 +13,7 @@ export function updateParentSubtasks(
           ...task,
           subtasks: updater(task.subtasks ?? []),
         }
-      : task,
+      : task
   );
 }
 

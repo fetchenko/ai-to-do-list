@@ -12,12 +12,13 @@
   "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "importOrder": [
     "^react$",
-    "^next",
+    "^next(/.*)?$",
     "<THIRD_PARTY_MODULES>",
-    "^@/components/(.*)$",
-    "^@/hooks/(.*)$",
-    "^@/styles/(.*)$",
-    "^[./]"
+    "^@/",
+    "^[.]/(?=.*/)",
+    "^\\.(?!/?$)",
+    "^\\./?$",
+    "\\.(css|scss|sass)$"
   ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,

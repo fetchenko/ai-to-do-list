@@ -1,54 +1,55 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from "sonner"
-import { useMutation } from '@tanstack/react-query';
+import { Input } from '@/components/ui/input';
+import { AddTaskForm } from '@/features/tasks/components/add-task-form';
+import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
+import { Subtasks } from '@/features/tasks/components/subtasks';
+import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
+import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
+import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
+import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
+import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
+import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
+import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
-import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
-import { useForm } from 'react-hook-form';
-import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
-import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
-import { AddTaskForm } from '@/features/tasks/components/add-task-form';
-import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
-import { Subtasks } from '@/features/tasks/components/subtasks';
-import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
-import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 
 type TaskItemProps = {
   task: Task;
-}
+};
 type EditTaskForm = {
   title: string;
-}
+};
 
 export default function TaskItem({ task }: TaskItemProps) {
-  const updateTaskMutation = useUpdateTaskMutation()
+  const updateTaskMutation = useUpdateTaskMutation();
 
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
-  const generateSubtaskForTask = useSubtaskStore(state => state.generateSubtaskForTask);
-  const setGeneratedSubtasksForTask = useSubtaskStore(state => state.setGeneratedSubtasksForTask)
+  const generateSubtaskForTask = useSubtaskStore((state) => state.generateSubtaskForTask);
+  const setGeneratedSubtasksForTask = useSubtaskStore((state) => state.setGeneratedSubtasksForTask);
   const { deleteWithUndo } = useDeleteTaskWithUndo();
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
   const mutationSubtasks = useMutation({
     mutationFn: async (id: string) => {
-      if (!id) throw new AppError(ErrorCode.INVALID_REQUEST, 400, "Missing task id");
+      if (!id) throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
 
       return await generateSubtasks(id);
     },
@@ -56,40 +57,43 @@ export default function TaskItem({ task }: TaskItemProps) {
       setGeneratedSubtasks(task.id, data);
     },
     onError: (error) => {
-      setGeneratedSubtasksForTask(null)
+      setGeneratedSubtasksForTask(null);
       if (error instanceof AppError) {
         toast.info(getFriendlyErrorMessage(error));
         return;
       }
-    }
+    },
   });
 
-  const resetTaskStore = useTaskStore(state => state.reset)
+  const resetTaskStore = useTaskStore((state) => state.reset);
 
   const { register, handleSubmit } = useForm<EditTaskForm>({
     defaultValues: {
       title: task.title,
     },
-  })
+  });
 
   const handleCancel = () => {
     resetTaskStore();
   };
 
   const handleSave = (newTask: EditTaskForm) => {
-    updateTaskMutation.mutate({
-      taskId: task.id,
-      updates: newTask,
-    }, {
-      onSuccess: () => {
-        setEditingTaskId('');
+    updateTaskMutation.mutate(
+      {
+        taskId: task.id,
+        updates: newTask,
+      },
+      {
+        onSuccess: () => {
+          setEditingTaskId('');
+        },
       }
-    })
-  }
+    );
+  };
 
   const handleGenerateSubtasks = (id: string) => {
     setGeneratedSubtasksForTask(id);
-    mutationSubtasks.mutate(id)
+    mutationSubtasks.mutate(id);
   };
 
   const editTask = (id: string) => {
@@ -97,12 +101,17 @@ export default function TaskItem({ task }: TaskItemProps) {
   };
 
   return (
-    <Card data-testid='task-item' data-task-title={task.title} key={task.id} className="p-4 space-y-3">
-      <div className="flex items-center justify-between gap-3 w-full">
+    <Card
+      data-testid="task-item"
+      data-task-title={task.title}
+      key={task.id}
+      className="space-y-3 p-4"
+    >
+      <div className="flex w-full items-center justify-between gap-3">
         {editingTaskId && task.id === editingTaskId ? (
           <form
             onSubmit={handleSubmit(handleSave)}
-            className="flex items-center justify-between gap-3 w-full"
+            className="flex w-full items-center justify-between gap-3"
           >
             <Input
               {...register('title')}
@@ -125,7 +134,7 @@ export default function TaskItem({ task }: TaskItemProps) {
               <div>
                 <p className="font-medium">{task.title}</p>
                 {task.description && (
-                  <p className="text-sm text-muted-foreground">{task.description}</p>
+                  <p className="text-muted-foreground text-sm">{task.description}</p>
                 )}
               </div>
             </div>
@@ -140,12 +149,11 @@ export default function TaskItem({ task }: TaskItemProps) {
                   <DropdownMenuItem
                     data-testid="generate-subtasks-button"
                     disabled={mutationSubtasks.isPending}
-                    onClick={() => handleGenerateSubtasks(task.id)}>
+                    onClick={() => handleGenerateSubtasks(task.id)}
+                  >
                     Gen subtask
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => editTask(task.id)}>
-                    Edit
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => editTask(task.id)}>Edit</DropdownMenuItem>
                   <DropdownMenuItem
                     data-testid="delete-task-button"
                     onClick={() => deleteWithUndo(task)}
@@ -160,22 +168,20 @@ export default function TaskItem({ task }: TaskItemProps) {
         )}
       </div>
 
-      {task.subtasks && (
-        <Subtasks task={task} />
-      )}
-      {(
+      {task.subtasks && <Subtasks task={task} />}
+      {
         <AddTaskForm
           error={createTaskError}
           onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
         />
-      )}
-      {generateSubtaskForTask && generateSubtaskForTask === task.id &&
+      }
+      {generateSubtaskForTask && generateSubtaskForTask === task.id && (
         <>
           {mutationSubtasks.isPending && <p>generating subtasks</p>}
           {mutationSubtasks.isPending && <TasksSkeleton />}
           <DraftSubtasks task={task} />
         </>
-      }
+      )}
     </Card>
   );
 }

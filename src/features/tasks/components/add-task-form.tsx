@@ -1,22 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, Loader2, Plus } from "lucide-react";
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/shared/utils/classnames";
-import { CreateTaskInput } from "../types/tasks.types";
-import { taskSchema } from "../validation/tasks";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronDown, Loader2, Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { CreateTaskInput } from '@/features/tasks/types/tasks.types';
+import { taskSchema } from '@/features/tasks/validation/tasks';
+import { cn } from '@/shared/utils/classnames';
 
 interface AddTaskFormProps {
   onAddTask: (values: CreateTaskInput) => Promise<null>;
@@ -34,7 +31,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<CreateTaskInput>({
     resolver: zodResolver(taskSchema),
-    defaultValues: { title: "", description: "" },
+    defaultValues: { title: '', description: '' },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -49,11 +46,11 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
       noValidate
       aria-title="Add a new task"
       className={cn(
-        "w-full max-w-2xl mx-auto rounded-xl border bg-card p-3 sm:p-4 space-y-3",
+        'bg-card mx-auto w-full max-w-2xl space-y-3 rounded-xl border p-3 sm:p-4',
         className
       )}
     >
-      <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
         <div className="flex-1 space-y-1">
           <Label htmlFor="task-title" className="sr-only">
             Task name
@@ -63,12 +60,12 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             placeholder="Add a task…"
             autoComplete="off"
             aria-invalid={!!errors.title}
-            aria-describedby={errors.title ? "task-title-error" : undefined}
+            aria-describedby={errors.title ? 'task-title-error' : undefined}
             disabled={isSubmitting}
-            {...register("title")}
+            {...register('title')}
           />
           {errors.title && (
-            <p id="task-title-error" role="alert" className="text-sm font-medium text-destructive">
+            <p id="task-title-error" role="alert" className="text-destructive text-sm font-medium">
               {errors.title.message}
             </p>
           )}
@@ -80,13 +77,13 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
                 variant="ghost"
                 size="sm"
                 disabled={isSubmitting}
-                className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-8 px-2"
               >
                 <ChevronDown
-                  className={cn("size-4 transition-transform", isDescriptionOpen && "rotate-180")}
+                  className={cn('size-4 transition-transform', isDescriptionOpen && 'rotate-180')}
                   aria-hidden="true"
                 />
-                <span>{isDescriptionOpen ? "Hide description" : "Add description"}</span>
+                <span>{isDescriptionOpen ? 'Hide description' : 'Add description'}</span>
               </Button>
             </CollapsibleTrigger>
 
@@ -100,14 +97,14 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
                 rows={3}
                 disabled={isSubmitting}
                 aria-invalid={!!errors.description}
-                aria-describedby={errors.description ? "task-description-error" : undefined}
-                {...register("description")}
+                aria-describedby={errors.description ? 'task-description-error' : undefined}
+                {...register('description')}
               />
               {errors.description && (
                 <p
                   id="task-description-error"
                   role="alert"
-                  className="mt-1 text-sm font-medium text-destructive"
+                  className="text-destructive mt-1 text-sm font-medium"
                 >
                   {errors.description.message}
                 </p>
@@ -116,13 +113,13 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
           </Collapsible>
 
           {error?.message && (
-            <p role="alert" className="text-sm font-medium text-destructive">
+            <p role="alert" className="text-destructive text-sm font-medium">
               {error?.message}
             </p>
           )}
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto shrink-0">
+        <Button type="submit" disabled={isSubmitting} className="w-full shrink-0 sm:w-auto">
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -136,8 +133,6 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
           )}
         </Button>
       </div>
-
-
     </form>
   );
 }

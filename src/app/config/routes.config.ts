@@ -16,5 +16,5 @@ export const DEFAULT_REDIRECTS = {
   public: ROUTES.home,
 } as const;
 
-export type AppRoute = typeof ROUTES[keyof typeof ROUTES];
+export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
 export type RedirectKey = keyof typeof DEFAULT_REDIRECTS;

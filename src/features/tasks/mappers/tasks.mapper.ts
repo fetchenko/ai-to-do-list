@@ -5,26 +5,26 @@ import {
   Task,
   TaskInsert,
   TaskUpdate,
-} from "@/features/tasks/types/tasks.types";
+} from '@/features/tasks/types/tasks.types';
 
 export const taskKeyMap = {
-  id: "id",
-  completed_at: "completedAt",
-  created_at: "createdAt",
-  deleted_at: "deletedAt",
-  description: "description",
-  due_date: "dueDate",
-  parent_task_id: "parentTaskId",
-  position: "position",
-  priority: "priority",
-  status: "status",
-  title: "title",
-  updated_at: "updatedAt",
-  user_id: "userId",
+  id: 'id',
+  completed_at: 'completedAt',
+  created_at: 'createdAt',
+  deleted_at: 'deletedAt',
+  description: 'description',
+  due_date: 'dueDate',
+  parent_task_id: 'parentTaskId',
+  position: 'position',
+  priority: 'priority',
+  status: 'status',
+  title: 'title',
+  updated_at: 'updatedAt',
+  user_id: 'userId',
 } as const;
 
 export const taskKeyMapReverse = Object.fromEntries(
-  Object.entries(taskKeyMap).map(([db, fe]) => [fe, db]),
+  Object.entries(taskKeyMap).map(([db, fe]) => [fe, db])
 ) as {
   [K in keyof typeof taskKeyMap as (typeof taskKeyMap)[K]]: K;
 };
@@ -40,7 +40,7 @@ export function mapDbTask(dbTask: DbTask): Task {
     parentTaskId: dbTask.parent_task_id,
     position: dbTask.position,
     priority: dbTask.priority,
-    status: dbTask.status as Task["status"],
+    status: dbTask.status as Task['status'],
     title: dbTask.title,
     updatedAt: dbTask.updated_at,
     userId: dbTask.user_id,
@@ -60,8 +60,7 @@ function mapTaskBase(task: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
 
   for (const [feKey, value] of Object.entries(task)) {
-    const dbKey =
-      taskKeyMapReverse[feKey as keyof typeof taskKeyMapReverse] ?? feKey;
+    const dbKey = taskKeyMapReverse[feKey as keyof typeof taskKeyMapReverse] ?? feKey;
 
     if (value !== undefined) {
       result[dbKey] = value;

@@ -1,22 +1,23 @@
-import z from "zod";
-import { createClient } from "@/infrastructure/supabase/client";
-import { API_ROUTES } from "@/app/config/api-routes";
-import { generateKeyBetween } from "fractional-indexing";
-import { AppError } from "@/shared/errors/app-error";
-import { ErrorCode } from "@/shared/errors/code";
-import { fromSupabaseError } from "@/shared/errors/from-supabase-error";
-import { ErrorHttpStatus } from "@/shared/errors/http-status-map";
-import { getLastPosition } from "../repository/tasks.repository";
-import { AiTask, TaskInsert } from "../types/tasks.types";
-import { mapTaskInsertToDb } from "../mappers/tasks.mapper";
-import { subtasksResponseSchema } from "@/shared/validation/subtasks.validation";
-import { taskSchema } from "../validation/tasks";
+import { generateKeyBetween } from 'fractional-indexing';
+import z from 'zod';
+
+import { API_ROUTES } from '@/app/config/api-routes';
+import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
+import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
+import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
+import { taskSchema } from '@/features/tasks/validation/tasks';
+import { createClient } from '@/infrastructure/supabase/client';
+import { AppError } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
+import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
+import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
+import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ taskId }),
   });
@@ -26,9 +27,9 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
     throw new AppError(
       body?.error?.code ?? ErrorCode.UNKNOWN,
       res.status,
-      body?.error?.message ?? "Failed to generate subtasks",
+      body?.error?.message ?? 'Failed to generate subtasks',
       body?.error?.details,
-      body?.error?.retryable,
+      body?.error?.retryable
     );
   }
 
@@ -40,14 +41,14 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
     throw new AppError(
       ErrorCode.AI_INVALID_RESPONSE_FORMAT,
       ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-      "Invalid AI response format",
+      'Invalid AI response format'
     );
   }
   if (!parsed.subtasks?.length) {
     throw new AppError(
       ErrorCode.AI_EMPTY_RESPONSE,
       ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
-      "No meaningful subtasks could be generated.",
+      'No meaningful subtasks could be generated.'
     );
   }
 
@@ -59,10 +60,7 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   return subtasks;
 }
 
-export async function saveSubtasks(
-  parentTaskId: string,
-  subtasks: TaskInsert[],
-) {
+export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
   const supabase = createClient();
 
   const lastPosition = await getLastPosition(parentTaskId);
@@ -70,18 +68,14 @@ export async function saveSubtasks(
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
-    const {
-      data: parsedSubtask,
-      success,
-      error,
-    } = taskSchema.safeParse(subtask);
+    const { data: parsedSubtask, success, error } = taskSchema.safeParse(subtask);
 
     if (!success) {
       throw new AppError(
         ErrorCode.INVALID_REQUEST,
         ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
-        "Each subtask must have a valid title",
-        z.treeifyError(error),
+        'Each subtask must have a valid title',
+        z.treeifyError(error)
       );
     }
 
@@ -95,7 +89,7 @@ export async function saveSubtasks(
     });
   });
 
-  const { data, error } = await supabase.from("tasks").insert(rows);
+  const { data, error } = await supabase.from('tasks').insert(rows);
 
   if (error) {
     throw fromSupabaseError(error);

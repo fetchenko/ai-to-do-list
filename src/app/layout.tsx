@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import Providers from "./providers";
 import { Toaster } from "@/components/ui/sonner"
 import { GoogleAnalytics } from "@next/third-parties/google";
 
-import "./globals.css";
+import "@/app/globals.css";
+import Providers from "@/app/providers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`

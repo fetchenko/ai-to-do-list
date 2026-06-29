@@ -8,11 +8,10 @@ import { useSubtaskStore } from "@/features/tasks/stores/use-subtask-store";
 import { Task, TaskInsert } from "@/features/tasks/types/tasks.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUpdateTaskMutation } from "@/features/tasks/hooks/use-update-task";
-import { taskKeys, taskStatus } from "@/features/tasks/constants/task.constants";
-import { CheckedState } from "@radix-ui/react-checkbox";
-import { saveSubtasks } from "../services/subtasks.service";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useDeleteTaskWithUndo } from "../hooks/use-delete-task-with-undo";
+import { taskKeys } from "@/features/tasks/constants/task.constants";
+import { saveSubtasks } from "@/features/tasks/services/subtasks.service";
+import { useDeleteTaskWithUndo } from "@/features/tasks/hooks/use-delete-task-with-undo";
+import { TaskCheckbox } from "@/features/tasks/components/task-checkbox";
 
 interface TaskSubtasksProps {
   task: Task
@@ -81,17 +80,6 @@ export function Subtasks({
     resetActiveSubtask();
   }
 
-  const toggleDone = (id: string, checked: CheckedState) => {
-    const newStatus = (checked) ? taskStatus.done : taskStatus.active;
-
-    updateTaskMutation.mutate({
-      taskId: id,
-      updates: { status: newStatus },
-    }, {
-      onSuccess: () => { }
-    })
-  }
-
   if (!task.subtasks?.length) return null;
 
   return (
@@ -128,11 +116,7 @@ export function Subtasks({
 
                 ) : (
                   <div className="flex items-center gap-3">
-                    <Checkbox
-                      disabled={updateTaskMutation.isPending}
-                      checked={subtask.status === taskStatus.done}
-                      onCheckedChange={(value) => toggleDone(subtask.id, value)}
-                    />
+                    <TaskCheckbox task={subtask} />
                     <p className="text-sm text-muted-foreground">
                       {subtask.title}
                     </p>

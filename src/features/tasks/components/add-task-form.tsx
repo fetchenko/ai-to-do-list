@@ -11,14 +11,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CreateTaskInput } from '@/features/tasks/types/tasks.types';
-import { taskSchema } from '@/features/tasks/validation/tasks';
+import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
 import { cn } from '@/shared/utils/classnames';
 
 interface AddTaskFormProps {
-  onAddTask: (values: CreateTaskInput) => Promise<null>;
+  onAddTask: (values: TaskFormFields) => Promise<null>;
   className?: string;
   error?: Error | null;
+
 }
 
 export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
@@ -29,7 +29,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateTaskInput>({
+  } = useForm<TaskFormFields>({
     resolver: zodResolver(taskSchema),
     defaultValues: { title: '', description: '' },
   });

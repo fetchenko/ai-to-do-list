@@ -5,3 +5,5 @@ export const taskSchema = z.object({
 
   description: z.string().max(1000, 'Description is too long').optional().or(z.literal('')),
 });
+
+export type TaskFormFields = z.infer<typeof taskSchema>;

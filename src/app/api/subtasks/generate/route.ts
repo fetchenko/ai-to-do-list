@@ -10,18 +10,21 @@ import {
 import {
   checkAiQuotaLimit,
   checkRequestLock,
+  releaseRequestLock,
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 
 export async function POST(request: Request) {
   let aiLogId: string | null = null;
+  let userId;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
 
   try {
     const { user } = await getCurrentUser();
+    userId = user.id;
 
     await checkRequestLock(user.id);
     await checkAiQuotaLimit(user.id);
@@ -56,5 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json(error, { status });
   } finally {
     clearTimeout(timeout);
+
+    releaseRequestLock(userId);
   }
 }

@@ -147,7 +147,7 @@ export default function TaskItem({ task }: TaskItemProps) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     data-testid="generate-subtasks-button"
-                    disabled={mutationSubtasks.isPending}
+                    // disabled={mutationSubtasks.isPending}
                     onClick={() => handleGenerateSubtasks(task.id)}
                   >
                     Gen subtask

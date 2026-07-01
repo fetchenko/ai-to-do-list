@@ -114,8 +114,8 @@ export default function TaskItem({ task }: TaskItemProps) {
             className="flex w-full items-center justify-between gap-3"
           >
             <TaskInputFields
-              idPrefix={`edit-task`}
-              form={form}
+              register={form.register}
+              errors={form.formState.errors}
             />
             <div className="flex gap-2">
               <Button variant="default" size="sm" type="submit">
@@ -170,10 +170,7 @@ export default function TaskItem({ task }: TaskItemProps) {
       {!!task.subtasks?.length && task.subtasks.map((subtask) => (
         <SubtaskItem key={subtask.id} task={subtask} />
       ))}
-      <AddTaskForm
-        error={createTaskError}
-        onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
-      />
+
       {generateSubtaskForTask && generateSubtaskForTask === task.id && (
         <>
           {mutationSubtasks.isPending && <p>generating subtasks</p>}
@@ -181,6 +178,10 @@ export default function TaskItem({ task }: TaskItemProps) {
           <DraftSubtasks task={task} />
         </>
       )}
+      <AddTaskForm
+        error={createTaskError}
+        onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
+      />
     </Card>
   );
 }

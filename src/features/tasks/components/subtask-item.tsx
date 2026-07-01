@@ -77,8 +77,8 @@ export default function SubtaskItem({ task }: TaskItemProps) {
             className="flex w-full items-center justify-between gap-3"
           >
             <TaskInputFields
-              idPrefix={`edit-subtask`}
-              form={form}
+              register={form.register}
+              errors={form.formState.errors}
             />
             <div className="flex gap-2">
               <Button variant="default" size="sm" type="submit">

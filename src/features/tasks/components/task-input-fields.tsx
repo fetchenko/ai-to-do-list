@@ -1,104 +1,49 @@
-import type { UseFormReturn } from "react-hook-form";
-
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
 
 import { TaskFormFields } from "@/features/tasks/schema/tasks";
-import { cn } from "@/shared/utils/classnames";
+import { FormAsyncError } from "@/components/primitives/form-async-error";
+import { TaskFieldsVariant } from "@/features/tasks/constants/input-fields-variants";
+import { TaskInputTitle } from "@/features/tasks/components/task-input-title";
+import { TaskInputDescription } from "@/features/tasks/components/task-input-description";
 
 interface TaskInputFieldsProps {
-  idPrefix: string;
-  form: UseFormReturn<TaskFormFields>;
-
+  register: UseFormRegister<TaskFormFields>;
+  errors: FieldErrors<TaskFormFields>;
+  variant?: TaskFieldsVariant;
   autoFocus?: boolean;
   hideLabels?: boolean;
-
-  titlePlaceholder?: string;
-  descriptionPlaceholder?: string;
-
-  descriptionRows?: number;
 }
 
 export function TaskInputFields({
-  idPrefix,
-  form,
+  register,
+  errors,
   autoFocus = false,
-  hideLabels = false,
-  descriptionRows = 3,
-  titlePlaceholder = "Task title",
-  descriptionPlaceholder = "Description (optional)",
+  hideLabels = false
 }: TaskInputFieldsProps) {
-  const {
-    register,
-    formState: { errors },
-  } = form;
+
+  const rootErrorMessage = errors.root?.message;
 
   return (
     <div className="min-w-0 w-full space-y-4">
-      <div className="space-y-1.5">
-        <Label
-          htmlFor={`${idPrefix}-title`}
-          className={cn(hideLabels && "sr-only")}
-        >
-          Title
-        </Label>
+      {rootErrorMessage && <FormAsyncError message={rootErrorMessage} />}
 
-        <Input
-          id={`${idPrefix}-title`}
+      <div className="space-y-1.5">
+        <TaskInputTitle
+          hideLabel={hideLabels}
           autoFocus={autoFocus}
-          placeholder={titlePlaceholder}
-          aria-invalid={!!errors.title}
-          aria-describedby={
-            errors.title
-              ? `${idPrefix}-title-error`
-              : undefined
-          }
-          {...register("title")}
-        />
-
-        {errors.title && (
-          <p
-            id={`${idPrefix}-title-error`}
-            role="alert"
-            className="text-destructive text-sm"
-          >
-            {errors.title.message}
-          </p>
-        )}
+          inputProps={register('title')}
+          error={errors.title}
+          titleLabel="Task"
+          titlePlaceholder="Task" />
       </div>
-
       <div className="space-y-1.5">
-        <Label
-          htmlFor={`${idPrefix}-description`}
-          className={cn(hideLabels && "sr-only")}
-        >
-          Description (optional)
-        </Label>
-
-        <Textarea
-          id={`${idPrefix}-description`}
-          rows={descriptionRows}
-          placeholder={descriptionPlaceholder}
-          className="resize-y"
-          aria-invalid={!!errors.description}
-          aria-describedby={
-            errors.description
-              ? `${idPrefix}-description-error`
-              : undefined
-          }
-          {...register("description")}
+        <TaskInputDescription
+          hideLabel={hideLabels}
+          inputProps={register('description')}
+          error={errors.description}
+          descriptionLabel='Description (optional)'
+          descriptionPlaceholder='Add detail for this task'
         />
-
-        {errors.description && (
-          <p
-            id={`${idPrefix}-description-error`}
-            role="alert"
-            className="text-destructive text-sm"
-          >
-            {errors.description.message}
-          </p>
-        )}
       </div>
     </div>
   );

@@ -8,17 +8,16 @@ import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
 import { cn } from '@/shared/utils/classnames';
+import { FormAsyncError } from '@/components/primitives/form-async-error';
+import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
+import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
 
 interface AddTaskFormProps {
   onAddTask: (values: TaskFormFields) => Promise<null>;
   className?: string;
   error?: Error | null;
-
 }
 
 export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
@@ -51,24 +50,17 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+        <FormAsyncError
+          message={error?.message}
+        />
         <div className="flex-1 space-y-1">
-          <Label htmlFor="task-title" className="sr-only">
-            Task name
-          </Label>
-          <Input
-            id="task-title"
-            placeholder="Add a task…"
-            autoComplete="off"
-            aria-invalid={!!errors.title}
-            aria-describedby={errors.title ? 'task-title-error' : undefined}
-            disabled={isSubmitting}
-            {...register('title')}
+          <TaskInputTitle
+            hideLabel
+            inputProps={{ ...register('title'), disabled: isSubmitting }}
+            error={errors.title}
+            titleLabel='Task'
+            titlePlaceholder='Add a task…'
           />
-          {errors.title && (
-            <p id="task-title-error" role="alert" className="text-destructive text-sm font-medium">
-              {errors.title.message}
-            </p>
-          )}
 
           <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
             <CollapsibleTrigger asChild>
@@ -88,35 +80,16 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             </CollapsibleTrigger>
 
             <CollapsibleContent className="pt-2">
-              <Label htmlFor="task-description" className="sr-only">
-                Description (optional)
-              </Label>
-              <Textarea
-                id="task-description"
-                placeholder="Add detail for this task"
-                rows={3}
-                disabled={isSubmitting}
-                aria-invalid={!!errors.description}
-                aria-describedby={errors.description ? 'task-description-error' : undefined}
-                {...register('description')}
+              <TaskInputDescription
+                hideLabel
+                inputProps={{ ...register('description'), disabled: isSubmitting }}
+                error={errors.description}
+                descriptionLabel='Description (optional)'
+                descriptionPlaceholder='Add detail for this task'
+                descriptionRows={3}
               />
-              {errors.description && (
-                <p
-                  id="task-description-error"
-                  role="alert"
-                  className="text-destructive mt-1 text-sm font-medium"
-                >
-                  {errors.description.message}
-                </p>
-              )}
             </CollapsibleContent>
           </Collapsible>
-
-          {error?.message && (
-            <p role="alert" className="text-destructive text-sm font-medium">
-              {error?.message}
-            </p>
-          )}
         </div>
 
         <Button type="submit" disabled={isSubmitting} className="w-full shrink-0 sm:w-auto">

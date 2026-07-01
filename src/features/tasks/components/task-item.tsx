@@ -167,7 +167,7 @@ export default function TaskItem({ task }: TaskItemProps) {
         )}
       </div>
 
-      {task.subtasks?.length && task.subtasks.map((subtask) => (
+      {!!task.subtasks?.length && task.subtasks.map((subtask) => (
         <SubtaskItem key={subtask.id} task={subtask} />
       ))}
       <AddTaskForm

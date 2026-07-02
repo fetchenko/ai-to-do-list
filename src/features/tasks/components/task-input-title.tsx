@@ -1,11 +1,11 @@
-import type { GlobalError } from "react-hook-form";
+import { InputHTMLAttributes, useId } from 'react';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import type { GlobalError } from 'react-hook-form';
 
-import { cn } from "@/shared/utils/classnames";
-import { FieldError } from "@/components/primitives/field-error";
-import { InputHTMLAttributes, useId } from "react";
+import { FieldError } from '@/components/primitives/field-error';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/shared/utils/classnames';
 
 interface TaskInputTitleProps {
   inputProps: InputHTMLAttributes<HTMLInputElement>;
@@ -28,10 +28,7 @@ export function TaskInputTitle({
 
   return (
     <>
-      <Label
-        htmlFor={`${idPrefix}-title`}
-        className={cn(hideLabel && "sr-only")}
-      >
+      <Label htmlFor={`${idPrefix}-title`} className={cn(hideLabel && 'sr-only')}>
         {titleLabel}
       </Label>
       <Input
@@ -39,17 +36,10 @@ export function TaskInputTitle({
         autoFocus={autoFocus}
         placeholder={titlePlaceholder}
         aria-invalid={!!error?.message}
-        aria-describedby={
-          error?.message
-            ? `${idPrefix}-title-error`
-            : undefined
-        }
+        aria-describedby={error?.message ? `${idPrefix}-title-error` : undefined}
         {...inputProps}
       />
-      <FieldError
-        id={`${idPrefix}-title-error`}
-        message={error?.message}
-      />
+      <FieldError id={`${idPrefix}-title-error`} message={error?.message} />
     </>
   );
 }

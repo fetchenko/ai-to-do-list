@@ -1,11 +1,11 @@
-import type { GlobalError } from "react-hook-form";
+import { InputHTMLAttributes, useId } from 'react';
 
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import type { GlobalError } from 'react-hook-form';
 
-import { cn } from "@/shared/utils/classnames";
-import { FieldError } from "@/components/primitives/field-error";
-import { InputHTMLAttributes, useId } from "react";
+import { FieldError } from '@/components/primitives/field-error';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/shared/utils/classnames';
 
 interface TaskInputFieldsProps {
   inputProps: InputHTMLAttributes<HTMLTextAreaElement>;
@@ -22,16 +22,13 @@ export function TaskInputDescription({
   hideLabel = false,
   descriptionLabel,
   descriptionPlaceholder,
-  descriptionRows = 3
+  descriptionRows = 3,
 }: TaskInputFieldsProps) {
   const idPrefix = useId();
 
   return (
     <>
-      <Label
-        htmlFor={`${idPrefix}-description`}
-        className={cn(hideLabel && "sr-only")}
-      >
+      <Label htmlFor={`${idPrefix}-description`} className={cn(hideLabel && 'sr-only')}>
         {descriptionLabel}
       </Label>
       <Textarea
@@ -40,17 +37,10 @@ export function TaskInputDescription({
         placeholder={descriptionPlaceholder}
         className="resize-y"
         aria-invalid={!!error}
-        aria-describedby={
-          error
-            ? `${idPrefix}-description-error`
-            : undefined
-        }
+        aria-describedby={error ? `${idPrefix}-description-error` : undefined}
         {...inputProps}
       />
-      <FieldError
-        id={`${idPrefix}-description-error`}
-        message={error?.message}
-      />
+      <FieldError id={`${idPrefix}-description-error`} message={error?.message} />
     </>
   );
 }

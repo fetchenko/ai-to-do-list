@@ -6,13 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { FormAsyncError } from '@/components/blocks/form-async-error';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
+import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
 import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
 import { cn } from '@/shared/utils/classnames';
-import { FormAsyncError } from '@/components/primitives/form-async-error';
-import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
-import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
 
 interface AddTaskFormProps {
   onAddTask: (values: TaskFormFields) => Promise<null>;
@@ -50,16 +50,14 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-        <FormAsyncError
-          message={error?.message}
-        />
+        <FormAsyncError message={error?.message} />
         <div className="flex-1 space-y-1">
           <TaskInputTitle
             hideLabel
             inputProps={{ ...register('title'), disabled: isSubmitting }}
             error={errors.title}
-            titleLabel='Task'
-            titlePlaceholder='Add a task…'
+            titleLabel="Task"
+            titlePlaceholder="Add a task…"
           />
 
           <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
@@ -84,15 +82,19 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
                 hideLabel
                 inputProps={{ ...register('description'), disabled: isSubmitting }}
                 error={errors.description}
-                descriptionLabel='Description (optional)'
-                descriptionPlaceholder='Add detail for this task'
+                descriptionLabel="Description (optional)"
+                descriptionPlaceholder="Add detail for this task"
                 descriptionRows={3}
               />
             </CollapsibleContent>
           </Collapsible>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full shrink-0 sm:w-auto">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full shrink-0 sm:w-auto"
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -102,8 +104,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             <>
               <Plus className="size-4" aria-hidden="true" />
               <span>Add task</span>
-            </>
-          )}
+            </>)}
         </Button>
       </div>
     </form>

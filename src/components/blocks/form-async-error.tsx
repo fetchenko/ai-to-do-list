@@ -1,23 +1,23 @@
-// components/ui/form-async-error.tsx
-import { cn } from "@/shared/utils/classnames"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle } from 'lucide-react';
+
+import { cn } from '@/shared/utils/classnames';
 
 interface FormAsyncErrorProps {
-  message?: string | null
-  className?: string
-  onRetry?: () => void
+  message?: string | null;
+  className?: string;
+  onRetry?: () => void;
 }
 
 export function FormAsyncError({ message, className, onRetry }: FormAsyncErrorProps) {
-  if (!message) return null
+  if (!message) return null;
 
   return (
     <div
       role="alert"
       aria-live="assertive"
       className={cn(
-        "flex items-start gap-2 rounded-md border border-destructive/30",
-        "bg-destructive/10 px-3 py-2 text-sm text-destructive",
+        'border-destructive/30 flex items-start gap-2 rounded-md border',
+        'bg-destructive/10 text-destructive px-3 py-2 text-sm',
         className
       )}
     >
@@ -33,5 +33,5 @@ export function FormAsyncError({ message, className, onRetry }: FormAsyncErrorPr
         </button>
       )}
     </div>
-  )
+  );
 }

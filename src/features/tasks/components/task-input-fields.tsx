@@ -1,10 +1,10 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 
-import { TaskFormFields } from "@/features/tasks/schema/tasks";
-import { FormAsyncError } from "@/components/primitives/form-async-error";
-import { TaskFieldsVariant } from "@/features/tasks/constants/input-fields-variants";
-import { TaskInputTitle } from "@/features/tasks/components/task-input-title";
-import { TaskInputDescription } from "@/features/tasks/components/task-input-description";
+import { FormAsyncError } from '@/components/blocks/form-async-error';
+import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
+import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
+import { TaskFieldsVariant } from '@/features/tasks/constants/input-fields-variants';
+import { TaskFormFields } from '@/features/tasks/schema/tasks';
 
 interface TaskInputFieldsProps {
   register: UseFormRegister<TaskFormFields>;
@@ -18,15 +18,13 @@ export function TaskInputFields({
   register,
   errors,
   autoFocus = false,
-  hideLabels = false
+  hideLabels = false,
 }: TaskInputFieldsProps) {
-
   const rootErrorMessage = errors.root?.message;
 
   return (
-    <div className="min-w-0 w-full space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       {rootErrorMessage && <FormAsyncError message={rootErrorMessage} />}
-
       <div className="space-y-1.5">
         <TaskInputTitle
           hideLabel={hideLabels}
@@ -34,15 +32,16 @@ export function TaskInputFields({
           inputProps={register('title')}
           error={errors.title}
           titleLabel="Task"
-          titlePlaceholder="Task" />
+          titlePlaceholder="Task"
+        />
       </div>
       <div className="space-y-1.5">
         <TaskInputDescription
           hideLabel={hideLabels}
           inputProps={register('description')}
           error={errors.description}
-          descriptionLabel='Description (optional)'
-          descriptionPlaceholder='Add detail for this task'
+          descriptionLabel="Description (optional)"
+          descriptionPlaceholder="Add detail for this task"
         />
       </div>
     </div>

@@ -1,7 +1,5 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -10,13 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import EditTaskForm from '@/features/tasks/components/edit-task-form';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
-import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
-import { TaskInputFields } from '@/features/tasks/components/task-input-fields';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { TaskFormFields } from '@/features/tasks/schema/tasks';
 
 type TaskItemProps = {
   task: Task;
@@ -26,38 +22,9 @@ type EditTaskForm = {
 };
 
 export default function SubtaskItem({ task }: TaskItemProps) {
-  const updateTaskMutation = useUpdateTaskMutation();
-
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const { deleteWithUndo } = useDeleteTaskWithUndo();
-
-  const resetTaskStore = useTaskStore((state) => state.reset);
-
-  const form = useForm<TaskFormFields>({
-    defaultValues: {
-      title: task.title,
-      description: task.description || ""
-    },
-  });
-
-  const handleCancel = () => {
-    resetTaskStore();
-  };
-
-  const handleSave = (newTask: EditTaskForm) => {
-    updateTaskMutation.mutate(
-      {
-        taskId: task.id,
-        updates: newTask,
-      },
-      {
-        onSuccess: () => {
-          setEditingTaskId('');
-        },
-      }
-    );
-  };
 
   const editTask = (id: string) => {
     setEditingTaskId(id);
@@ -72,23 +39,7 @@ export default function SubtaskItem({ task }: TaskItemProps) {
     >
       <div className="flex w-full items-center justify-between gap-3">
         {editingTaskId && task.id === editingTaskId ? (
-          <form
-            onSubmit={form.handleSubmit(handleSave)}
-            className="flex w-full items-center justify-between gap-3"
-          >
-            <TaskInputFields
-              register={form.register}
-              errors={form.formState.errors}
-            />
-            <div className="flex gap-2">
-              <Button variant="default" size="sm" type="submit">
-                Save
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                Cancel
-              </Button>
-            </div>
-          </form>
+          <EditTaskForm task={task} />
         ) : (
           <>
             <div className="flex items-center gap-3">

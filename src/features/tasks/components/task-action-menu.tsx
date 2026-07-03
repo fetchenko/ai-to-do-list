@@ -8,18 +8,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { MoreHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type TaskActionsMenuProps = {
   onEdit: () => void;
   onDelete: () => void;
   onGenerateSubtasks?: () => void;
   showGenerate?: boolean;
+};
+
+type Action = {
+  key: string;
+  label: string;
+  onClick: () => void;
+  destructive?: boolean;
 };
 
 export function TaskActionsMenu({
@@ -30,8 +34,54 @@ export function TaskActionsMenu({
 }: TaskActionsMenuProps) {
   const [open, setOpen] = useState(false);
 
+  const actions: Action[] = [
+    ...(showGenerate && onGenerateSubtasks
+      ? [{ key: 'generate', label: 'Generate subtasks', onClick: onGenerateSubtasks }]
+      : []),
+    { key: 'edit', label: 'Edit', onClick: onEdit },
+    { key: 'delete', label: 'Delete', onClick: onDelete, destructive: true },
+  ];
+
+  const runAndClose = (fn: () => void) => {
+    fn();
+    setOpen(false);
+  };
+
   return (
     <>
+      <div className="sm:hidden">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" aria-label="open task actions">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent
+            className={cn(
+              'fixed inset-x-0 bottom-0 top-auto max-w-none',
+              'translate-x-0 translate-y-0 rounded-t-2xl p-2',
+            )}
+          >
+            <div className="flex flex-col gap-1 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+              {actions.map((action) => (
+                <Button
+                  key={action.key}
+                  variant="ghost"
+                  className={cn(
+                    'h-11 justify-start text-base',
+                    action.destructive && 'text-destructive',
+                  )}
+                  onClick={() => runAndClose(action.onClick)}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <div className="hidden sm:block">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -41,81 +91,17 @@ export function TaskActionsMenu({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-44">
-            {showGenerate && onGenerateSubtasks && (
+            {actions.map((action) => (
               <DropdownMenuItem
-                onClick={onGenerateSubtasks}
+                key={action.key}
+                onClick={action.onClick}
+                className={cn(action.destructive && 'text-destructive')}
               >
-                Generate subtasks
+                {action.label}
               </DropdownMenuItem>
-            )}
-
-            <DropdownMenuItem onClick={onEdit}>
-              Edit
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={onDelete}
-              className="text-red-500"
-            >
-              Delete
-            </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      <div className="sm:hidden">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="open task actions"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent
-            className="fixed bottom-0 left-0 right-0 top-auto rounded-t-2xl p-2"
-          >
-            <div className="flex flex-col gap-2 p-2">
-              {showGenerate && onGenerateSubtasks && (
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    onGenerateSubtasks();
-                    setOpen(false);
-                  }}
-                >
-                  Generate subtasks
-                </Button>
-              )}
-
-              <Button
-                variant="ghost"
-                className="justify-start"
-                onClick={() => {
-                  onEdit();
-                  setOpen(false);
-                }}
-              >
-                Edit
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="justify-start text-red-500"
-                onClick={() => {
-                  onDelete();
-                  setOpen(false);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </>
   );

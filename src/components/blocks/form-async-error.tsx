@@ -1,6 +1,6 @@
 import { AlertCircle } from 'lucide-react';
 
-import { cn } from '@/shared/utils/classnames';
+import { cn } from '@/lib/utils/classnames';
 
 interface FormAsyncErrorProps {
   message?: string | null;

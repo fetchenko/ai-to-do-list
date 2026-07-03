@@ -1,4 +1,4 @@
-import { cn } from '@/shared/utils/classnames';
+import { cn } from '@/lib/utils/classnames';
 
 interface FieldErrorProps {
   id?: string;

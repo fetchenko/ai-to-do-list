@@ -3,7 +3,7 @@ import { generateKeyBetween } from 'fractional-indexing';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import { fetchTasks, getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { TaskInsert } from '@/features/tasks/types/tasks.types';
-import { filterDeletedSubtasks } from '@/features/tasks/utils/tasks';
+import { filterDeletedSubtasks } from '@/features/tasks/utils/tasks-helpers';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 

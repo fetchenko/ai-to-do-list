@@ -4,7 +4,7 @@ import {
   ResetPasswordInput,
   SignupInput,
   UpdatePasswordInput,
-} from '@/features/auth/types/auth.types';
+} from '@/features/auth/schema/auth';
 import { createClient } from '@/infrastructure/supabase/client';
 
 export async function signInWithPassword({ email, password }: LoginInput) {

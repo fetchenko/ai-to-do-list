@@ -1,6 +1,6 @@
-import { DeepSeekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.types';
+import { DeepSeekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { NormilizedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
+import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function normalizeDeepseekResponse(response: DeepSeekResponse): NormilizedAiResponse {
   const choice = response.choices?.[0];

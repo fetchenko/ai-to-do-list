@@ -17,3 +17,5 @@ export const ollamaChatResponseSchema = z.object({
   eval_count: z.number().optional(),
   eval_duration: z.number().optional(),
 });
+
+export type OllamaResponse = z.infer<typeof ollamaChatResponseSchema>;

@@ -1,10 +1,10 @@
 import { parseResponseJson } from '@/infrastructure/ai/helpers/ai.helpers';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
-import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.validation';
+import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import * as appError from '@/shared/errors/app-error';
-import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
+import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export class OllamaProvider implements AIProvider {
   async generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse> {

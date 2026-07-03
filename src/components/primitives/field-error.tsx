@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils/classnames';
+import { cn } from '@/lib/utils/cn';
 
 interface FieldErrorProps {
   id?: string;

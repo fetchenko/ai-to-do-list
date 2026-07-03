@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
 import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
 import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
-import { cn } from '@/lib/utils/classnames';
+import { cn } from '@/lib/utils/cn';
 
 interface AddTaskFormProps {
   onAddTask: (values: TaskFormFields) => Promise<null>;

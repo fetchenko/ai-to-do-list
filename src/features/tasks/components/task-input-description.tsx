@@ -5,7 +5,7 @@ import type { GlobalError } from 'react-hook-form';
 import { FieldError } from '@/components/primitives/field-error';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils/classnames';
+import { cn } from '@/lib/utils/cn';
 
 interface TaskInputFieldsProps {
   inputProps: InputHTMLAttributes<HTMLTextAreaElement>;

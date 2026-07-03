@@ -65,3 +65,13 @@ export async function updatePassword({ password }: UpdatePasswordInput) {
 
   return data;
 }
+
+export async function logout() {
+  const supabase = createClient();
+
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+  if (error) {
+    throw error;
+  }
+}

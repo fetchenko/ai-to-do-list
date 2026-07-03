@@ -43,7 +43,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
     <form
       onSubmit={onSubmit}
       noValidate
-      aria-title="Add a new task"
+      aria-label="Add a new task"
       className={cn(
         'bg-card mx-auto w-full max-w-2xl space-y-3 rounded-xl border p-3 sm:p-4',
         className

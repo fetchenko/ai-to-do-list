@@ -6,15 +6,14 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { ROUTES } from '@/app/config/routes.config';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/infrastructure/supabase/client';
+import { logout } from '@/features/auth/repository/auth.repository';
 
 export function LogoutButton() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const logout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut({ scope: 'local' });
+  const onLogout = async () => {
+    await logout();
 
     queryClient.clear();
 
@@ -22,5 +21,5 @@ export function LogoutButton() {
     router.push(ROUTES.authLogin);
   };
 
-  return <Button onClick={logout}>Logout</Button>;
+  return <Button onClick={onLogout}>Logout</Button>;
 }

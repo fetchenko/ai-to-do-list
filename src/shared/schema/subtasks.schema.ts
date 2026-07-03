@@ -9,3 +9,5 @@ export const subtasksResponseSchema = z.object({
     })
   ),
 });
+
+export type SubtasksResponse = z.infer<typeof subtasksResponseSchema>;

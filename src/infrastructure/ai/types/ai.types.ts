@@ -1,5 +1,5 @@
 import { ErrorCode } from '@/shared/errors/code';
-import { SubtasksResponse } from '@/shared/types/subtasks.types';
+import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 
 export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
 

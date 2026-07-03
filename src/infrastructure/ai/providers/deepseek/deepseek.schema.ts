@@ -31,3 +31,5 @@ export const deepSeekResponseSchema = z.object({
     })
     .optional(),
 });
+
+export type DeepSeekResponse = z.infer<typeof deepSeekResponseSchema>;

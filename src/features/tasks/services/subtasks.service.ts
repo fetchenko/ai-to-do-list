@@ -11,7 +11,7 @@ import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
+import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks, {

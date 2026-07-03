@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { resetPasswordForEmail } from '@/features/auth/repository/auth.repository';
-import { ResetPasswordInput } from '@/features/auth/types/auth.types';
-import { resetPasswordSchema } from '@/features/auth/validation/auth';
+import { resetPasswordSchema, ResetPasswordInput } from '@/features/auth/schema/auth';
 
 export function ForgotPasswordForm() {
   const {

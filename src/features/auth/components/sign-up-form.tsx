@@ -13,8 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signUp } from '@/features/auth/repository/auth.repository';
-import { SignupInput } from '@/features/auth/types/auth.types';
-import { signupSchema } from '@/features/auth/validation/auth';
+import { signupSchema, SignupInput } from '@/features/auth/schema/auth';
 
 export function SignUpForm() {
   const {

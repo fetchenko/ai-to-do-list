@@ -1,6 +1,6 @@
-import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.types';
+import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { NormilizedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { subtasksResponseSchema } from '@/shared/validation/subtasks.validation';
+import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function normalizeOllamaResponse(response: OllamaResponse): NormilizedAiResponse {
   return {

@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updatePassword } from '@/features/auth/repository/auth.repository';
-import { UpdatePasswordInput } from '@/features/auth/types/auth.types';
-import { updatePasswordSchema } from '@/features/auth/validation/auth';
+import { updatePasswordSchema, UpdatePasswordInput } from '@/features/auth/schema/auth';
 
 export function UpdatePasswordForm() {
   const {

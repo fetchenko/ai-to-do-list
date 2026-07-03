@@ -13,8 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { signInWithPassword } from '@/features/auth/repository/auth.repository';
-import { LoginInput } from '@/features/auth/types/auth.types';
-import { loginSchema } from '@/features/auth/validation/auth';
+import { LoginInput, loginSchema } from '@/features/auth/schema/auth';
 
 export function LoginForm() {
   const {

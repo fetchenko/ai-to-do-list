@@ -23,3 +23,13 @@ export async function filterDeletedSubtasks(tasks: Task[]) {
     subtasks: task.subtasks?.filter((subtask) => !subtask.deletedAt),
   }));
 }
+
+export function groupTasksByStatus(tasks: Task[]) {
+  return tasks.reduce<Record<Task['status'], Task[]>>(
+    (acc, task) => {
+      (acc[task.status] ??= []).push(task);
+      return acc;
+    },
+    { active: [], done: [], archived: [] }
+  );
+}

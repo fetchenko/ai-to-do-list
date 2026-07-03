@@ -1,14 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import EditTaskForm from '@/features/tasks/components/edit-task-form';
+import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
@@ -52,23 +47,10 @@ export default function SubtaskItem({ task }: TaskItemProps) {
               </div>
             </div>
             <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger data-testid="task-actions-trigger" asChild>
-                  <Button variant="outline" size="sm">
-                    Actions
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => editTask(task.id)}>Edit</DropdownMenuItem>
-                  <DropdownMenuItem
-                    data-testid="delete-task-button"
-                    onClick={() => deleteWithUndo(task)}
-                    className="text-red-500"
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <TaskActionsMenu
+                onEdit={() => editTask(task.id)}
+                onDelete={() => deleteWithUndo(task)}
+              />
             </div>
           </>
         )}

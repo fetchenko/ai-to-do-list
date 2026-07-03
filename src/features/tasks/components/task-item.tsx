@@ -3,14 +3,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
 import EditTaskForm from '@/features/tasks/components/edit-task-form';
@@ -26,6 +20,7 @@ import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 
 type TaskItemProps = {
   task: Task;
@@ -89,30 +84,12 @@ export default function TaskItem({ task }: TaskItemProps) {
               </div>
             </div>
             <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger data-testid="task-actions-trigger" asChild>
-                  <Button variant="outline" size="sm">
-                    Actions
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    data-testid="generate-subtasks-button"
-                    // disabled={mutationSubtasks.isPending}
-                    onClick={() => handleGenerateSubtasks(task.id)}
-                  >
-                    Gen subtask
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => editTask(task.id)}>Edit</DropdownMenuItem>
-                  <DropdownMenuItem
-                    data-testid="delete-task-button"
-                    onClick={() => deleteWithUndo(task)}
-                    className="text-red-500"
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <TaskActionsMenu
+                showGenerate
+                onGenerateSubtasks={() => handleGenerateSubtasks(task.id)}
+                onEdit={() => editTask(task.id)}
+                onDelete={() => deleteWithUndo(task)}
+              />
             </div>
           </>
         )}

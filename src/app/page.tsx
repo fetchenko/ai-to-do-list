@@ -3,11 +3,11 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 
 import { DEFAULT_REDIRECTS } from '@/app/config/routes.config';
+import { ThemeSwitcher } from '@/components/layout/theme-switcher';
 import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthButtonSkeleton } from '@/features/auth/components/auth-button-skeleton';
 import ContentSkeleton from '@/features/home/components/content-skeleton';
 import UserContent from '@/features/home/components/user-content';
-import { ThemeSwitcher } from '@/features/theme/theme-switcher';
 
 export default async function Home() {
   return (

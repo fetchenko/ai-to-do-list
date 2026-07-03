@@ -5,7 +5,7 @@ import type { GlobalError } from 'react-hook-form';
 import { FieldError } from '@/components/primitives/field-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils/classnames';
+import { cn } from '@/lib/utils/cn';
 
 interface TaskInputTitleProps {
   inputProps: InputHTMLAttributes<HTMLInputElement>;

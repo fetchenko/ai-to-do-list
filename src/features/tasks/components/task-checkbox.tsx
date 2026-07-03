@@ -3,7 +3,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToggleTask } from '@/features/tasks/hooks/use-toggle-task';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { cn } from '@/lib/utils/classnames';
+import { cn } from '@/lib/utils/cn';
 
 interface TaskCheckboxProps {
   task: Task;

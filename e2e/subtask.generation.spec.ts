@@ -15,7 +15,9 @@ function taskCard(page: Page, title: string) {
 }
 
 test.describe('AI subtask generation', () => {
-  test('generates draft subtasks and saves them when accepted', async ({ page }) => {
+  test('generates draft subtasks and saves them when accepted', async ({
+    page,
+  }) => {
     // Mock the AI endpoint so the test doesn't call DeepSeek, doesn't cost
     // tokens, and doesn't flake on AI response variability.
     await page.route('**/api/subtasks/generate', async (route) => {
@@ -24,7 +26,10 @@ test.describe('AI subtask generation', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           data: {
-            subtasks: [{ title: 'Mocked subtask one' }, { title: 'Mocked subtask two' }],
+            subtasks: [
+              { title: 'Mocked subtask one' },
+              { title: 'Mocked subtask two' },
+            ],
           },
         }),
       });
@@ -40,7 +45,9 @@ test.describe('AI subtask generation', () => {
 
     const drafts = page.getByTestId('draft-subtask');
     await expect(drafts).toHaveCount(2);
-    await expect(page.locator('[data-subtask-title="Mocked subtask one"]')).toBeVisible();
+    await expect(
+      page.locator('[data-subtask-title="Mocked subtask one"]')
+    ).toBeVisible();
 
     await page.getByRole('button', { name: 'Accept All' }).click();
 

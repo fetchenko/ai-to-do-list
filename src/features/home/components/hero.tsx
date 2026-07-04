@@ -24,8 +24,8 @@ export default function Hero() {
             </p>
 
             <p className="text-muted-foreground mx-auto max-w-xl text-base leading-7 sm:text-lg">
-              Organize your tasks, generate AI-powered subtasks instantly, and stay focused on what
-              matters most.
+              Organize your tasks, generate AI-powered subtasks instantly, and
+              stay focused on what matters most.
             </p>
           </header>
 
@@ -37,7 +37,12 @@ export default function Hero() {
               <Link href={ROUTES.authLogin}>Sign In</Link>
             </Button>
 
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
               <Link href={ROUTES.authSignup}>Create Account</Link>
             </Button>
           </nav>

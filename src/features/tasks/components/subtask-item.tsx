@@ -1,7 +1,6 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-
 import EditTaskForm from '@/features/tasks/components/edit-task-form';
 import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
@@ -42,7 +41,9 @@ export default function SubtaskItem({ task }: TaskItemProps) {
               <div>
                 <p className="font-medium break-all">{task.title}</p>
                 {task.description && (
-                  <p className="text-muted-foreground text-sm break-all">{task.description}</p>
+                  <p className="text-muted-foreground text-sm break-all">
+                    {task.description}
+                  </p>
                 )}
               </div>
             </div>

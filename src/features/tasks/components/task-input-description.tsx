@@ -28,7 +28,10 @@ export function TaskInputDescription({
 
   return (
     <>
-      <Label htmlFor={`${idPrefix}-description`} className={cn(hideLabel && 'sr-only')}>
+      <Label
+        htmlFor={`${idPrefix}-description`}
+        className={cn(hideLabel && 'sr-only')}
+      >
         {descriptionLabel}
       </Label>
       <Textarea
@@ -40,7 +43,10 @@ export function TaskInputDescription({
         aria-describedby={error ? `${idPrefix}-description-error` : undefined}
         {...inputProps}
       />
-      <FieldError id={`${idPrefix}-description-error`} message={error?.message} />
+      <FieldError
+        id={`${idPrefix}-description-error`}
+        message={error?.message}
+      />
     </>
   );
 }

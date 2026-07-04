@@ -5,15 +5,18 @@ export const mockOllamaResponse = {
     subtasks: [
       {
         title: 'Create a prompt user interface',
-        description: 'Design a user-friendly interface to allow users to input text.',
+        description:
+          'Design a user-friendly interface to allow users to input text.',
       },
       {
         title: 'Implement the prompt functionality',
-        description: 'Develop code to handle user input and provide prompts accordingly.',
+        description:
+          'Develop code to handle user input and provide prompts accordingly.',
       },
       {
         title: 'Test the prompt functionality',
-        description: 'Validate that the prompt function works as expected with various inputs.',
+        description:
+          'Validate that the prompt function works as expected with various inputs.',
       },
     ],
   }),

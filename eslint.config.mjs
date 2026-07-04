@@ -16,7 +16,10 @@ const eslintConfig = defineConfig([
         'error',
         { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
+      '@typescript-eslint/explicit-function-return-type': [
+        'warn',
+        { allowExpressions: true },
+      ],
       'no-restricted-imports': [
         'error',
         {

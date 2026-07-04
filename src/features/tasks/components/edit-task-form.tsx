@@ -3,11 +3,11 @@
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
-import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { TaskInputFields } from '@/features/tasks/components/task-input-fields';
-import { Task } from '@/features/tasks/types/tasks.types';
+import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
 import { TaskFormFields } from '@/features/tasks/schema/tasks';
+import { useTaskStore } from '@/features/tasks/stores/use-task-store';
+import { Task } from '@/features/tasks/types/tasks.types';
 
 type EditTaskProps = {
   task: Task;
@@ -21,7 +21,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
   const { register, formState, handleSubmit } = useForm<TaskFormFields>({
     defaultValues: {
       title: task.title,
-      description: task.description || ""
+      description: task.description || '',
     },
   });
 
@@ -37,25 +37,19 @@ export default function EditTaskForm({ task }: EditTaskProps) {
       },
       {
         onSuccess: () => {
-          resetTaskStore()
+          resetTaskStore();
         },
       }
     );
   };
 
-
   return (
-    <form
-      onSubmit={handleSubmit(handleSave)}
-      className="w-full"
-    >
+    <form onSubmit={handleSubmit(handleSave)} className="w-full">
       <fieldset
         className="flex w-full items-center justify-between gap-3"
-        disabled={updateTaskMutation.isPending}>
-        <TaskInputFields
-          register={register}
-          errors={formState.errors}
-        />
+        disabled={updateTaskMutation.isPending}
+      >
+        <TaskInputFields register={register} errors={formState.errors} />
         <div className="flex gap-2">
           <Button variant="default" size="sm" type="submit">
             Save

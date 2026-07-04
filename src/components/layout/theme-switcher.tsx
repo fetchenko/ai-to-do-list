@@ -36,7 +36,12 @@ export function ThemeSwitcher() {
   }, []);
 
   if (!mounted) {
-    return <div aria-hidden className="bg-muted h-10 w-32 animate-pulse rounded-md" />;
+    return (
+      <div
+        aria-hidden
+        className="bg-muted h-10 w-32 animate-pulse rounded-md"
+      />
+    );
   }
 
   return (

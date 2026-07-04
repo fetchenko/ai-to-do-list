@@ -76,7 +76,9 @@ describe('task cache utils', () => {
 
       const parent = result.find((t) => t.id === 'task-2');
 
-      expect(parent?.subtasks?.find((s) => s.id === 'sub-1')?.title).toBe('Updated Subtask');
+      expect(parent?.subtasks?.find((s) => s.id === 'sub-1')?.title).toBe(
+        'Updated Subtask'
+      );
     });
 
     it('does not modify tasks when id is not found', () => {
@@ -158,7 +160,11 @@ describe('task cache utils', () => {
         position: 'a1',
       } as Task);
 
-      expect(result[0].subtasks?.map((s) => s.id)).toEqual(['sub-1', 'sub-2', 'sub-3']);
+      expect(result[0].subtasks?.map((s) => s.id)).toEqual([
+        'sub-1',
+        'sub-2',
+        'sub-3',
+      ]);
     });
   });
 });

@@ -7,7 +7,10 @@ import * as appError from '@/shared/errors/app-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export class OllamaProvider implements AIProvider {
-  async generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse> {
+  async generate(
+    prompt: string,
+    signal?: AbortSignal
+  ): Promise<CombinedAiResponse> {
     const response = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
       headers: {
@@ -24,7 +27,8 @@ export class OllamaProvider implements AIProvider {
 
     const parsedResponse = await parseResponseJson(response);
 
-    const { data, success } = ollamaChatResponseSchema.safeParse(parsedResponse);
+    const { data, success } =
+      ollamaChatResponseSchema.safeParse(parsedResponse);
 
     if (!success) {
       throw new appError.ResponseFormatError('Invalid format of AI response');

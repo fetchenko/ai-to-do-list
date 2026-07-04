@@ -15,7 +15,7 @@ export function TaskList({ tasks, isLoading, emptyLabel }: TaskListProps) {
     return (
       <div
         role="status"
-        className="flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
+        className="text-muted-foreground flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed py-10 text-center text-sm"
       >
         <p>{emptyLabel}</p>
       </div>

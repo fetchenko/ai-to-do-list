@@ -8,7 +8,10 @@ import { AiGeneration } from '@/shared/types/database.types';
 
 const MAX_AI_REQUESTS_PER_USER = 10;
 
-export async function updateAiLog(logId: string, updates: AiGeneration['Update']) {
+export async function updateAiLog(
+  logId: string,
+  updates: AiGeneration['Update']
+) {
   if (!logId) return null;
 
   try {
@@ -29,7 +32,9 @@ export async function updateAiLog(logId: string, updates: AiGeneration['Update']
   }
 }
 
-export async function createAiLog(input: AiGeneration['Insert']): Promise<string | null> {
+export async function createAiLog(
+  input: AiGeneration['Insert']
+): Promise<string | null> {
   try {
     const { data, error } = await supabaseAdmin
       .from('ai_generations')
@@ -68,16 +73,21 @@ export async function checkAiQuotaLimit(userId: string) {
 }
 
 export async function checkRequestLock(userId: string) {
-  const { data: lockAcquired, error } = await supabaseAdmin.rpc('try_acquire_user_ai_lock', {
-    p_user_id: userId,
-  });
+  const { data: lockAcquired, error } = await supabaseAdmin.rpc(
+    'try_acquire_user_ai_lock',
+    {
+      p_user_id: userId,
+    }
+  );
 
   if (error) {
     throw new AiLockRequestFailedError(error);
   }
 
   if (!lockAcquired) {
-    throw new AiLockActiveError('Another AI generation is already running for this user');
+    throw new AiLockActiveError(
+      'Another AI generation is already running for this user'
+    );
   }
 }
 

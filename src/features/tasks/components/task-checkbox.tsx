@@ -19,7 +19,11 @@ export function TaskCheckbox({ task, className }: TaskCheckboxProps) {
       checked={checked}
       disabled={isPending}
       onCheckedChange={toggle}
-      aria-label={checked ? `Mark "${task.title}" as not done` : `Mark "${task.title}" as done`}
+      aria-label={
+        checked
+          ? `Mark "${task.title}" as not done`
+          : `Mark "${task.title}" as done`
+      }
       className={cn('mt-1', className)}
     />
   );

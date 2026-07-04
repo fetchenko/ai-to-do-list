@@ -28,7 +28,10 @@ export function TaskInputTitle({
 
   return (
     <>
-      <Label htmlFor={`${idPrefix}-title`} className={cn(hideLabel && 'sr-only')}>
+      <Label
+        htmlFor={`${idPrefix}-title`}
+        className={cn(hideLabel && 'sr-only')}
+      >
         {titleLabel}
       </Label>
       <Input
@@ -36,7 +39,9 @@ export function TaskInputTitle({
         autoFocus={autoFocus}
         placeholder={titlePlaceholder}
         aria-invalid={!!error?.message}
-        aria-describedby={error?.message ? `${idPrefix}-title-error` : undefined}
+        aria-describedby={
+          error?.message ? `${idPrefix}-title-error` : undefined
+        }
         {...inputProps}
       />
       <FieldError id={`${idPrefix}-title-error`} message={error?.message} />

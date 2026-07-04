@@ -1,36 +1,42 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import { useQuery } from '@tanstack/react-query';
+
+import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
+import { TaskList } from '@/features/tasks/components/task-list';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { getUserTasks } from '@/features/tasks/services/tasks.service';
 import type { Task } from '@/features/tasks/types/tasks.types';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { ErrorAlert } from '@/components/primitives/error-alert';
-import { TaskList } from '@/features/tasks/components/task-list';
 import { groupTasksByStatus } from '@/features/tasks/utils/tasks-helpers';
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 const TABS = [
   { value: 'active', label: 'Active', emptyLabel: 'No active tasks yet' },
   { value: 'done', label: 'Done', emptyLabel: 'No completed tasks yet' },
-] as const satisfies readonly { value: Task['status']; label: string; emptyLabel: string }[];
+] as const satisfies readonly {
+  value: Task['status'];
+  label: string;
+  emptyLabel: string;
+}[];
 
 export default function UserTasks() {
-  const { data: tasks = [], isPending, error } = useQuery({
+  const {
+    data: tasks = [],
+    isPending,
+    error,
+  } = useQuery({
     queryKey: taskKeys.all,
     queryFn: getUserTasks,
   });
 
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
-  const tasksByStatus = useMemo(
-    () =>
-      groupTasksByStatus(tasks),
-    [tasks],
-  );
+  const tasksByStatus = useMemo(() => groupTasksByStatus(tasks), [tasks]);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
@@ -46,10 +52,19 @@ export default function UserTasks() {
             ))}
           </TabsList>
 
-          {error && <ErrorAlert className="mt-4" message={getFriendlyErrorMessage(error)} />}
+          {error && (
+            <ErrorAlert
+              className="mt-4"
+              message={getFriendlyErrorMessage(error)}
+            />
+          )}
 
           {TABS.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value} className="mt-4 focus-visible:outline-none">
+            <TabsContent
+              key={tab.value}
+              value={tab.value}
+              className="mt-4 focus-visible:outline-none"
+            >
               <TaskList
                 tasks={tasksByStatus[tab.value]}
                 isLoading={isPending}

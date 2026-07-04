@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+
+import { MoreHorizontal } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type TaskActionsMenuProps = {
@@ -36,7 +38,13 @@ export function TaskActionsMenu({
 
   const actions: Action[] = [
     ...(showGenerate && onGenerateSubtasks
-      ? [{ key: 'generate', label: 'Generate subtasks', onClick: onGenerateSubtasks }]
+      ? [
+          {
+            key: 'generate',
+            label: 'Generate subtasks',
+            onClick: onGenerateSubtasks,
+          },
+        ]
       : []),
     { key: 'edit', label: 'Edit', onClick: onEdit },
     { key: 'delete', label: 'Delete', onClick: onDelete, destructive: true },
@@ -52,15 +60,19 @@ export function TaskActionsMenu({
       <div className="sm:hidden">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="open task actions">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="open task actions"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DialogTrigger>
 
           <DialogContent
             className={cn(
-              'fixed inset-x-0 bottom-0 top-auto max-w-none',
-              'translate-x-0 translate-y-0 rounded-t-2xl p-2',
+              'fixed inset-x-0 top-auto bottom-0 max-w-none',
+              'translate-x-0 translate-y-0 rounded-t-2xl p-2'
             )}
           >
             <div className="flex flex-col gap-1 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -70,7 +82,7 @@ export function TaskActionsMenu({
                   variant="ghost"
                   className={cn(
                     'h-11 justify-start text-base',
-                    action.destructive && 'text-destructive',
+                    action.destructive && 'text-destructive'
                   )}
                   onClick={() => runAndClose(action.onClick)}
                 >

@@ -6,7 +6,10 @@ import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { ResponseFormatError } from '@/shared/errors/app-error';
 
 export default class DeepSeekProvider implements AIProvider {
-  async generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse> {
+  async generate(
+    prompt: string,
+    signal?: AbortSignal
+  ): Promise<CombinedAiResponse> {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {

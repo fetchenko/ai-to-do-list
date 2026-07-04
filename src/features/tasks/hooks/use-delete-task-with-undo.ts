@@ -4,7 +4,10 @@ import { toast } from 'sonner';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { softDeleteTask } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { removeFromCache, restoreToCache } from '@/features/tasks/utils/tasks-cache';
+import {
+  removeFromCache,
+  restoreToCache,
+} from '@/features/tasks/utils/tasks-cache';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 const UNDO_WINDOW_MS = 8000;

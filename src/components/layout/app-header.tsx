@@ -3,10 +3,9 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 
 import { DEFAULT_REDIRECTS } from '@/app/config/routes.config';
-
+import { Container } from '@/components/layout/container';
 import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthButtonSkeleton } from '@/features/auth/components/auth-button-skeleton';
-import { Container } from '@/components/layout/container';
 
 export function AppHeader() {
   return (

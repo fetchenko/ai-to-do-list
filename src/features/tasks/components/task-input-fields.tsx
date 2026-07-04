@@ -1,6 +1,6 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 
-import { FormAsyncError } from '@/components/blocks/form-async-error';
+import { FormError } from '@/components/blocks/form-error';
 import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
 import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
 import { TaskFieldsVariant } from '@/features/tasks/constants/input-fields-variants';
@@ -24,7 +24,7 @@ export function TaskInputFields({
 
   return (
     <div className="w-full min-w-0 space-y-4">
-      {rootErrorMessage && <FormAsyncError message={rootErrorMessage} />}
+      {rootErrorMessage && <FormError message={rootErrorMessage} />}
       <div className="space-y-1.5">
         <TaskInputTitle
           hideLabel={hideLabels}

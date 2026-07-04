@@ -8,10 +8,11 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
 import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
+import { FormError } from '@/components/blocks/form-error';
+import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AuthCard } from '@/features/auth/components/auth-card';
 import { signInWithPassword } from '@/features/auth/repository/auth.repository';
 import { LoginInput, loginSchema } from '@/features/auth/schema/auth';
 
@@ -28,10 +29,8 @@ export function LoginForm() {
   const router = useRouter();
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: LoginInput) => await signInWithPassword(data),
-    onSuccess: () => {
-      router.push(DEFAULT_REDIRECTS.authenticated);
-    },
+    mutationFn: signInWithPassword,
+    onSuccess: () => router.push(DEFAULT_REDIRECTS.authenticated),
   });
 
   const onSubmit = async (data: LoginInput) => {
@@ -39,52 +38,69 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your email below to login to your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" {...register('email')} placeholder="Email" />
-                {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href={ROUTES.authForgotPassword}
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register('password')}
-                  placeholder="Password"
-                />
-              </div>
-              {errors.password && <p className="text-red-500">{errors.password.message}</p>}
-              {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? 'Logging in...' : 'Login'}
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{' '}
-              <Link href={ROUTES.authSignup} className="underline underline-offset-4">
-                Sign up
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard title="Login" description="Enter your email below to login">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-5 sm:gap-6"
+        noValidate
+      >
+        <FormError message={error?.message} />
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="email"
+            label="Email"
+            error={errors.email?.message}
+          >
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              {...register('email')}
+              placeholder="Email"
+            />
+          </FormField>
+        </div>
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="password"
+            label="Password"
+            error={errors.password?.message}
+          >
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Password"
+              {...register('password')}
+            />
+          </FormField>
+          <div className="flex-end flex flex-wrap items-center gap-1">
+            <Link
+              href={ROUTES.authForgotPassword}
+              className="text-sm underline-offset-4 hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+        </div>
+        <Button
+          type="submit"
+          className="h-11 w-full sm:h-10"
+          disabled={isPending}
+        >
+          {isPending ? 'Logging in...' : 'Login'}
+        </Button>
+        <div className="mt-4 text-center text-sm">
+          Don&apos;t have an account?{' '}
+          <Link
+            href={ROUTES.authSignup}
+            className="underline underline-offset-4"
+          >
+            Sign up
+          </Link>
+        </div>
+      </form>
+    </AuthCard>
   );
 }

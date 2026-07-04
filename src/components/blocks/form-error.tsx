@@ -2,13 +2,13 @@ import { AlertCircle } from 'lucide-react';
 
 import { cn } from '@/lib/utils/cn';
 
-interface FormAsyncErrorProps {
+interface FormErrorProps {
   message?: string | null;
   className?: string;
   onRetry?: () => void;
 }
 
-export function FormAsyncError({ message, className, onRetry }: FormAsyncErrorProps) {
+export function FormError({ message, className, onRetry }: FormErrorProps) {
   if (!message) return null;
 
   return (

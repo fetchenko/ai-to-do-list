@@ -69,7 +69,9 @@ export async function updatePassword({ password }: UpdatePasswordInput) {
 export async function logout() {
   const supabase = createClient();
 
-  const { error } = await supabase.auth.signOut({ scope: 'local' });
+  const { error } = await supabase.auth.signOut({
+    scope: 'local',
+  });
 
   if (error) {
     throw error;

@@ -7,12 +7,16 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
 import { ROUTES } from '@/app/config/routes.config';
+import { FormError } from '@/components/blocks/form-error';
+import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AuthCard } from '@/features/auth/components/auth-card';
 import { resetPasswordForEmail } from '@/features/auth/repository/auth.repository';
-import { resetPasswordSchema, ResetPasswordInput } from '@/features/auth/schema/auth';
+import {
+  ResetPasswordInput,
+  resetPasswordSchema,
+} from '@/features/auth/schema/auth';
 
 export function ForgotPasswordForm() {
   const {
@@ -25,61 +29,64 @@ export function ForgotPasswordForm() {
   });
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: ResetPasswordInput) => await resetPasswordForEmail(data),
+    mutationFn: resetPasswordForEmail,
   });
 
   const onSubmit = async (data: ResetPasswordInput) => {
     mutate(data);
   };
 
+  if (isSubmitSuccessful) {
+    return (
+      <AuthCard
+        title="Check Your Email"
+        description="Password reset instructions sent"
+      >
+        <p className="text-muted-foreground text-sm">
+          If you registered using your email and password, you will receive a
+          password reset email.
+        </p>
+      </AuthCard>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-6">
-      {isSubmitSuccessful ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">
-              If you registered using your email and password, you will receive a password reset
-              email.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-            <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your password
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input type="email" {...register('email')} placeholder="Email" />
-                  {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-                  {error && error.message && (
-                    <p className="text-sm text-red-500">{error.message}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isPending}>
-                  {isPending ? 'Sending...' : 'Send reset email'}
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <Link href={ROUTES.authLogin} className="underline underline-offset-4">
-                  Login
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    <AuthCard
+      title="Reset Your Password"
+      description="Type in your email and we'll send you a link to reset your password"
+    >
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-5 sm:gap-6"
+        noValidate
+      >
+        <FormError message={error?.message} />
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="email"
+            label="Email"
+            error={errors.email?.message}
+          >
+            <Input type="email" {...register('email')} placeholder="Email" />
+          </FormField>
+        </div>
+        <Button
+          type="submit"
+          className="h-11 w-full sm:h-10"
+          disabled={isPending}
+        >
+          {isPending ? 'Sending...' : 'Send reset email'}
+        </Button>
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{' '}
+          <Link
+            href={ROUTES.authLogin}
+            className="underline underline-offset-4"
+          >
+            Login
+          </Link>
+        </div>
+      </form>
+    </AuthCard>
   );
 }

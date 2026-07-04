@@ -7,12 +7,16 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
 import { DEFAULT_REDIRECTS } from '@/app/config/routes.config';
+import { FormError } from '@/components/blocks/form-error';
+import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AuthCard } from '@/features/auth/components/auth-card';
 import { updatePassword } from '@/features/auth/repository/auth.repository';
-import { updatePasswordSchema, UpdatePasswordInput } from '@/features/auth/schema/auth';
+import {
+  UpdatePasswordInput,
+  updatePasswordSchema,
+} from '@/features/auth/schema/auth';
 
 export function UpdatePasswordForm() {
   const {
@@ -26,7 +30,7 @@ export function UpdatePasswordForm() {
   const router = useRouter();
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: UpdatePasswordInput) => await updatePassword(data),
+    mutationFn: updatePassword,
     onSuccess: () => {
       router.push(DEFAULT_REDIRECTS.authenticated);
     },
@@ -37,36 +41,52 @@ export function UpdatePasswordForm() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-          <CardDescription>Please enter your new password below.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="password">New password</Label>
-                <Input type="password" {...register('password')} placeholder="New password" />
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
-                <Input
-                  type="confirmPassword"
-                  {...register('confirmPassword')}
-                  placeholder="New password"
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-              )}
-              {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? 'Saving...' : 'Save new password'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard
+      title="Reset Your Password"
+      description="Please enter your new password below."
+    >
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-5 sm:gap-6"
+        noValidate
+      >
+        <FormError message={error?.message} />
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="password"
+            label="New Password"
+            error={errors.password?.message}
+          >
+            <Input
+              id="password"
+              type="password"
+              placeholder="New password"
+              {...register('password')}
+            />
+          </FormField>
+        </div>
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="confirmPassword"
+            label="Confirm password"
+            error={errors.confirmPassword?.message}
+          >
+            <Input
+              id="confirmPassword"
+              type="confirmPassword"
+              placeholder="Confirm password"
+              {...register('confirmPassword')}
+            />
+          </FormField>
+        </div>
+        <Button
+          type="submit"
+          className="h-11 w-full sm:h-10"
+          disabled={isPending}
+        >
+          {isPending ? 'Saving...' : 'Save new password'}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

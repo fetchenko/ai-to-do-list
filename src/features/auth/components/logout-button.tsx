@@ -21,5 +21,9 @@ export function LogoutButton() {
     router.push(ROUTES.authLogin);
   };
 
-  return <Button onClick={onLogout}>Logout</Button>;
+  return (
+    <Button size="sm" className="shrink-0" onClick={onLogout}>
+      Logout
+    </Button>
+  );
 }

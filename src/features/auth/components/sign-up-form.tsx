@@ -8,12 +8,13 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
 import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
+import { FormError } from '@/components/blocks/form-error';
+import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AuthCard } from '@/features/auth/components/auth-card';
 import { signUp } from '@/features/auth/repository/auth.repository';
-import { signupSchema, SignupInput } from '@/features/auth/schema/auth';
+import { SignupInput, signupSchema } from '@/features/auth/schema/auth';
 
 export function SignUpForm() {
   const {
@@ -28,7 +29,7 @@ export function SignUpForm() {
   const router = useRouter();
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: SignupInput) => await signUp(data),
+    mutationFn: signUp,
     onSuccess: () => {
       router.push(DEFAULT_REDIRECTS.authenticated);
     },
@@ -39,60 +40,72 @@ export function SignUpForm() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSumbit)}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" {...register('email')} placeholder="Email" />
-                {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register('password')}
-                  placeholder="Password"
-                />
-                {errors.password && <p className="text-red-500">{errors.password.message}</p>}
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repeat Password</Label>
-                </div>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  {...register('confirmPassword')}
-                  placeholder="Confirm password"
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-              )}
-              {error && error.message && <p className="text-sm text-red-500">{error.message}</p>}
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? 'Creating an account...' : 'Sign up'}
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{' '}
-              <Link href={ROUTES.authLogin} className="underline underline-offset-4">
-                Login
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard title="Sign up" description="Create a new account">
+      <form
+        onSubmit={handleSubmit(onSumbit)}
+        className="flex flex-col gap-5 sm:gap-6"
+        noValidate
+      >
+        <FormError message={error?.message} />
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="email"
+            label="Email"
+            error={errors.email?.message}
+          >
+            <Input
+              id="email"
+              type="email"
+              {...register('email')}
+              placeholder="Email"
+            />
+          </FormField>
+        </div>
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="password"
+            label="Password"
+            error={errors.password?.message}
+          >
+            <Input
+              id="password"
+              type="password"
+              {...register('password')}
+              placeholder="Password"
+            />
+          </FormField>
+        </div>
+        <div className="grid gap-2">
+          <FormField
+            idPrefix="confirm-password"
+            label="Confirm Password"
+            error={errors.password?.message}
+          >
+            <Input
+              id="confirm-password"
+              type="password"
+              {...register('confirmPassword')}
+              placeholder="Confirm password"
+            />
+          </FormField>
+        </div>
+        <Button
+          type="submit"
+          className="h-11 w-full sm:h-10"
+          disabled={isPending}
+        >
+          {isPending ? 'Creating an account...' : 'Sign up'}
+        </Button>
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{' '}
+          <Link
+            href={ROUTES.authLogin}
+            className="underline underline-offset-4"
+          >
+            Login
+          </Link>
+        </div>
+      </form>
+    </AuthCard>
   );
 }

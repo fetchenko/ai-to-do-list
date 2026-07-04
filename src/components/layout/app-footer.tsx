@@ -1,5 +1,5 @@
-import { Container } from "@/components/layout/container";
-import { ThemeSwitcher } from "@/components/layout/theme-switcher";
+import { Container } from '@/components/layout/container';
+import { ThemeSwitcher } from '@/components/layout/theme-switcher';
 
 export function AppFooter() {
   return (

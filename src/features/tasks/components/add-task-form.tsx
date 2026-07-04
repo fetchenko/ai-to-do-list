@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import { FormAsyncError } from '@/components/blocks/form-async-error';
+import { FormError } from '@/components/blocks/form-error';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
@@ -50,7 +50,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-        <FormAsyncError message={error?.message} />
+        <FormError message={error?.message} />
         <div className="flex-1 space-y-1">
           <TaskInputTitle
             hideLabel

@@ -61,7 +61,9 @@ export const useSubtaskStore = create<SubtaskState>((set) => ({
     })),
   deleteSubtask: (id: string) =>
     set((state) => ({
-      generatedSubtasks: state.generatedSubtasks.filter((subtask) => subtask.id !== id),
+      generatedSubtasks: state.generatedSubtasks.filter(
+        (subtask) => subtask.id !== id
+      ),
     })),
 
   setDraftSubtask: (draftSubtask: string) =>
@@ -70,5 +72,6 @@ export const useSubtaskStore = create<SubtaskState>((set) => ({
     }),
 
   reset: () => set(initialState),
-  resetActiveSubtask: () => set((state) => ({ ...state, activeSubtaskId: null, draftSubtask: '' })),
+  resetActiveSubtask: () =>
+    set((state) => ({ ...state, activeSubtaskId: null, draftSubtask: '' })),
 }));

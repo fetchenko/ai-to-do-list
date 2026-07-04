@@ -1,14 +1,22 @@
 import { AiErrorResult, AiLogs } from '@/infrastructure/ai/types/ai.types';
 import { requestGenSubtasksSchema } from '@/infrastructure/ai/validation/ai.request';
-import { AppError, ResponseFormatError, ValidationRequestError } from '@/shared/errors/app-error';
+import {
+  AppError,
+  ResponseFormatError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
 export async function parseAiRequest(request: Request) {
-  const { data, success: parsed } = requestGenSubtasksSchema.safeParse(await request.json());
+  const { data, success: parsed } = requestGenSubtasksSchema.safeParse(
+    await request.json()
+  );
 
   if (!parsed) {
-    throw new ValidationRequestError('Invalid request payload, taskId is required');
+    throw new ValidationRequestError(
+      'Invalid request payload, taskId is required'
+    );
   }
 
   return data;

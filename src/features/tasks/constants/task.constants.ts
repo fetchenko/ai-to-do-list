@@ -22,6 +22,7 @@ export const taskToDbFieldMap = {
 
 export const taskKeys = {
   all: ['tasks'] as const,
-  list: (parentTaskId?: string) => [...taskKeys.all, 'list', parentTaskId ?? 'root'] as const,
+  list: (parentTaskId?: string) =>
+    [...taskKeys.all, 'list', parentTaskId ?? 'root'] as const,
   detail: (taskId: string) => [...taskKeys.all, 'detail', taskId] as const,
 };

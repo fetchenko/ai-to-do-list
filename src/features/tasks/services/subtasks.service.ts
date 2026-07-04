@@ -60,7 +60,10 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   return subtasks;
 }
 
-export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
+export async function saveSubtasks(
+  parentTaskId: string,
+  subtasks: TaskInsert[]
+) {
   const supabase = createClient();
 
   const lastPosition = await getLastPosition(parentTaskId);
@@ -68,7 +71,11 @@ export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[])
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
-    const { data: parsedSubtask, success, error } = taskSchema.safeParse(subtask);
+    const {
+      data: parsedSubtask,
+      success,
+      error,
+    } = taskSchema.safeParse(subtask);
 
     if (!success) {
       throw new AppError(

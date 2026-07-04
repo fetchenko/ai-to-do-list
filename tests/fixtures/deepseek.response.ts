@@ -6,7 +6,8 @@ export const deepseekResponse = {
       finish_reason: 'stop',
       message: {
         content: JSON.stringify({
-          task_summary: 'Prompt the user to enter input through a user interface',
+          task_summary:
+            'Prompt the user to enter input through a user interface',
           subtasks: [
             {
               title: 'Build input form UI',

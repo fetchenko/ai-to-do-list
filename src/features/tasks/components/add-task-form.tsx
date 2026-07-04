@@ -8,7 +8,11 @@ import { useForm } from 'react-hook-form';
 
 import { FormError } from '@/components/blocks/form-error';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
 import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
 import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
@@ -60,7 +64,10 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             titlePlaceholder="Add a task…"
           />
 
-          <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
+          <Collapsible
+            open={isDescriptionOpen}
+            onOpenChange={setIsDescriptionOpen}
+          >
             <CollapsibleTrigger asChild>
               <Button
                 type="button"
@@ -70,17 +77,25 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
                 className="text-muted-foreground hover:text-foreground h-8 px-2"
               >
                 <ChevronDown
-                  className={cn('size-4 transition-transform', isDescriptionOpen && 'rotate-180')}
+                  className={cn(
+                    'size-4 transition-transform',
+                    isDescriptionOpen && 'rotate-180'
+                  )}
                   aria-hidden="true"
                 />
-                <span>{isDescriptionOpen ? 'Hide description' : 'Add description'}</span>
+                <span>
+                  {isDescriptionOpen ? 'Hide description' : 'Add description'}
+                </span>
               </Button>
             </CollapsibleTrigger>
 
             <CollapsibleContent className="pt-2">
               <TaskInputDescription
                 hideLabel
-                inputProps={{ ...register('description'), disabled: isSubmitting }}
+                inputProps={{
+                  ...register('description'),
+                  disabled: isSubmitting,
+                }}
                 error={errors.description}
                 descriptionLabel="Description (optional)"
                 descriptionPlaceholder="Add detail for this task"
@@ -104,7 +119,8 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             <>
               <Plus className="size-4" aria-hidden="true" />
               <span>Add task</span>
-            </>)}
+            </>
+          )}
         </Button>
       </div>
     </form>

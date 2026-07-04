@@ -1,5 +1,8 @@
 import { Task } from '@/features/tasks/types/tasks.types';
-import { byPosition, updateParentSubtasks } from '@/features/tasks/utils/tasks-helpers';
+import {
+  byPosition,
+  updateParentSubtasks,
+} from '@/features/tasks/utils/tasks-helpers';
 
 export function findTask(tasks: Task[], id: string): Task | undefined {
   return (
@@ -8,7 +11,11 @@ export function findTask(tasks: Task[], id: string): Task | undefined {
   );
 }
 
-export function updateTaskInCache(tasks: Task[], id: string, patch: Partial<Task>): Task[] {
+export function updateTaskInCache(
+  tasks: Task[],
+  id: string,
+  patch: Partial<Task>
+): Task[] {
   return tasks.map((task) => {
     if (task.id === id) return { ...task, ...patch };
 

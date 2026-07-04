@@ -4,11 +4,11 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Card } from '@/components/ui/card';
-
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
 import EditTaskForm from '@/features/tasks/components/edit-task-form';
 import SubtaskItem from '@/features/tasks/components/subtask-item';
+import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
@@ -20,7 +20,6 @@ import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 
 type TaskItemProps = {
   task: Task;
@@ -29,15 +28,22 @@ type TaskItemProps = {
 export default function TaskItem({ task }: TaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
-  const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
-  const generateSubtaskForTask = useSubtaskStore((state) => state.generateSubtaskForTask);
-  const setGeneratedSubtasksForTask = useSubtaskStore((state) => state.setGeneratedSubtasksForTask);
+  const setGeneratedSubtasks = useSubtaskStore(
+    (state) => state.setGeneratedSubtasks
+  );
+  const generateSubtaskForTask = useSubtaskStore(
+    (state) => state.generateSubtaskForTask
+  );
+  const setGeneratedSubtasksForTask = useSubtaskStore(
+    (state) => state.setGeneratedSubtasksForTask
+  );
   const { deleteWithUndo } = useDeleteTaskWithUndo();
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
   const mutationSubtasks = useMutation({
     mutationFn: async (id: string) => {
-      if (!id) throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
+      if (!id)
+        throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
 
       return await generateSubtasks(id);
     },
@@ -79,7 +85,9 @@ export default function TaskItem({ task }: TaskItemProps) {
               <div>
                 <p className="font-medium">{task.title}</p>
                 {task.description && (
-                  <p className="text-muted-foreground text-sm">{task.description}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {task.description}
+                  </p>
                 )}
               </div>
             </div>
@@ -96,7 +104,9 @@ export default function TaskItem({ task }: TaskItemProps) {
       </div>
 
       {!!task.subtasks?.length &&
-        task.subtasks.map((subtask) => <SubtaskItem key={subtask.id} task={subtask} />)}
+        task.subtasks.map((subtask) => (
+          <SubtaskItem key={subtask.id} task={subtask} />
+        ))}
 
       {generateSubtaskForTask && generateSubtaskForTask === task.id && (
         <>

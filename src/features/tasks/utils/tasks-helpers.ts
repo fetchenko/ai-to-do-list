@@ -1,6 +1,7 @@
 import { Task } from '@/features/tasks/types/tasks.types';
 
-export const byPosition = (a: Task, b: Task) => a.position.localeCompare(b.position);
+export const byPosition = (a: Task, b: Task) =>
+  a.position.localeCompare(b.position);
 
 export function updateParentSubtasks(
   tasks: Task[],

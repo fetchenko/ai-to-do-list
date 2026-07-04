@@ -17,14 +17,20 @@ interface TaskSubtasksProps {
 
 export function DraftSubtasks({ task }: TaskSubtasksProps) {
   const draftSubtasks = useSubtaskStore((state) => state.generatedSubtasks);
-  const setGeneratedSubtasks = useSubtaskStore((state) => state.setGeneratedSubtasks);
+  const setGeneratedSubtasks = useSubtaskStore(
+    (state) => state.setGeneratedSubtasks
+  );
   const activeSubtaskId = useSubtaskStore((state) => state.activeSubtaskId);
-  const setActiveSubastkId = useSubtaskStore((state) => state.setActiveSubtaskId);
+  const setActiveSubastkId = useSubtaskStore(
+    (state) => state.setActiveSubtaskId
+  );
   const updateSubtask = useSubtaskStore((state) => state.updateSubtask);
   const deleteSubtask = useSubtaskStore((state) => state.deleteSubtask);
   const draftSubtask = useSubtaskStore((state) => state.draftSubtask);
   const setDraftSubtask = useSubtaskStore((state) => state.setDraftSubtask);
-  const resetActiveSubtask = useSubtaskStore((state) => state.resetActiveSubtask);
+  const resetActiveSubtask = useSubtaskStore(
+    (state) => state.resetActiveSubtask
+  );
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -104,20 +110,30 @@ export function DraftSubtasks({ task }: TaskSubtasksProps) {
                       <Button variant="default" size="sm" type="submit">
                         Save
                       </Button>
-                      <Button variant="outline" size="sm" onClick={handleCancelEditSubtask}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancelEditSubtask}
+                      >
                         Cancel
                       </Button>
                     </div>
                   </form>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <p className="text-muted-foreground text-sm">{subtask.title}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {subtask.title}
+                    </p>
                   </div>
                 )}
               </div>
 
               {!isEditing && (
-                <Button variant="ghost" size="sm" onClick={() => startEditSubtask(subtask)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditSubtask(subtask)}
+                >
                   Edit
                 </Button>
               )}
@@ -144,7 +160,10 @@ export function DraftSubtasks({ task }: TaskSubtasksProps) {
           Reject All
         </Button>
 
-        <Button disabled={mutation.isPending} onClick={() => handleSaveSubtasks()}>
+        <Button
+          disabled={mutation.isPending}
+          onClick={() => handleSaveSubtasks()}
+        >
           Accept All
         </Button>
       </div>

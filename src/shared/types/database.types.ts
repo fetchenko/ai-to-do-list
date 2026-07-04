@@ -1,4 +1,10 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 export type TaskStatus = Database['public']['Enums']['task_status'];
 export type AiGeneration = Database['public']['Tables']['ai_generations'];

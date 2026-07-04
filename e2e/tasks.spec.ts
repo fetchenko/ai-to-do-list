@@ -63,6 +63,8 @@ test.describe('tasks', () => {
       .getByRole('button', { name: 'Add' })
       .click();
 
-    await expect(page.getByText('Title must be at least 5 characters')).toBeVisible();
+    await expect(
+      page.getByText('Title must be at least 5 characters')
+    ).toBeVisible();
   });
 });

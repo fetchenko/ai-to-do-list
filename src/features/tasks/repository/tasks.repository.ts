@@ -1,6 +1,9 @@
 import { PostgrestError } from '@supabase/supabase-js';
 
-import { mapDbTasks, mapTaskUpdateToDb } from '@/features/tasks/mappers/tasks.mapper';
+import {
+  mapDbTasks,
+  mapTaskUpdateToDb,
+} from '@/features/tasks/mappers/tasks.mapper';
 import { DbTask, TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';

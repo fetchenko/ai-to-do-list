@@ -60,7 +60,8 @@ function mapTaskBase(task: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
 
   for (const [feKey, value] of Object.entries(task)) {
-    const dbKey = taskKeyMapReverse[feKey as keyof typeof taskKeyMapReverse] ?? feKey;
+    const dbKey =
+      taskKeyMapReverse[feKey as keyof typeof taskKeyMapReverse] ?? feKey;
 
     if (value !== undefined) {
       result[dbKey] = value;

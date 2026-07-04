@@ -9,8 +9,13 @@ export function useUpdateTaskMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ taskId, updates }: { taskId: string; updates: TaskUpdate }) =>
-      updateTask(taskId, updates),
+    mutationFn: ({
+      taskId,
+      updates,
+    }: {
+      taskId: string;
+      updates: TaskUpdate;
+    }) => updateTask(taskId, updates),
 
     onMutate: async ({ taskId, updates }) => {
       await queryClient.cancelQueries({

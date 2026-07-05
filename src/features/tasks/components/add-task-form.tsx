@@ -69,10 +69,8 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             <Input
               id="add-title"
               placeholder="Add a task"
-              aria-invalid={!!error?.message}
-              aria-describedby={
-                !!error?.message ? `add-title-error` : undefined
-              }
+              aria-invalid={!!errors?.title}
+              aria-describedby={!!errors?.title ? `add-title-error` : undefined}
               {...register('title')}
             />
           </FormField>

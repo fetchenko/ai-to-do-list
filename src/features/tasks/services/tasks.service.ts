@@ -6,7 +6,7 @@ import {
   getLastPosition,
 } from '@/features/tasks/repository/tasks.repository';
 import { TaskInsert } from '@/features/tasks/types/tasks.types';
-import { filterDeletedSubtasks } from '@/features/tasks/utils/tasks-helpers';
+import { filterDeletedSubtasks } from '@/features/tasks/utils/tasks.utils';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 

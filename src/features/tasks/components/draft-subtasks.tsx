@@ -11,6 +11,7 @@ import { DraftSubtaskRow } from '@/features/tasks/components/draft-subtask-row';
 import { useSaveSubtasks } from '@/features/tasks/hooks/use-save-subtasks';
 import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
+import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
 
 type DraftSubtasksProps = {
   task: Task;
@@ -21,10 +22,7 @@ type DraftSubtasksProps = {
 export function DraftSubtasks({ task, drafts, onDiscard }: DraftSubtasksProps) {
   const formDefaults = useMemo<DraftForm>(
     () => ({
-      drafts: drafts.map(({ description, ...draft }) => ({
-        ...draft,
-        description: description ?? '',
-      })),
+      drafts: normalizeAiTasks(drafts),
     }),
     [drafts]
   );

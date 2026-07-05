@@ -13,7 +13,7 @@ import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { getUserTasksClient } from '@/features/tasks/services/tasks.service';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { groupTasksByStatus } from '@/features/tasks/utils/tasks-helpers';
+import { groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 const TABS = [

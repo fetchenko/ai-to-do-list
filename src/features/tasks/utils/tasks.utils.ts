@@ -1,4 +1,4 @@
-import { GroupedTasks, Task } from '@/features/tasks/types/tasks.types';
+import { AiTask, GroupedTasks, Task } from '@/features/tasks/types/tasks.types';
 
 export const byPosition = (a: Task, b: Task) =>
   a.position.localeCompare(b.position);
@@ -34,3 +34,11 @@ export function groupTasksByStatus(tasks: Task[]) {
     { active: [], done: [], archived: [] }
   );
 }
+
+export const normalizeAiTask = (task: AiTask) => ({
+  id: task.id,
+  title: task.title ?? undefined,
+  description: task.description ?? undefined,
+});
+
+export const normalizeAiTasks = (tasks: AiTask[]) => tasks.map(normalizeAiTask);

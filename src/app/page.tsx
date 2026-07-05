@@ -4,7 +4,7 @@ import { AppFooter } from '@/components/layout/app-footer';
 import { AppHeader } from '@/components/layout/app-header';
 import { Container } from '@/components/layout/container';
 import ContentSkeleton from '@/features/home/components/content-skeleton';
-import UserContent from '@/features/home/components/user-content';
+import HomeContent from '@/features/home/components/home-content';
 
 export default function Home() {
   return (
@@ -13,7 +13,7 @@ export default function Home() {
 
       <Container className="flex flex-1 py-6 sm:py-10">
         <Suspense fallback={<ContentSkeleton />}>
-          <UserContent />
+          <HomeContent />
         </Suspense>
       </Container>
 

@@ -7,14 +7,15 @@ import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { FormError } from '@/components/blocks/form-error';
+import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { TaskInputDescription } from '@/features/tasks/components/task-input-description';
-import { TaskInputTitle } from '@/features/tasks/components/task-input-title';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
 import { cn } from '@/lib/utils/cn';
 
@@ -53,17 +54,28 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
         className
       )}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <fieldset
+        disabled={isSubmitting}
+        className="flex flex-col gap-2 sm:flex-row sm:items-start"
+      >
         <FormError message={error?.message} />
         <div className="flex-1 space-y-1">
-          <TaskInputTitle
+          <FormField
+            idPrefix="add-title"
+            label="Task"
+            error={errors.title?.message}
             hideLabel
-            inputProps={{ ...register('title'), disabled: isSubmitting }}
-            error={errors.title}
-            titleLabel="Task"
-            titlePlaceholder="Add a task…"
-          />
-
+          >
+            <Input
+              id="add-title"
+              placeholder="Add a task"
+              aria-invalid={!!error?.message}
+              aria-describedby={
+                !!error?.message ? `add-title-error` : undefined
+              }
+              {...register('title')}
+            />
+          </FormField>
           <Collapsible
             open={isDescriptionOpen}
             onOpenChange={setIsDescriptionOpen}
@@ -73,7 +85,6 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                disabled={isSubmitting}
                 className="text-muted-foreground hover:text-foreground h-8 px-2"
               >
                 <ChevronDown
@@ -90,26 +101,28 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             </CollapsibleTrigger>
 
             <CollapsibleContent className="pt-2">
-              <TaskInputDescription
+              <FormField
+                idPrefix="add-description"
+                label="Description (optional)"
+                error={errors.description?.message}
                 hideLabel
-                inputProps={{
-                  ...register('description'),
-                  disabled: isSubmitting,
-                }}
-                error={errors.description}
-                descriptionLabel="Description (optional)"
-                descriptionPlaceholder="Add detail for this task"
-                descriptionRows={3}
-              />
+              >
+                <Textarea
+                  id="add-description"
+                  rows={3}
+                  placeholder="Add detail for this task"
+                  className="resize-y"
+                  aria-invalid={!!errors.description}
+                  aria-describedby={
+                    !!errors.description ? `add-description-error` : undefined
+                  }
+                  {...register('description')}
+                />
+              </FormField>
             </CollapsibleContent>
           </Collapsible>
         </div>
-
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full shrink-0 sm:w-auto"
-        >
+        <Button type="submit" className="w-full shrink-0 sm:w-auto">
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -122,7 +135,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             </>
           )}
         </Button>
-      </div>
+      </fieldset>
     </form>
   );
 }

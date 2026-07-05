@@ -8,11 +8,12 @@ import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { TaskList } from '@/features/tasks/components/task-list';
+import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { getUserTasks } from '@/features/tasks/services/tasks.service';
-import type { Task } from '@/features/tasks/types/tasks.types';
-import { groupTasksByStatus } from '@/features/tasks/utils/tasks-helpers';
+import { getUserTasksClient } from '@/features/tasks/services/tasks.service';
+import { Task } from '@/features/tasks/types/tasks.types';
+import { groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 const TABS = [
@@ -31,7 +32,7 @@ export default function UserTasks() {
     error,
   } = useQuery({
     queryKey: taskKeys.all,
-    queryFn: getUserTasks,
+    queryFn: getUserTasksClient,
   });
 
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
@@ -43,36 +44,38 @@ export default function UserTasks() {
       <div className="flex flex-col gap-4 sm:gap-6">
         <AddTaskForm error={createTaskError} onAddTask={createTask} />
 
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        {error ? (
+          <ErrorAlert
+            className="mt-4"
+            message={getFriendlyErrorMessage(error)}
+          />
+        ) : (
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              {TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
             {TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
+              <TabsContent
+                key={tab.value}
+                value={tab.value}
+                className="mt-4 focus-visible:outline-none"
+              >
+                {isPending ? (
+                  <TasksSkeleton />
+                ) : (
+                  <TaskList
+                    tasks={tasksByStatus[tab.value]}
+                    emptyLabel={tab.emptyLabel}
+                  />
+                )}
+              </TabsContent>
             ))}
-          </TabsList>
-
-          {error && (
-            <ErrorAlert
-              className="mt-4"
-              message={getFriendlyErrorMessage(error)}
-            />
-          )}
-
-          {TABS.map((tab) => (
-            <TabsContent
-              key={tab.value}
-              value={tab.value}
-              className="mt-4 focus-visible:outline-none"
-            >
-              <TaskList
-                tasks={tasksByStatus[tab.value]}
-                isLoading={isPending}
-                emptyLabel={tab.emptyLabel}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+          </Tabs>
+        )}
       </div>
     </div>
   );

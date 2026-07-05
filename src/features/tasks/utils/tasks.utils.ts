@@ -1,4 +1,4 @@
-import { Task } from '@/features/tasks/types/tasks.types';
+import { AiTask, GroupedTasks, Task } from '@/features/tasks/types/tasks.types';
 
 export const byPosition = (a: Task, b: Task) =>
   a.position.localeCompare(b.position);
@@ -18,15 +18,15 @@ export function updateParentSubtasks(
   );
 }
 
-export async function filterDeletedSubtasks(tasks: Task[]) {
+export function filterDeletedSubtasks(tasks: Task[]) {
   return tasks.map((task) => ({
     ...task,
-    subtasks: task.subtasks?.filter((subtask) => !subtask.deletedAt),
+    subtasks: task.subtasks?.filter((subtask: Task) => !subtask.deletedAt),
   }));
 }
 
 export function groupTasksByStatus(tasks: Task[]) {
-  return tasks.reduce<Record<Task['status'], Task[]>>(
+  return tasks.reduce<GroupedTasks>(
     (acc, task) => {
       (acc[task.status] ??= []).push(task);
       return acc;
@@ -34,3 +34,11 @@ export function groupTasksByStatus(tasks: Task[]) {
     { active: [], done: [], archived: [] }
   );
 }
+
+export const normalizeAiTask = (task: AiTask) => ({
+  id: task.id,
+  title: task.title ?? undefined,
+  description: task.description ?? undefined,
+});
+
+export const normalizeAiTasks = (tasks: AiTask[]) => tasks.map(normalizeAiTask);

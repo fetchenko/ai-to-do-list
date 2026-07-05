@@ -1,7 +1,8 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { memo } from 'react';
+
+import { Sparkles } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
@@ -13,112 +14,110 @@ import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
-import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
-import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
+import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
-import { AiTask, Task } from '@/features/tasks/types/tasks.types';
-import { AppError } from '@/shared/errors/app-error';
-import { ErrorCode } from '@/shared/errors/code';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { Task } from '@/features/tasks/types/tasks.types';
 
 type TaskItemProps = {
   task: Task;
+  className?: string;
 };
 
-export default function TaskItem({ task }: TaskItemProps) {
+function TaskItem({ task, className }: TaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
-  const setGeneratedSubtasks = useSubtaskStore(
-    (state) => state.setGeneratedSubtasks
-  );
-  const generateSubtaskForTask = useSubtaskStore(
-    (state) => state.generateSubtaskForTask
-  );
-  const setGeneratedSubtasksForTask = useSubtaskStore(
-    (state) => state.setGeneratedSubtasksForTask
-  );
+
   const { deleteWithUndo } = useDeleteTaskWithUndo();
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
-  const mutationSubtasks = useMutation({
-    mutationFn: async (id: string) => {
-      if (!id)
-        throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
+  const { drafts, generate, isPending, discard } = useSubtaskDrafts(task.id);
 
-      return await generateSubtasks(id);
-    },
-    onSuccess: (data: AiTask[]) => {
-      setGeneratedSubtasks(task.id, data);
-    },
-    onError: (error) => {
-      setGeneratedSubtasksForTask(null);
-      if (error instanceof AppError) {
-        toast.info(getFriendlyErrorMessage(error));
-        return;
-      }
-    },
-  });
-
-  const handleGenerateSubtasks = (id: string) => {
-    setGeneratedSubtasksForTask(id);
-    mutationSubtasks.mutate(id);
-  };
-
-  const editTask = (id: string) => {
-    setEditingTaskId(id);
-  };
+  const isEditing = editingTaskId === task.id;
+  const hasSubtasks = !!task.subtasks?.length;
+  const showDraftPanel = isPending || drafts !== null;
 
   return (
     <Card
       data-testid="task-item"
       data-task-title={task.title}
-      key={task.id}
-      className="space-y-3 p-4"
+      className={className}
     >
-      <div className="flex w-full items-center justify-between gap-3">
-        {editingTaskId && task.id === editingTaskId ? (
+      <article
+        aria-labelledby={`task-title-${task.id}`}
+        className="space-y-3 p-4"
+      >
+        {isEditing ? (
           <EditTaskForm task={task} />
         ) : (
-          <>
-            <div className="flex items-center gap-3">
-              <TaskCheckbox task={task} />
-              <div>
-                <p className="font-medium">{task.title}</p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <TaskCheckbox
+                task={task}
+                aria-label={`Mark "${task.title}" complete`}
+              />
+              <div className="min-w-0">
+                <p
+                  id={`task-title-${task.id}`}
+                  className="font-medium break-words"
+                >
+                  {task.title}
+                </p>
                 {task.description && (
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-sm break-words">
                     {task.description}
                   </p>
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <TaskActionsMenu
-                showGenerate
-                onGenerateSubtasks={() => handleGenerateSubtasks(task.id)}
-                onEdit={() => editTask(task.id)}
-                onDelete={() => deleteWithUndo(task)}
-              />
-            </div>
-          </>
+
+            <TaskActionsMenu
+              showGenerate
+              onGenerateSubtasks={() => generate()}
+              onEdit={() => setEditingTaskId(task.id)}
+              onDelete={() => deleteWithUndo(task)}
+            />
+          </div>
         )}
-      </div>
 
-      {!!task.subtasks?.length &&
-        task.subtasks.map((subtask) => (
-          <SubtaskItem key={subtask.id} task={subtask} />
-        ))}
+        {hasSubtasks && (
+          <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
+            {task.subtasks!.map((subtask) => (
+              <li key={subtask.id}>
+                <SubtaskItem task={subtask} />
+              </li>
+            ))}
+          </ul>
+        )}
 
-      {generateSubtaskForTask && generateSubtaskForTask === task.id && (
-        <>
-          {mutationSubtasks.isPending && <p>generating subtasks</p>}
-          {mutationSubtasks.isPending && <TasksSkeleton />}
-          <DraftSubtasks task={task} />
-        </>
-      )}
-      <AddTaskForm
-        error={createTaskError}
-        onAddTask={(values) => createTask({ ...values, parentTaskId: task.id })}
-      />
+        {showDraftPanel && (
+          <div aria-live="polite" className="space-y-2">
+            {isPending ? (
+              <>
+                <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                  <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+                  Generating subtasks…
+                </p>
+                <TasksSkeleton />
+              </>
+            ) : (
+              <DraftSubtasks
+                task={task}
+                drafts={drafts ?? []}
+                onDiscard={discard}
+              />
+            )}
+          </div>
+        )}
+
+        <AddTaskForm
+          error={createTaskError}
+          onAddTask={(values) =>
+            createTask({ ...values, parentTaskId: task.id })
+          }
+        />
+      </article>
     </Card>
   );
 }
+
+export default memo(TaskItem);

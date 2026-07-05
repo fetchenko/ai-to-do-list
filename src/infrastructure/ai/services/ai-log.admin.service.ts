@@ -6,7 +6,7 @@ import {
 } from '@/shared/errors/app-error';
 import { AiGeneration } from '@/shared/types/database.types';
 
-const MAX_AI_REQUESTS_PER_USER = 10;
+const MAX_AI_REQUESTS_PER_USER = 20;
 
 export async function updateAiLog(
   logId: string,

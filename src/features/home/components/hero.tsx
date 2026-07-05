@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Hero() {
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center">
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
       <section
         aria-labelledby="hero-title"
         className="container mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8"

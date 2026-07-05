@@ -13,4 +13,16 @@ export const taskSchema = z.object({
     .or(z.literal('')),
 });
 
-export type TaskFormFields = z.infer<typeof taskSchema>;
+export type TaskForm = z.infer<typeof taskSchema>;
+
+export const draftSchema = z.object({
+  drafts: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string().trim().min(1, 'Title is required'),
+      description: z.string().optional(),
+    })
+  ),
+});
+
+export type DraftForm = z.infer<typeof draftSchema>;

@@ -1,4 +1,4 @@
-import { TaskPreview } from '@/features/tasks/types/tasks.types';
+import { TaskPreview } from '@/features/tasks/types/database.types';
 import {
   getInitialAiLog,
   getSuccessAiLogs,

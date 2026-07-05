@@ -10,7 +10,7 @@ import UserTasks from '@/features/tasks/components/user-tasks';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { getUserTasksServer } from '@/features/tasks/services/tasks.server.service';
 
-export default async function UserContent() {
+export default async function HomeContent() {
   const user = await getUserClaims();
 
   if (!user) {

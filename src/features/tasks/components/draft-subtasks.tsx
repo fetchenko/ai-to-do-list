@@ -1,172 +1,111 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Sparkles } from 'lucide-react';
+import { useFieldArray, useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { taskKeys } from '@/features/tasks/constants/task.constants';
-import { saveSubtasks } from '@/features/tasks/services/subtasks.service';
-import { useSubtaskStore } from '@/features/tasks/stores/use-subtask-store';
-import { AiTask, Task, TaskInsert } from '@/features/tasks/types/tasks.types';
+import { DraftSubtaskRow } from '@/features/tasks/components/draft-subtask-row';
+import { useSaveSubtasks } from '@/features/tasks/hooks/use-save-subtasks';
+import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
+import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 
-interface TaskSubtasksProps {
+type DraftSubtasksProps = {
   task: Task;
-}
+  drafts: AiTask[];
+  onDiscard: () => void;
+};
 
-export function DraftSubtasks({ task }: TaskSubtasksProps) {
-  const draftSubtasks = useSubtaskStore((state) => state.generatedSubtasks);
-  const setGeneratedSubtasks = useSubtaskStore(
-    (state) => state.setGeneratedSubtasks
+export function DraftSubtasks({ task, drafts, onDiscard }: DraftSubtasksProps) {
+  const formDefaults = useMemo<DraftForm>(
+    () => ({
+      drafts: drafts.map(({ description, ...draft }) => ({
+        ...draft,
+        description: description ?? '',
+      })),
+    }),
+    [drafts]
   );
-  const activeSubtaskId = useSubtaskStore((state) => state.activeSubtaskId);
-  const setActiveSubastkId = useSubtaskStore(
-    (state) => state.setActiveSubtaskId
-  );
-  const updateSubtask = useSubtaskStore((state) => state.updateSubtask);
-  const deleteSubtask = useSubtaskStore((state) => state.deleteSubtask);
-  const draftSubtask = useSubtaskStore((state) => state.draftSubtask);
-  const setDraftSubtask = useSubtaskStore((state) => state.setDraftSubtask);
-  const resetActiveSubtask = useSubtaskStore(
-    (state) => state.resetActiveSubtask
-  );
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: async ({ subtasks }: { id: string; subtasks: TaskInsert[] }) =>
-      saveSubtasks(task.id, subtasks),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: taskKeys.all,
-      });
-      setGeneratedSubtasks('', []);
-    },
+  const { saveSubtasks, isSaving } = useSaveSubtasks(task.id);
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DraftForm>({
+    resolver: zodResolver(draftSchema),
+    defaultValues: formDefaults,
   });
 
-  if (mutation.isPending) {
+  const { fields, remove } = useFieldArray({ control, name: 'drafts' });
+
+  useEffect(() => {
+    reset(formDefaults);
+  }, [formDefaults, reset]);
+
+  if (fields.length === 0) {
     return (
-      <div className="mt-4 space-y-3 border-l pl-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <Skeleton className="h-4 w-4 rounded-full" />
-            <Skeleton className="h-9 flex-1" />
-          </div>
-        ))}
+      <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
+        No drafts left to review.
+        <Button
+          type="button"
+          variant="link"
+          className="h-auto p-0 pl-1"
+          onClick={onDiscard}
+        >
+          Close
+        </Button>
       </div>
     );
   }
 
-  const startEditSubtask = (subtask: AiTask) => {
-    setActiveSubastkId(subtask.id);
-    setDraftSubtask(subtask.title);
+  const onSubmit = async (values: DraftForm) => {
+    await saveSubtasks(values.drafts);
+    onDiscard();
   };
-
-  const handleUpdateSubtask = (taskId: string) => {
-    updateSubtask(taskId, { title: draftSubtask });
-    resetActiveSubtask();
-  };
-
-  const handleCancelEditSubtask = () => {
-    resetActiveSubtask();
-  };
-
-  const handleDeleteSubtask = (id: string) => {
-    deleteSubtask(id);
-  };
-
-  const handleSaveSubtasks = async () => {
-    mutation.mutate({ id: task.id, subtasks: draftSubtasks });
-  };
-
-  if (!draftSubtasks?.length) return null;
 
   return (
-    <div className="mt-4 space-y-3 border-l pl-4">
-      {draftSubtasks.map((subtask) => {
-        const isEditing = activeSubtaskId && activeSubtaskId === subtask.id;
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-3"
+      aria-label={`AI-generated draft subtasks for ${task.title}`}
+    >
+      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+        <span>AI-generated — tap any field to edit before adding</span>
+      </div>
+      <ul className="space-y-2">
+        {fields.map((field, index) => (
+          <DraftSubtaskRow
+            key={field.id}
+            titleRegister={register(`drafts.${index}.title`)}
+            descriptionRegister={register(`drafts.${index}.description`)}
+            titleError={errors.drafts?.[index]?.title?.message}
+            onRemove={() => remove(index)}
+          />
+        ))}
+      </ul>
 
-        return (
-          <Card
-            data-testid="draft-subtask"
-            data-subtask-title={subtask.title}
-            key={subtask.id}
-            className="p-3"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                {isEditing ? (
-                  <form
-                    className="flex w-full items-center justify-between gap-3"
-                    onSubmit={() => handleUpdateSubtask(subtask.id)}
-                  >
-                    <Input
-                      autoFocus
-                      value={draftSubtask ?? ''}
-                      onChange={(e) => setDraftSubtask(e.target.value)}
-                      className="flex-1"
-                    />
-                    <div className="flex gap-2">
-                      <Button variant="default" size="sm" type="submit">
-                        Save
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCancelEditSubtask}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <p className="text-muted-foreground text-sm">
-                      {subtask.title}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {!isEditing && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => startEditSubtask(subtask)}
-                >
-                  Edit
-                </Button>
-              )}
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive"
-                onClick={() => handleDeleteSubtask(subtask.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </Card>
-        );
-      })}
-
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
+          type="button"
           variant="outline"
-          disabled={mutation.isPending}
-          onClick={() => setGeneratedSubtasks('', [])}
+          onClick={onDiscard}
+          disabled={isSaving}
         >
-          Reject All
+          Discard
         </Button>
-
-        <Button
-          disabled={mutation.isPending}
-          onClick={() => handleSaveSubtasks()}
-        >
-          Accept All
+        <Button type="submit" disabled={isSaving}>
+          {isSaving
+            ? 'Adding…'
+            : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
         </Button>
       </div>
-    </div>
+    </form>
   );
 }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
-import { TaskFormFields } from '@/features/tasks/schema/tasks';
+import { TaskForm } from '@/features/tasks/schema/tasks';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
 
@@ -25,7 +25,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<TaskFormFields>({
+  } = useForm<TaskForm>({
     defaultValues: {
       title: task.title,
       description: task.description || '',
@@ -36,7 +36,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
     resetTaskStore();
   };
 
-  const handleSave = (newTask: TaskFormFields) => {
+  const handleSave = (newTask: TaskForm) => {
     updateTaskMutation.mutate(
       {
         taskId: task.id,

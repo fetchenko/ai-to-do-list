@@ -1,5 +1,5 @@
 import TaskItem from '@/features/tasks/components/task-item';
-import type { Task } from '@/features/tasks/types/tasks.types';
+import { Task } from '@/features/tasks/types/tasks.types';
 
 interface TaskListProps {
   tasks: Task[];

@@ -2,7 +2,7 @@ import { generateKeyBetween } from 'fractional-indexing';
 
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import {
-  fetchTasks,
+  fetchTasksClient,
   getLastPosition,
 } from '@/features/tasks/repository/tasks.repository';
 import { TaskInsert } from '@/features/tasks/types/tasks.types';
@@ -28,8 +28,8 @@ export async function addTask(newTask: TaskInsert) {
   return data;
 }
 
-export async function getUserTasks() {
-  const tasks = await fetchTasks();
+export async function getUserTasksClient() {
+  const tasks = await fetchTasksClient();
 
   return filterDeletedSubtasks(tasks);
 }

@@ -16,11 +16,11 @@ import {
 } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { TaskFormFields, taskSchema } from '@/features/tasks/schema/tasks';
+import { TaskForm, taskSchema } from '@/features/tasks/schema/tasks';
 import { cn } from '@/lib/utils/cn';
 
 interface AddTaskFormProps {
-  onAddTask: (values: TaskFormFields) => Promise<null>;
+  onAddTask: (values: TaskForm) => Promise<null>;
   className?: string;
   error?: Error | null;
 }
@@ -33,7 +33,7 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<TaskFormFields>({
+  } = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
     defaultValues: { title: '', description: '' },
   });

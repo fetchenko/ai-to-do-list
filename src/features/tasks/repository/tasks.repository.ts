@@ -1,16 +1,15 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 import {
   mapDbTasks,
   mapTaskUpdateToDb,
 } from '@/features/tasks/mappers/tasks.mapper';
-import { DbTask, TaskUpdate } from '@/features/tasks/types/tasks.types';
+import { DbTask } from '@/features/tasks/types/database.types';
+import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 
-export async function fetchTasks() {
-  const supabase = createClient();
-
+export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = (await supabase
     .from('tasks')
     .select(
@@ -32,6 +31,12 @@ export async function fetchTasks() {
   }
 
   return mapDbTasks(data);
+}
+
+export async function fetchTasksClient() {
+  const supabase = createClient();
+
+  return fetchTasks(supabase);
 }
 
 export async function updateTask(id: string, newTask: TaskUpdate) {

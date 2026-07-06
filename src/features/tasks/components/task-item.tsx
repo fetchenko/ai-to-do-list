@@ -17,6 +17,11 @@ import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-wi
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
+import { SortableItem } from '@/components/sortable/sortable-item';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { useReorderTask } from '@/features/tasks/hooks/use-reorder-task';
 
 type TaskItemProps = {
   task: Task;
@@ -33,6 +38,37 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   const { drafts, generate, isPending, discard } = useSubtaskDrafts(task.id);
 
+  const { reorderTask } = useReorderTask();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = subtasks.findIndex((t) => t.id === active.id);
+    const newIndex = subtasks.findIndex((t) => t.id === over.id);
+
+    const reordered = arrayMove(subtasks, oldIndex, newIndex);
+
+    const movedIndex = reordered.findIndex((t) => t.id === active.id);
+
+
+    const beforeId = reordered[movedIndex - 1]?.id ?? null;
+    const afterId = reordered[movedIndex + 1]?.id ?? null;
+
+    reorderTask({
+      taskId: active.id as string,
+      parentTaskId: task.id,
+      beforeId,
+      afterId,
+    });
+  };
   const isEditing = editingTaskId === task.id;
   const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
@@ -81,13 +117,30 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
         )}
 
         {hasSubtasks && (
-          <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
-            {subtasks!.map((subtask) => (
-              <li key={subtask.id}>
-                <SubtaskItem task={subtask} />
-              </li>
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={subtasks.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
+                {subtasks.map((subtask) => (
+                  <li key={subtask.id}>
+                    <SortableItem
+                      id={subtask.id}
+                      disabled={editingTaskId === subtask.id}
+                    >
+                      <SubtaskItem task={subtask} />
+                    </SortableItem>
+                  </li>
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
 
         {showDraftPanel && (
@@ -122,3 +175,4 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 }
 
 export default memo(TaskItem);
+

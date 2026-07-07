@@ -7,16 +7,11 @@ import { Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
-import EditTaskForm from '@/features/tasks/components/edit-task-form';
-import SubtaskItem from '@/features/tasks/components/subtask-item';
-import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
-import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
-import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
+import { TaskContent } from '@/features/tasks/components/task-content';
 
 type TaskItemProps = {
   task: Task;
@@ -25,16 +20,10 @@ type TaskItemProps = {
 };
 
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
-  const editingTaskId = useTaskStore((state) => state.editingTaskId);
-  const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
-
-  const { deleteWithUndo } = useDeleteTaskWithUndo();
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
   const { drafts, generate, isPending, discard } = useSubtaskDrafts(task.id);
 
-  const isEditing = editingTaskId === task.id;
-  const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
 
   return (
@@ -47,44 +36,19 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
         aria-labelledby={`task-title-${task.id}`}
         className="space-y-3 p-4"
       >
-        {isEditing ? (
-          <EditTaskForm task={task} />
-        ) : (
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-start gap-3">
-              <TaskCheckbox
-                task={task}
-                aria-label={`Mark "${task.title}" complete`}
-              />
-              <div className="min-w-0">
-                <p
-                  id={`task-title-${task.id}`}
-                  className="font-medium break-words"
-                >
-                  {task.title}
-                </p>
-                {task.description && (
-                  <p className="text-muted-foreground text-sm break-words">
-                    {task.description}
-                  </p>
-                )}
-              </div>
-            </div>
+        <TaskContent
+          task={task}
+          showGenerate
+          onGenerateSubtasks={generate}
+        />
 
-            <TaskActionsMenu
-              showGenerate
-              onGenerateSubtasks={() => generate()}
-              onEdit={() => setEditingTaskId(task.id)}
-              onDelete={() => deleteWithUndo(task)}
-            />
-          </div>
-        )}
-
-        {hasSubtasks && (
+        {subtasks.length > 0 && (
           <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
-            {subtasks!.map((subtask) => (
+            {subtasks.map((subtask) => (
               <li key={subtask.id}>
-                <SubtaskItem task={subtask} />
+                <Card className="space-y-3 p-4">
+                  <TaskContent task={subtask} />
+                </Card>
               </li>
             ))}
           </ul>

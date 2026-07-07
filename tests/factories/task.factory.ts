@@ -15,7 +15,6 @@ export function createTask(overrides: Partial<Task> = {}): Task {
     dueDate: null,
     parentTaskId: null,
     updatedAt: null,
-    subtasks: [],
     ...overrides,
   };
 }

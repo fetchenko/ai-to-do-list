@@ -8,33 +8,23 @@ import {
   restoreToCache,
   updateTaskInCache,
 } from '@/features/tasks/utils/tasks-cache';
+import { buildGroups } from '@/features/tasks/utils/tasks.utils';
 
 describe('task cache utils', () => {
   const tasks: Task[] = [
+    createTask({ id: 'task-1', title: 'Task 1', position: 'a0' }),
+    createTask({ id: 'task-2', title: 'Task 2', position: 'a1' }),
     createTask({
-      id: 'task-1',
-      title: 'Task 1',
+      id: 'sub-1',
+      title: 'Subtask 1',
+      parentTaskId: 'task-2',
       position: 'a0',
-      subtasks: [],
     }),
     createTask({
-      id: 'task-2',
-      title: 'Task 2',
-      position: 'a1',
-      subtasks: [
-        createTask({
-          id: 'sub-1',
-          title: 'Subtask 1',
-          parentTaskId: 'task-2',
-          position: 'a0',
-        }),
-        createTask({
-          id: 'sub-2',
-          title: 'Subtask 2',
-          parentTaskId: 'task-2',
-          position: 'a2',
-        }),
-      ],
+      id: 'sub-2',
+      title: 'Subtask 2',
+      parentTaskId: 'task-2',
+      position: 'a2',
     }),
   ];
 
@@ -74,11 +64,10 @@ describe('task cache utils', () => {
         title: 'Updated Subtask',
       });
 
-      const parent = result.find((t) => t.id === 'task-2');
-
-      expect(parent?.subtasks?.find((s) => s.id === 'sub-1')?.title).toBe(
+      expect(result.find((t) => t.id === 'sub-1')?.title).toBe(
         'Updated Subtask'
       );
+      expect(result.find((t) => t.id === 'sub-2')?.title).toBe('Subtask 2');
     });
 
     it('does not modify tasks when id is not found', () => {
@@ -91,68 +80,55 @@ describe('task cache utils', () => {
   });
 
   describe('removeFromCache', () => {
-    it('removes a root task', () => {
+    it('removes a root task and cascades to its subtasks', () => {
       const result = removeFromCache(tasks, {
-        id: 'task-1',
+        id: 'task-2',
+        parentTaskId: null,
       } as Task);
 
-      expect(result.map((t) => t.id)).toEqual(['task-2']);
+      expect(result.map((t) => t.id)).toEqual(['task-1']);
     });
 
-    it('removes a subtask from its parent', () => {
+    it('removes only the subtask when removing a subtask directly', () => {
       const result = removeFromCache(tasks, {
         id: 'sub-1',
         parentTaskId: 'task-2',
       } as Task);
 
-      const parent = result.find((t) => t.id === 'task-2');
-
-      expect(parent?.subtasks?.map((s) => s.id)).toEqual(['sub-2']);
+      expect(result.map((t) => t.id)).toEqual(['task-1', 'task-2', 'sub-2']);
     });
   });
 
   describe('restoreToCache', () => {
     it('restores a root task and keeps tasks sorted by position', () => {
       const cache = [
-        createTask({
-          id: 'task-1',
-          position: 'a0',
-          subtasks: [],
-        }),
-        createTask({
-          id: 'task-3',
-          position: 'a2',
-          subtasks: [],
-        }),
+        createTask({ id: 'task-1', position: 'a0' }),
+        createTask({ id: 'task-3', position: 'a2' }),
       ];
 
       const result = restoreToCache(cache, {
         id: 'task-2',
+        parentTaskId: null,
         position: 'a1',
       } as Task);
 
       expect(result.map((t) => t.id)).toEqual(['task-1', 'task-2', 'task-3']);
     });
 
-    it('restores a subtask and keeps subtasks sorted by position', () => {
+    it('restores a subtask alongside its siblings, sorted by position', () => {
       const cache = [
-        {
-          id: 'task-1',
+        createTask({ id: 'task-1', position: 'a0' }),
+        createTask({
+          id: 'sub-1',
+          parentTaskId: 'task-1',
           position: 'a0',
-          subtasks: [
-            {
-              id: 'sub-1',
-              parentTaskId: 'task-1',
-              position: 'a0',
-            },
-            {
-              id: 'sub-3',
-              parentTaskId: 'task-1',
-              position: 'a2',
-            },
-          ],
-        },
-      ] as Task[];
+        }),
+        createTask({
+          id: 'sub-3',
+          parentTaskId: 'task-1',
+          position: 'a2',
+        }),
+      ];
 
       const result = restoreToCache(cache, {
         id: 'sub-2',
@@ -160,11 +136,51 @@ describe('task cache utils', () => {
         position: 'a1',
       } as Task);
 
-      expect(result[0].subtasks?.map((s) => s.id)).toEqual([
+      expect(result.map((t) => t.id)).toEqual([
+        'task-1',
         'sub-1',
         'sub-2',
         'sub-3',
       ]);
+    });
+
+    it('restores a root task together with its cascaded subtasks', () => {
+      const cache = [createTask({ id: 'task-1', position: 'a0' })];
+
+      const result = restoreToCache(
+        cache,
+        { id: 'task-2', parentTaskId: null, position: 'a1' } as Task,
+        [
+          { id: 'sub-2', parentTaskId: 'task-2', position: 'a2' } as Task,
+          { id: 'sub-1', parentTaskId: 'task-2', position: 'a0' } as Task,
+        ]
+      );
+
+      expect(result.map((t) => t.id)).toEqual([
+        'task-1',
+        'sub-1',
+        'task-2',
+        'sub-2',
+      ]);
+
+      const groups = buildGroups(result);
+      const task2Group = groups.find((g) => g.parent.id === 'task-2');
+      expect(task2Group?.subtasks.map((s) => s.id)).toEqual(['sub-1', 'sub-2']);
+    });
+
+    it('is idempotent: does not duplicate a task that is already present', () => {
+      const cache = [
+        createTask({ id: 'task-1', position: 'a0' }),
+        createTask({ id: 'task-2', position: 'a1' }),
+      ];
+
+      const result = restoreToCache(cache, {
+        id: 'task-2',
+        parentTaskId: null,
+        position: 'a1',
+      } as Task);
+
+      expect(result).toEqual(cache);
     });
   });
 });

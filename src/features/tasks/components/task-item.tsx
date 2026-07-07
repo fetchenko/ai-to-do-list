@@ -20,10 +20,11 @@ import { Task } from '@/features/tasks/types/tasks.types';
 
 type TaskItemProps = {
   task: Task;
+  subtasks: Task[];
   className?: string;
 };
 
-function TaskItem({ task, className }: TaskItemProps) {
+function TaskItem({ task, subtasks, className }: TaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
 
@@ -33,7 +34,7 @@ function TaskItem({ task, className }: TaskItemProps) {
   const { drafts, generate, isPending, discard } = useSubtaskDrafts(task.id);
 
   const isEditing = editingTaskId === task.id;
-  const hasSubtasks = !!task.subtasks?.length;
+  const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
 
   return (
@@ -81,7 +82,7 @@ function TaskItem({ task, className }: TaskItemProps) {
 
         {hasSubtasks && (
           <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
-            {task.subtasks!.map((subtask) => (
+            {subtasks!.map((subtask) => (
               <li key={subtask.id}>
                 <SubtaskItem task={subtask} />
               </li>

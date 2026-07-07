@@ -25,7 +25,7 @@ const TABS = [
   emptyLabel: string;
 }[];
 
-export default function UserTasks() {
+export default function TasksManager() {
   const {
     data: tasks = [],
     isPending,

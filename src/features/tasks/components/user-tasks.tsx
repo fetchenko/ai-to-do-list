@@ -11,7 +11,7 @@ import { TaskList } from '@/features/tasks/components/task-list';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { getUserTasksClient } from '@/features/tasks/services/tasks.service';
+import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
@@ -32,7 +32,7 @@ export default function UserTasks() {
     error,
   } = useQuery({
     queryKey: taskKeys.all,
-    queryFn: getUserTasksClient,
+    queryFn: fetchTasksClient,
   });
 
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
@@ -68,7 +68,7 @@ export default function UserTasks() {
                   <TasksSkeleton />
                 ) : (
                   <TaskList
-                    tasks={tasksByStatus[tab.value]}
+                    groups={tasksByStatus[tab.value]}
                     emptyLabel={tab.emptyLabel}
                   />
                 )}

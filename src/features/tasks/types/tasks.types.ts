@@ -14,11 +14,13 @@ export type Task = {
   title: string;
   updatedAt: string | null;
   userId: string;
-  subtasks?: Task[];
 };
 
 export type TaskInsert = Partial<Task> & Required<Pick<Task, 'title'>>;
 export type TaskUpdate = Partial<Omit<Task, 'subtasks'>>;
 export type AiTask = Partial<Task> & Required<Pick<Task, 'id' | 'title'>>;
 
-export type GroupedTasks = Record<Task['status'], Task[]>;
+export type TaskGroup = {
+  parent: Task;
+  subtasks: Task[];
+};

@@ -1,39 +1,7 @@
-import { AiTask, GroupedTasks, Task } from '@/features/tasks/types/tasks.types';
+import { AiTask, Task, TaskGroup } from '@/features/tasks/types/tasks.types';
 
 export const byPosition = (a: Task, b: Task) =>
   a.position.localeCompare(b.position);
-
-export function updateParentSubtasks(
-  tasks: Task[],
-  parentId: string,
-  updater: (subtasks: Task[]) => Task[]
-): Task[] {
-  return tasks.map((task) =>
-    task.id === parentId
-      ? {
-          ...task,
-          subtasks: updater(task.subtasks ?? []),
-        }
-      : task
-  );
-}
-
-export function filterDeletedSubtasks(tasks: Task[]) {
-  return tasks.map((task) => ({
-    ...task,
-    subtasks: task.subtasks?.filter((subtask: Task) => !subtask.deletedAt),
-  }));
-}
-
-export function groupTasksByStatus(tasks: Task[]) {
-  return tasks.reduce<GroupedTasks>(
-    (acc, task) => {
-      (acc[task.status] ??= []).push(task);
-      return acc;
-    },
-    { active: [], done: [], archived: [] }
-  );
-}
 
 export const normalizeAiTask = (task: AiTask) => ({
   id: task.id,
@@ -42,3 +10,36 @@ export const normalizeAiTask = (task: AiTask) => ({
 });
 
 export const normalizeAiTasks = (tasks: AiTask[]) => tasks.map(normalizeAiTask);
+
+export function buildGroups(tasks: Task[]): TaskGroup[] {
+  const bySiblingKey = new Map<string | null, Task[]>();
+
+  for (const task of tasks) {
+    const key = task.parentTaskId;
+    const siblings = bySiblingKey.get(key);
+    if (siblings) siblings.push(task);
+    else bySiblingKey.set(key, [task]);
+  }
+
+  const topLevel = bySiblingKey.get(null) ?? [];
+  return topLevel.map((parent) => ({
+    parent,
+    subtasks: bySiblingKey.get(parent.id) ?? [],
+  }));
+}
+
+export function groupTasksByStatus(tasks: Task[]) {
+  const groups = buildGroups(tasks);
+  const initial: Record<Task['status'], TaskGroup[]> = {
+    active: [],
+    done: [],
+    archived: [],
+  };
+
+  return groups.reduce((acc, group) => {
+    const bucket = acc[group.parent.status];
+    if (bucket) bucket.push(group);
+
+    return acc;
+  }, initial);
+}

@@ -1,36 +1,25 @@
-import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 import {
-  mapDbTasks,
+  mapDbTask,
   mapTaskUpdateToDb,
 } from '@/features/tasks/mappers/tasks.mapper';
-import { DbTask } from '@/features/tasks/types/database.types';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 
 export async function fetchTasks(supabase: SupabaseClient) {
-  const { data, error } = (await supabase
+  const { data, error } = await supabase
     .from('tasks')
-    .select(
-      `
-    *,
-    subtasks:tasks!parent_task_id(*)
-  `
-    )
+    .select('*')
     .order('position')
-    .order('position', { referencedTable: 'subtasks', ascending: true })
-    .is('parent_task_id', null)
-    .is('deleted_at', null)) as {
-    data: DbTask[] | null;
-    error: PostgrestError | null;
-  };
+    .is('deleted_at', null);
 
   if (error) {
     throw fromSupabaseError(error);
   }
 
-  return mapDbTasks(data);
+  return data.map(mapDbTask);
 }
 
 export async function fetchTasksClient() {

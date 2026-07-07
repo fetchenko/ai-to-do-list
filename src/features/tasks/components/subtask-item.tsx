@@ -8,14 +8,14 @@ import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-wi
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
 
-type TaskItemProps = {
+type SubtaskItemProps = {
   task: Task;
 };
 type EditTaskForm = {
   title: string;
 };
 
-export default function SubtaskItem({ task }: TaskItemProps) {
+export default function SubtaskItem({ task }: SubtaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
   const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
   const { deleteWithUndo } = useDeleteTaskWithUndo();

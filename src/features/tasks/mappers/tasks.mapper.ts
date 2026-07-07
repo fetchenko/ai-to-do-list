@@ -49,15 +49,6 @@ export function mapDbTask(dbTask: DbTask): Task {
   };
 }
 
-export function mapDbTasks(dbTasks: DbTask[] | null): Task[] {
-  return dbTasks
-    ? dbTasks.map((dbTask) => ({
-        ...mapDbTask(dbTask),
-        subtasks: (dbTask.subtasks ?? []).map(mapDbTask),
-      }))
-    : [];
-}
-
 function mapTaskBase(task: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
 

@@ -6,7 +6,7 @@ import {
 
 import { getUserClaims } from '@/features/auth/repository/auth.server.repository';
 import Hero from '@/features/home/components/hero';
-import UserTasks from '@/features/tasks/components/user-tasks';
+import TasksManager from '@/features/tasks/components/tasks-manager';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { fetchTasksServer } from '@/features/tasks/repository/tasks.server.repository';
 
@@ -26,7 +26,7 @@ export default async function HomeContent() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <UserTasks />
+      <TasksManager />
     </HydrationBoundary>
   );
 }

@@ -9,10 +9,11 @@ import { cn } from '@/lib/utils';
 type SortableItemProps = {
   id: string;
   disabled?: boolean;
+  label?: string;
   children: ReactNode;
 };
 
-export function SortableItem({ id, disabled, children }: SortableItemProps) {
+export function SortableItem({ id, disabled, label, children }: SortableItemProps) {
   const {
     attributes,
     listeners,
@@ -33,6 +34,7 @@ export function SortableItem({ id, disabled, children }: SortableItemProps) {
       style={style}
       {...attributes}
       {...listeners}
+      aria-label={label}
       className={cn(
         'touch-none',
         isDragging && 'z-10 opacity-70',

@@ -12,10 +12,10 @@ type ReorderArgs = {
   afterId: string | null;
 };
 
-function getSiblingList(tasks: Task[], parentTaskId: string | null): Task[] {
-  if (parentTaskId === null) return tasks;
-  const parent = tasks.find((t) => t.id === parentTaskId);
-  return parent?.subtasks ?? [];
+export function getSiblings(tasks: Task[], parentTaskId: string | null) {
+  return tasks
+    .filter((task) => task.parentTaskId === parentTaskId)
+    .sort((a, b) => a.position.localeCompare(b.position));
 }
 
 function computeNewPosition(
@@ -24,7 +24,7 @@ function computeNewPosition(
   beforeId: string | null,
   afterId: string | null
 ) {
-  const siblings = getSiblingList(tasks, parentTaskId);
+  const siblings = getSiblings(tasks, parentTaskId);
   const before = siblings.find((t) => t.id === beforeId)?.position ?? null;
   const after = siblings.find((t) => t.id === afterId)?.position ?? null;
 
@@ -54,58 +54,23 @@ export function useReorderTask() {
       return { taskId, parentTaskId, newPosition };
     },
 
-    onMutate: async ({ taskId, parentTaskId, beforeId, afterId }) => {
+    onMutate: async ({ taskId }) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.all });
       const previous = queryClient.getQueryData<Task[]>(taskKeys.all);
 
-      queryClient.setQueryData<Task[]>(taskKeys.all, (old) => {
-        if (!old) return old;
-
-        const updateList = (list: Task[]) =>
-          list.map((t) =>
-            t.id === taskId
-              ? { ...t, position: 'optimistic' } // optional placeholder
-              : t
-          );
-
-        return old.map((t) => {
-          if (parentTaskId === null) {
-            return t.id === taskId ? { ...t, position: 'optimistic' } : t;
-          }
-
-          if (t.id !== parentTaskId) return t;
-
-          return {
-            ...t,
-            subtasks: updateList(t.subtasks ?? []),
-          };
-        });
-      });
+      queryClient.setQueryData<Task[]>(taskKeys.all, (old) =>
+        old?.map((t) =>
+          t.id === taskId ? { ...t, position: 'optimistic' } : t
+        )
+      );
 
       return { previous };
     },
 
-    onSuccess: (data) => {
-      const { taskId, newPosition } = data;
-
-      queryClient.setQueryData<Task[]>(taskKeys.all, (old) => {
-        if (!old) return old;
-
-        return old.map((t) => {
-          if (t.id === taskId) {
-            return { ...t, position: newPosition };
-          }
-
-          if (!t.subtasks) return t;
-
-          return {
-            ...t,
-            subtasks: t.subtasks.map((st) =>
-              st.id === taskId ? { ...st, position: newPosition } : st
-            ),
-          };
-        });
-      });
+    onSuccess: ({ taskId, newPosition }) => {
+      queryClient.setQueryData<Task[]>(taskKeys.all, (old) =>
+        old?.map((t) => (t.id === taskId ? { ...t, position: newPosition } : t))
+      );
     },
 
     onError: (_err, _vars, context) => {

@@ -4,14 +4,7 @@ import { useReorderTask } from '@/features/tasks/hooks/use-reorder-task';
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { SortableItem } from '@/components/sortable/sortable-item';
 import { TaskGroup } from '@/features/tasks/types/tasks.types';
-import { closestCenter, DndContext } from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useReorderTask } from '@/features/tasks/hooks/use-reorder-task';
-import { DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates, } from '@dnd-kit/sortable';
 
 interface TaskListProps {
   groups: TaskGroup[];

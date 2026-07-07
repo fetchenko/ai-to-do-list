@@ -3,11 +3,16 @@
 import {
   DndContext,
   closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core';
 
 import {
   SortableContext,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 
 type Props = {
@@ -16,19 +21,37 @@ type Props = {
   onDragEnd: (activeId: string, overId: string) => void;
 };
 
-export function SortableList({ items, children, onDragEnd }: Props) {
+export function SortableList({
+  items,
+  children,
+  onDragEnd,
+}: Props) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={({ active, over }) => {
-        if (!over) return;
-        if (active.id === over.id) return;
+        if (!over || active.id === over.id) return;
 
-        onDragEnd(String(active.id), String(over.id));
+        onDragEnd(
+          String(active.id),
+          String(over.id)
+        );
       }}
     >
       <SortableContext
-        items={items.map(i => i.id)}
+        items={items.map(item => item.id)}
         strategy={verticalListSortingStrategy}
       >
         {children}

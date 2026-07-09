@@ -11,7 +11,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col">
       <AppHeader />
 
-      <Container className="flex flex-1 py-6 sm:py-10">
+      <Container className="flex flex-1 justify-center py-6 sm:py-10">
         <Suspense fallback={<ContentSkeleton />}>
           <HomeContent />
         </Suspense>

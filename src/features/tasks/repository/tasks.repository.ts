@@ -60,3 +60,22 @@ export async function getLastPosition(parentTaskId?: string | null) {
 
   return data;
 }
+
+export async function moveTask(taskId: string, newPosition: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .update(
+      mapTaskUpdateToDb({
+        position: newPosition,
+      })
+    )
+    .eq('id', taskId);
+
+  if (error) {
+    throw fromSupabaseError(error);
+  }
+
+  return data;
+}

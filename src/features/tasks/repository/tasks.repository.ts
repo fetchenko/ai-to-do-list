@@ -12,6 +12,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
+    .order('parent_task_id')
     .order('position')
     .is('deleted_at', null);
 

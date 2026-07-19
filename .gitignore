@@ -53,5 +53,3 @@ launch.json
 /playwright/.auth/
 
 /supabase/.temp
-
-.ai

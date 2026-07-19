@@ -8,7 +8,7 @@ import {
   restoreToCache,
   updateTaskInCache,
 } from '@/features/tasks/utils/tasks-cache';
-import { buildGroups } from '@/features/tasks/utils/tasks.utils';
+import { groupTasksByParent } from '@/features/tasks/utils/tasks.utils';
 
 describe('task cache utils', () => {
   const tasks: Task[] = [
@@ -163,7 +163,7 @@ describe('task cache utils', () => {
         'sub-2',
       ]);
 
-      const groups = buildGroups(result);
+      const groups = groupTasksByParent(result);
       const task2Group = groups.find((g) => g.parent.id === 'task-2');
       expect(task2Group?.subtasks.map((s) => s.id)).toEqual(['sub-1', 'sub-2']);
     });

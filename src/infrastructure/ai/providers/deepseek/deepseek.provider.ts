@@ -3,6 +3,7 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import { serverEnv } from '@/shared/env/server-env';
 import { ResponseFormatError } from '@/shared/errors/app-error';
 
 export default class DeepSeekProvider implements AIProvider {
@@ -13,7 +14,7 @@ export default class DeepSeekProvider implements AIProvider {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.DEEPSEEK_KEY}`,
+        Authorization: `Bearer ${serverEnv.DEEPSEEK_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

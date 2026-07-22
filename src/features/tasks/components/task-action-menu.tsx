@@ -39,12 +39,12 @@ export function TaskActionsMenu({
   const actions: Action[] = [
     ...(showGenerate && onGenerateSubtasks
       ? [
-          {
-            key: 'generate',
-            label: 'Generate subtasks',
-            onClick: onGenerateSubtasks,
-          },
-        ]
+        {
+          key: 'generate',
+          label: 'Generate subtasks',
+          onClick: onGenerateSubtasks,
+        },
+      ]
       : []),
     { key: 'edit', label: 'Edit', onClick: onEdit },
     { key: 'delete', label: 'Delete', onClick: onDelete, destructive: true },

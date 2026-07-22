@@ -7,6 +7,7 @@ import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
+import { testIds } from '@/shared/testing/test-ids';
 
 type SubtaskItemProps = {
   task: Task;
@@ -26,8 +27,8 @@ export default function SubtaskItem({ task }: SubtaskItemProps) {
 
   return (
     <Card
-      data-testid="task-item"
-      data-task-title={task.title}
+      data-testid={testIds.subtask.item}
+      data-task-id={task.id}
       key={task.id}
       className="space-y-3 p-4"
     >

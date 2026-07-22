@@ -17,6 +17,7 @@ import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-wi
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
+import { testIds } from '@/shared/testing/test-ids';
 
 type TaskItemProps = {
   task: Task;
@@ -39,8 +40,8 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   return (
     <Card
-      data-testid="task-item"
-      data-task-title={task.title}
+      data-testid={testIds.task.item}
+      data-task-id={task.id}
       className={className}
     >
       <article
@@ -53,11 +54,13 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-start gap-3">
               <TaskCheckbox
+                data-testid="task-checkbox"
                 task={task}
                 aria-label={`Mark "${task.title}" complete`}
               />
               <div className="min-w-0">
                 <p
+                  data-task-title={task.title}
                   id={`task-title-${task.id}`}
                   className="font-medium break-words"
                 >

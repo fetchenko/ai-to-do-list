@@ -1,5 +1,5 @@
 import { Task } from '@/features/tasks/types/tasks.types';
-import { byPosition } from '@/features/tasks/utils/tasks.utils';
+import { byTaskPosition } from '@/features/tasks/utils/tasks.utils';
 
 export function findTask(tasks: Task[], id: string): Task | undefined {
   return tasks.find((t) => t.id === id);
@@ -29,5 +29,5 @@ export function restoreToCache(
   const alreadyPresent = tasks.some((t) => t.id === task.id);
   if (alreadyPresent) return tasks;
 
-  return [...tasks, task, ...cascadedSubtasks].sort(byPosition);
+  return [...tasks, task, ...cascadedSubtasks].sort(byTaskPosition);
 }

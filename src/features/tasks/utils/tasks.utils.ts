@@ -1,7 +1,7 @@
 import { AiTask, Task, TaskGroup } from '@/features/tasks/types/tasks.types';
 
-export const byPosition = (a: Task, b: Task) =>
-  a.position.localeCompare(b.position);
+export const byTaskPosition = (a: Task, b: Task) =>
+  a.position < b.position ? -1 : a.position > b.position ? 1 : 0;
 
 export const normalizeAiTask = (task: AiTask) => ({
   id: task.id,
@@ -11,35 +11,42 @@ export const normalizeAiTask = (task: AiTask) => ({
 
 export const normalizeAiTasks = (tasks: AiTask[]) => tasks.map(normalizeAiTask);
 
-export function buildGroups(tasks: Task[]): TaskGroup[] {
-  const bySiblingKey = new Map<string | null, Task[]>();
+export function groupTasksByParent(tasks: Task[]): TaskGroup[] {
+  const taskMap = new Map<string, Task[]>();
 
   for (const task of tasks) {
-    const key = task.parentTaskId;
-    const siblings = bySiblingKey.get(key);
-    if (siblings) siblings.push(task);
-    else bySiblingKey.set(key, [task]);
+    if (task.parentTaskId) {
+      const children = taskMap.get(task.parentTaskId) ?? [];
+      children.push(task);
+      taskMap.set(task.parentTaskId, children);
+    }
   }
 
-  const topLevel = bySiblingKey.get(null) ?? [];
-  return topLevel.map((parent) => ({
-    parent,
-    subtasks: bySiblingKey.get(parent.id) ?? [],
-  }));
+  const result = [...tasks]
+    .filter((task) => task.parentTaskId === null)
+    .map((parent) => ({
+      parent,
+      subtasks: taskMap.get(parent.id) ?? [],
+    }))
+    .sort((a, b) => byTaskPosition(a.parent, b.parent));
+
+  return result;
 }
 
 export function groupTasksByStatus(tasks: Task[]) {
-  const groups = buildGroups(tasks);
+  const groups = groupTasksByParent([...tasks]);
   const initial: Record<Task['status'], TaskGroup[]> = {
     active: [],
     done: [],
     archived: [],
   };
 
-  return groups.reduce((acc, group) => {
+  const grouped = groups.reduce((acc, group) => {
     const bucket = acc[group.parent.status];
     if (bucket) bucket.push(group);
 
     return acc;
   }, initial);
+
+  return grouped;
 }

@@ -65,6 +65,13 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Debug env
+        run: |
+          echo "SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:+SET}"
+          echo "SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:+SET}"
+          echo "SERVICE_ROLE: ${SUPABASE_SERVICE_ROLE_KEY:+SET}"
+          echo "EMAIL: ${E2E_TEST_EMAIL:+SET}"
+
       - name: Run Playwright Tests
         run: npm run test:e2e
         env:

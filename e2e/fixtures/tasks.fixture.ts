@@ -5,7 +5,6 @@ import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 
 type TaskFactory = {
-  /** Returns a globally-unique title and registers it for cleanup. */
   title: (label: string) => string;
 };
 
@@ -30,14 +29,6 @@ export const test = base.extend<Fixtures>({
       },
     });
 
-    // Teardown — runs whether the test passed, failed, or threw partway
-    // through. This is intentionally NOT the app's own delete flow:
-    // useDeleteTaskWithUndo defers the real softDeleteTask call by 8s via
-    // setTimeout, and Playwright kills that timer the moment it closes the
-    // page/context after a test. Relying on the UI to clean up after
-    // itself silently leaves every test's data in Supabase forever.
-    // Deleting by exact, per-test-unique title means this is scoped to
-    // rows this test actually created — safe to run with parallel workers.
     if (createdTitles.length > 0) {
       const { error } = await supabaseAdmin
         .from('tasks')
@@ -45,8 +36,6 @@ export const test = base.extend<Fixtures>({
         .in('title', createdTitles);
 
       if (error) {
-        // Don't fail the test over cleanup — surface it loudly instead so
-        // it doesn't silently accumulate orphaned rows.
         console.error(
           `[tasks.fixture] cleanup failed for [${createdTitles.join(', ')}]:`,
           error.message
@@ -57,12 +46,6 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect } from '@playwright/test';
-
-// --- backend-state helpers --------------------------------------------
-//
-// "Verify backend state" per the test generator rules: these read directly
-// from Supabase via the service-role client so tests can confirm a UI
-// action actually persisted, not just that the optimistic UI updated.
 
 export async function getTaskRow(taskId: string) {
   const { data, error } = await supabaseAdmin

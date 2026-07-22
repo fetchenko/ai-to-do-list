@@ -6,9 +6,6 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    // Mocked at the network boundary so the test doesn't call the real AI
-    // provider, cost tokens, or flake on response variability — it still
-    // exercises all real client code that consumes the response.
     await page.route('**/api/subtasks/generate', (route) =>
       route.fulfill({
         status: 200,
@@ -56,8 +53,6 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    // Real ErrorCode value (AI_RATE_LIMIT), not a made-up one — this test
-    // is only meaningful if it exercises the app's actual error mapping.
     await page.route('**/api/subtasks/generate', (route) =>
       route.fulfill({
         status: 429,

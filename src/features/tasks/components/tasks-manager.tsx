@@ -15,6 +15,7 @@ import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { testIds } from '@/shared/testing/test-ids';
 
 const TABS = [
   { value: 'active', label: 'Active', emptyLabel: 'No active tasks yet' },
@@ -42,7 +43,9 @@ export default function TasksManager() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-4 sm:gap-6">
-        <AddTaskForm error={createTaskError} onAddTask={createTask} />
+        <div data-testid={testIds.taskSection.new}>
+          <AddTaskForm error={createTaskError} onAddTask={createTask} />
+        </div>
 
         {error ? (
           <ErrorAlert

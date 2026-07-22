@@ -1,4 +1,5 @@
 import { expect, test as setup } from '@playwright/test';
+import fs from 'node:fs';
 
 const authFile = 'playwright/.auth/user.json';
 
@@ -16,9 +17,13 @@ setup('authenticate', async ({ page }) => {
   await page.goto('/auth/login');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.getByRole('button', { name: /login/i }).click();
 
   await expect(page).toHaveURL('/', { timeout: 15000 });
+
+  fs.mkdirSync('playwright/.auth', {
+    recursive: true,
+  });
 
   await page.context().storageState({ path: authFile });
 });

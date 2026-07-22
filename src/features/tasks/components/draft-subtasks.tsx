@@ -72,6 +72,7 @@ export function DraftSubtasks({ task, drafts, onDiscard }: DraftSubtasksProps) {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-3"
       aria-label={`AI-generated draft subtasks for ${task.title}`}
+      data-testid="draft-subtasks-form"
     >
       <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
         <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
@@ -98,7 +99,7 @@ export function DraftSubtasks({ task, drafts, onDiscard }: DraftSubtasksProps) {
         >
           Discard
         </Button>
-        <Button type="submit" disabled={isSaving}>
+        <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
           {isSaving
             ? 'Adding…'
             : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}

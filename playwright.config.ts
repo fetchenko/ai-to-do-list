@@ -8,6 +8,24 @@ if (!process.env.CI) {
   });
 }
 
+const REQUIRED_ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'E2E_TEST_EMAIL',
+  'E2E_TEST_PASSWORD',
+] as const;
+
+const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+
+if (missing.length > 0) {
+  throw new Error(
+    `Missing required e2e environment variable(s): ${missing.join(', ')}.\n` +
+      `Create .env.e2e from .env.e2e.example with real values from your ` +
+      `dedicated e2e Supabase project, or set them in CI secrets.`
+  );
+}
+
 export default defineConfig({
   testDir: './e2e',
   testIgnore: ['**/tests/**'],

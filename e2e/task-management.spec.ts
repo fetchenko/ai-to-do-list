@@ -68,6 +68,10 @@ test.describe('task management', () => {
     await tasksPage.deleteTask(taskId);
     await expect(card).toHaveCount(0);
 
+    // The delete is optimistic in the UI; useDeleteTaskWithUndo defers the
+    // real soft-delete by 8s (UNDO_WINDOW_MS). Poll past that window to
+    // confirm the backend actually committed it, rather than trusting the
+    // optimistic UI state.
     await expect
       .poll(async () => (await getTaskRow(taskId))?.deleted_at, {
         timeout: 12_000,

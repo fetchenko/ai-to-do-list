@@ -55,6 +55,11 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
+      E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      DEEPSEEK_KEY: ${{ secrets.DEEPSEEK_KEY }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -77,11 +82,6 @@ jobs:
 
       - name: Run Playwright Tests
         run: npm run test:e2e
-        env:
-          CI: true
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
-          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
-          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
 
       - name: Upload Playwright Report
         if: always()

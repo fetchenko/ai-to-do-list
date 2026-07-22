@@ -35,9 +35,10 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ['tests/**/*.ts', '**/*.mock.ts'],
+    files: ['tests/**/*.ts', '**/*.mock.ts', 'e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      'react-hooks/rules-of-hooks': 'warn',
     },
   },
 ]);

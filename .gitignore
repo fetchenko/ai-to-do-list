@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*.local
 .env
+.env.e2e
+.env.supabase-cli
+
 
 # vercel
 .vercel
@@ -55,3 +58,8 @@ launch.json
 /supabase/.temp
 
 .ai
+
+# Playwright
+playwright/.auth/
+playwright-report/
+test-results/

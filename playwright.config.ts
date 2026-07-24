@@ -2,19 +2,43 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '.env.local') });
+if (!process.env.CI) {
+  dotenv.config({
+    path: path.resolve(__dirname, '.env.e2e'),
+  });
+}
+
+const REQUIRED_ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'E2E_TEST_EMAIL',
+  'E2E_TEST_PASSWORD',
+] as const;
+
+const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+
+if (missing.length > 0) {
+  throw new Error(
+    `Missing required e2e environment variable(s): ${missing.join(', ')}.\n` +
+      `Create .env.e2e from .env.e2e.example with real values from your ` +
+      `dedicated e2e Supabase project, or set them in CI secrets.`
+  );
+}
 
 export default defineConfig({
   testDir: './e2e',
   testIgnore: ['**/tests/**'],
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: 'html',
+  reporter: [['html'], ['junit', { outputFile: 'test-results/results.xml' }]],
   workers: 1,
 
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   projects: [
@@ -33,9 +57,16 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run build && npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      AI_PROVIDER: process.env.AI_PROVIDER ?? 'deepseek',
+      DEEPSEEK_KEY: process.env.DEEPSEEK_KEY ?? 'unused-in-e2e',
+    },
   },
 });

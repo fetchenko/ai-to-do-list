@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { testIds } from '@/shared/testing/test-ids';
 
 type DraftSubtaskRowProps = {
   titleRegister: UseFormRegisterReturn;
@@ -29,9 +30,13 @@ export function DraftSubtaskRow({
   onRemove,
 }: DraftSubtaskRowProps) {
   return (
-    <li className="flex flex-col gap-1 rounded-md p-1 sm:flex-row sm:items-start">
+    <li
+      data-testid={testIds.draftSubtask.row}
+      className="flex flex-col gap-1 rounded-md p-1 sm:flex-row sm:items-start"
+    >
       <div className="min-w-0 flex-1">
         <Input
+          data-testid="draft-subtask"
           aria-label="Subtask title"
           aria-invalid={!!titleError}
           className={cn('font-medium', textLikeFieldClass)}

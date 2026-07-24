@@ -1,14 +1,14 @@
 import DeepSeekProvider from '@/infrastructure/ai/providers/deepseek/deepseek.provider';
 import { OllamaProvider } from '@/infrastructure/ai/providers/ollama/ollama.provider';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { serverEnv } from '@/shared/env/server-env';
+import { aiEnv } from '@/shared/env/ai-env';
 
 export interface AIProvider {
   generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse>;
 }
 
 export function getAIProvider(): AIProvider {
-  if (serverEnv.AI_PROVIDER === 'ollama') {
+  if (aiEnv.AI_PROVIDER === 'ollama') {
     return new OllamaProvider();
   }
 

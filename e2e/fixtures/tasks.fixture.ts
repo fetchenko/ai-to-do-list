@@ -4,6 +4,8 @@ import { randomUUID } from 'crypto';
 
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 
+export const UNDO_WINDOW_ASSERTION_TIMEOUT_MS = 12_000;
+
 type TaskFactory = {
   /** Returns a globally-unique title and registers it for cleanup. */
   title: (label: string) => string;

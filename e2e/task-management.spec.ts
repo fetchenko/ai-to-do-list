@@ -1,4 +1,9 @@
-import { expect, getTaskRow, test } from '@e2e/fixtures/tasks.fixture';
+import {
+  UNDO_WINDOW_ASSERTION_TIMEOUT_MS,
+  expect,
+  getTaskRow,
+  test,
+} from '@e2e/fixtures/tasks.fixture';
 
 test.describe('task management', () => {
   test('creating a task adds it to the Active list and persists it', async ({
@@ -74,7 +79,43 @@ test.describe('task management', () => {
     // optimistic UI state.
     await expect
       .poll(async () => (await getTaskRow(taskId))?.deleted_at, {
-        timeout: 12_000,
+        timeout: UNDO_WINDOW_ASSERTION_TIMEOUT_MS,
+      })
+      .not.toBeNull();
+  });
+
+  test('subtasks can be edited and deleted, but never offer "Generate subtasks"', async ({
+    page,
+    tasksPage,
+    taskFactory,
+  }) => {
+    const parentTitle = taskFactory.title('parent');
+    const subtaskTitle = taskFactory.title('subtask');
+
+    await tasksPage.goto();
+    await tasksPage.addTask(parentTitle);
+    const parentId = await tasksPage.resolveTaskId(parentTitle);
+
+    await tasksPage.addSubtask(parentId, subtaskTitle);
+    const subtaskId = await tasksPage.resolveSubtaskId(parentId, subtaskTitle);
+    await expect(tasksPage.subtaskCard(subtaskId)).toBeVisible();
+
+    await tasksPage.openSubtaskActionsMenu(subtaskId);
+    await expect(page.getByRole('menuitem', { name: 'Edit' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Generate subtasks' })
+    ).not.toBeVisible();
+
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(tasksPage.subtaskCard(subtaskId)).toHaveCount(0);
+
+    // Same optimistic-delete-with-undo deferral as the task-deletion test above:
+    // useDeleteTaskWithUndo delays the real soft-delete by UNDO_WINDOW_MS (8s).
+    // Poll past that window rather than trusting the optimistic UI state.
+    await expect
+      .poll(async () => (await getTaskRow(subtaskId))?.deleted_at, {
+        timeout: UNDO_WINDOW_ASSERTION_TIMEOUT_MS,
       })
       .not.toBeNull();
   });

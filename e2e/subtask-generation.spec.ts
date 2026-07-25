@@ -82,4 +82,35 @@ test.describe('AI subtask generation', () => {
     await expect(tasksPage.draftRows()).toHaveCount(0);
     expect(await getSubtaskRows(taskId)).toHaveLength(0);
   });
+
+  test('shows a loading state while generating, then the drafts', async ({
+    page,
+    tasksPage,
+    taskFactory,
+  }) => {
+    await page.route('**/api/subtasks/generate', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 150)); // force the pending window to be observable
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: { subtasks: [{ title: 'Mocked subtask one' }] },
+        }),
+      });
+    });
+
+    const title = taskFactory.title('ai-loading-state');
+    await tasksPage.goto();
+    await tasksPage.addTask(title);
+    const taskId = await tasksPage.resolveTaskId(title);
+
+    await tasksPage.generateSubtasks(taskId);
+
+    // this is the exact state that was reading from the wrong hook instance
+    await expect(page.getByText('Generating subtasks…')).toBeVisible();
+
+    const drafts = tasksPage.draftRows();
+    await drafts.first().waitFor();
+    await expect(page.getByText('Generating subtasks…')).not.toBeVisible();
+  });
 });

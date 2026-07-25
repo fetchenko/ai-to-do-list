@@ -30,12 +30,12 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
-  const { drafts, isPending, discard } = useSubtaskDrafts(task.id);
+  const { drafts, isPending, generate, discard } = useSubtaskDrafts(task.id);
 
   const isEditing = editingTaskId === task.id;
   const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
-  const actions = useTaskActions(task);
+  const actions = useTaskActions(task, generate);
 
   return (
     <Card

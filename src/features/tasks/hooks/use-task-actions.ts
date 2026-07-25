@@ -1,21 +1,20 @@
-import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
-import { useToggleTask } from '@/features/tasks/hooks/use-toggle-task';
+import { MenuAction } from '@/components/blocks/action-menu/types';
+import { useBaseTaskActions } from '@/features/tasks/hooks/use-base-task-actions';
 import { Task } from '@/features/tasks/types/tasks.types';
 
-export function useTaskActions(task: Task) {
-  const toggleTask = useToggleTask(task);
+export function useTaskActions(
+  task: Task,
+  onGenerateSubtasks: () => void
+): MenuAction[] {
+  const baseActions = useBaseTaskActions(task);
 
-  const { deleteWithUndo } = useDeleteTaskWithUndo();
+  return [
+    ...baseActions,
 
-  return {
-    toggle: {
-      execute: toggleTask.toggle,
-      checked: toggleTask.checked,
-      isPending: toggleTask.isPending,
+    {
+      id: 'generate-subtasks',
+      label: 'Generate subtasks',
+      onSelect: onGenerateSubtasks,
     },
-
-    remove: {
-      execute: () => deleteWithUndo(task),
-    },
-  };
+  ];
 }

@@ -53,11 +53,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
         ) : (
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-start gap-3">
-              <TaskCheckbox
-                data-testid="task-checkbox"
-                task={task}
-                aria-label={`Mark "${task.title}" complete`}
-              />
+              <TaskCheckbox task={task} />
               <div className="min-w-0">
                 <p
                   data-task-title={task.title}

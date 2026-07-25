@@ -35,7 +35,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
   const isEditing = editingTaskId === task.id;
   const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
-  const { actions } = useTaskActions(task);
+  const actions = useTaskActions(task);
 
   return (
     <Card

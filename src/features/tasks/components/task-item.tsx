@@ -9,15 +9,15 @@ import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
 import EditTaskForm from '@/features/tasks/components/edit-task-form';
 import SubtaskItem from '@/features/tasks/components/subtask-item';
-import { TaskActionsMenu } from '@/features/tasks/components/task-action-menu';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { useDeleteTaskWithUndo } from '@/features/tasks/hooks/use-delete-task-with-undo';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { testIds } from '@/shared/testing/test-ids';
+import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
+import { ActionMenu } from '@/components/blocks/action-menu';
 
 type TaskItemProps = {
   task: Task;
@@ -27,16 +27,15 @@ type TaskItemProps = {
 
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
   const editingTaskId = useTaskStore((state) => state.editingTaskId);
-  const setEditingTaskId = useTaskStore((state) => state.setEditingTaskId);
 
-  const { deleteWithUndo } = useDeleteTaskWithUndo();
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
-  const { drafts, generate, isPending, discard } = useSubtaskDrafts(task.id);
+  const { drafts, isPending, discard } = useSubtaskDrafts(task.id);
 
   const isEditing = editingTaskId === task.id;
   const hasSubtasks = !!subtasks?.length;
   const showDraftPanel = isPending || drafts !== null;
+  const { actions } = useTaskActions(task);
 
   return (
     <Card
@@ -69,12 +68,9 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
                 )}
               </div>
             </div>
-
-            <TaskActionsMenu
-              showGenerate
-              onGenerateSubtasks={() => generate()}
-              onEdit={() => setEditingTaskId(task.id)}
-              onDelete={() => deleteWithUndo(task)}
+            <ActionMenu
+              actions={actions}
+              label={`Actions for ${task.title}`}
             />
           </div>
         )}

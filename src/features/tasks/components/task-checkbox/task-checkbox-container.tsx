@@ -1,5 +1,5 @@
 import { TaskCheckbox } from "@/features/tasks/components/task-checkbox/task-checkbox";
-import { useTaskActions } from "@/features/tasks/hooks/use-task-actions";
+import { useToggleTask } from "@/features/tasks/hooks/use-toggle-task";
 import { Task } from "@/features/tasks/types/tasks.types";
 
 export function TaskCheckboxContainer({
@@ -7,16 +7,14 @@ export function TaskCheckboxContainer({
 }: {
   task: Task;
 }) {
-  const actions = useTaskActions(task);
+  const { checked, isPending, toggle } = useToggleTask(task);
 
   return (
     <TaskCheckbox
-      checked={actions.toggle.checked}
-      disabled={actions.toggle.isPending}
+      checked={checked}
+      disabled={isPending}
       label={task.title}
-      onCheckedChange={
-        actions.toggle.execute
-      }
+      onCheckedChange={toggle}
     />
   );
 }

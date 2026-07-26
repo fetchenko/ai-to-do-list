@@ -5,13 +5,13 @@ import { memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
-import SubtaskItem from '@/features/tasks/components/subtask-item';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { testIds } from '@/shared/testing/test-ids';
 import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
 import { TaskRow } from '@/features/tasks/components/task-row';
+import { SubtaskList } from '@/features/tasks/components/subtask-list';
 
 type TaskItemProps = {
   task: Task;
@@ -24,7 +24,6 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   const { drafts, isPending, generate, discard } = useSubtaskDrafts(task.id);
 
-  const showDraftPanel = isPending || drafts !== null;
   const actions = useTaskActions(task, generate);
 
   return (
@@ -39,20 +38,13 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
       >
         <TaskRow task={task} titleId={`task-title-${task.id}`} actions={actions} />
 
-        {subtasks?.length > 0 && (
-          <ul className="space-y-2" aria-label={`Subtasks for ${task.title}`}>
-            {subtasks!.map((subtask) => (
-              <li key={subtask.id}>
-                <SubtaskItem task={subtask} />
-              </li>
-            ))}
-          </ul>
-        )}
-        {showDraftPanel && (
+        <SubtaskList label={`Subtasks for ${task.title}`} subtasks={subtasks} />
+
+        {isPending || drafts !== null && (
           <DraftSubtasks
             loading={isPending}
             task={task}
-            drafts={drafts ?? []}
+            drafts={drafts}
             onDiscard={discard}
           />
         )}

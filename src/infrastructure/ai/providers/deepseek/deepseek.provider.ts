@@ -36,7 +36,7 @@ export default class DeepSeekProvider implements AIProvider {
     }
     return {
       ...normalizeDeepseekResponse(data),
-      raw: parsedResponse,
+      raw: JSON.stringify(parsedResponse),
     };
   }
 }

@@ -69,12 +69,12 @@ export async function parseResponseJson(response: Response): Promise<unknown> {
     if (response.status >= ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE]) {
       throw new AiUnavailableError(body);
     }
-
     throw new AiGenerationError(body);
   }
 
   return body;
 }
+
 export function getInitialAiLog(userId: string, taskId: string) {
   return {
     task_id: taskId,

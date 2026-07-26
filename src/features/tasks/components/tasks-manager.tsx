@@ -8,7 +8,6 @@ import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { TaskList } from '@/features/tasks/components/task-list';
-import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { taskKeys } from '@/features/tasks/constants/task.constants';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
@@ -67,14 +66,11 @@ export default function TasksManager() {
                 value={tab.value}
                 className="mt-4 focus-visible:outline-none"
               >
-                {isPending ? (
-                  <TasksSkeleton />
-                ) : (
-                  <TaskList
-                    groups={tasksByStatus[tab.value]}
-                    emptyLabel={tab.emptyLabel}
-                  />
-                )}
+                <TaskList
+                  loading={isPending}
+                  groups={tasksByStatus[tab.value]}
+                  emptyLabel={tab.emptyLabel}
+                />
               </TabsContent>
             ))}
           </Tabs>

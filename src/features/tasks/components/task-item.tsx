@@ -26,6 +26,8 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   const actions = useTaskActions(task, generate);
 
+  const showDraftPanel = isPending || drafts !== null;
+
   return (
     <Card
       data-testid={testIds.task.item}
@@ -40,11 +42,11 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
         <SubtaskList label={`Subtasks for ${task.title}`} subtasks={subtasks} />
 
-        {isPending || drafts !== null && (
+        {showDraftPanel && (
           <DraftSubtasks
             loading={isPending}
             task={task}
-            drafts={drafts}
+            drafts={drafts ?? []}
             onDiscard={discard}
           />
         )}

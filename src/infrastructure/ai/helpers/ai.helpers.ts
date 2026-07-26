@@ -1,6 +1,9 @@
 import { AiErrorResult, AiLogs } from '@/infrastructure/ai/types/ai.types';
 import { requestGenSubtasksSchema } from '@/infrastructure/ai/validation/ai.request';
 import {
+  AiGenerationError,
+  AiRateLimitsError,
+  AiUnavailableError,
   AppError,
   ResponseFormatError,
   ValidationRequestError,
@@ -47,15 +50,29 @@ export function normalizeAiError(err: unknown): AiErrorResult {
   };
 }
 
-export async function parseResponseJson(response: Response): Promise<string> {
-  let raw;
+export async function parseResponseJson(response: Response): Promise<unknown> {
+  let body: unknown;
+
   try {
-    raw = await response.json();
+    body = await response.json();
   } catch (error) {
+    if (!response.ok) {
+      throw new AiUnavailableError({ status: response.status });
+    }
     throw new ResponseFormatError({ error });
   }
 
-  return raw;
+  if (!response.ok) {
+    if (response.status === ErrorHttpStatus[ErrorCode.AI_RATE_LIMIT]) {
+      throw new AiRateLimitsError(body);
+    }
+    if (response.status >= ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE]) {
+      throw new AiUnavailableError(body);
+    }
+    throw new AiGenerationError(body);
+  }
+
+  return body;
 }
 
 export function getInitialAiLog(userId: string, taskId: string) {

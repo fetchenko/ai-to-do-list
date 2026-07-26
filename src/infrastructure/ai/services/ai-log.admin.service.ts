@@ -67,7 +67,7 @@ export async function checkAiQuotaLimit(userId: string) {
 
   if ((count ?? 0) >= MAX_AI_REQUESTS_PER_USER) {
     throw new AiRequestLimitError(
-      `Reached maximum AI requests per user (${MAX_AI_REQUESTS_PER_USER}`
+      `Reached maximum AI requests per user (${MAX_AI_REQUESTS_PER_USER})`
     );
   }
 }

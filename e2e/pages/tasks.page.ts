@@ -30,7 +30,16 @@ export class TasksPage {
   async addTask(title: string) {
     const section = this.newTaskSection();
     await section.getByPlaceholder('Add a task').fill(title);
-    await section.getByRole('button', { name: 'Add task' }).click();
+
+    await Promise.all([
+      this.page.waitForResponse(
+        (res) =>
+          res.url().includes('/rest/v1/tasks') &&
+          res.request().method() === 'POST',
+        { timeout: 10_000 }
+      ),
+      section.getByRole('button', { name: 'Add task' }).click(),
+    ]);
   }
 
   // Per-task subtask form. Scoped by taskCard(parentTaskId) instead of a

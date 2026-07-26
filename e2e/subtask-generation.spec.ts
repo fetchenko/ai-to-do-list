@@ -1,5 +1,7 @@
 import { expect, getSubtaskRows, test } from '@e2e/fixtures/tasks.fixture';
 
+test.describe.configure({ mode: 'serial' });
+
 test.describe('AI subtask generation', () => {
   test('generates draft subtasks and saves them when accepted', async ({
     page,

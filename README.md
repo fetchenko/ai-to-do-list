@@ -255,7 +255,6 @@ workers invalidate each other's session.
 **Testing & CI**
 
 - Increase unit test coverage beyond AI response normalization
-- Wire e2e tests into the CI pipeline
 
 **Auth & growth**
 

@@ -60,6 +60,6 @@ export async function POST(request: Request) {
   } finally {
     clearTimeout(timeout);
 
-    releaseRequestLock(userId);
+    await releaseRequestLock(userId);
   }
 }

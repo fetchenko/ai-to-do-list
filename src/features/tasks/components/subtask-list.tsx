@@ -3,22 +3,19 @@ import { Task } from '@/features/tasks/types/tasks.types';
 
 interface SubtaskListProps {
   subtasks: Task[];
-  label: string;
+  parentTitle: string;
 }
 
-export function SubtaskList({ label, subtasks }: SubtaskListProps) {
+export default function SubtaskList({ parentTitle, subtasks }: SubtaskListProps) {
+  if (subtasks.length === 0) return null;
 
-  if (subtasks?.length > 0) {
-    return (
-      <ul className="space-y-2" aria-label={label}>
-        {subtasks!.map((subtask) => (
-          <li key={subtask.id}>
-            <SubtaskItem task={subtask} />
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
-  return null;
+  return (
+    <ul className="space-y-2" aria-label={`Subtasks for ${parentTitle}`}>
+      {subtasks.map((subtask) => (
+        <li key={subtask.id}>
+          <SubtaskItem task={subtask} />
+        </li>
+      ))}
+    </ul>
+  )
 }

@@ -11,7 +11,7 @@ import { Task } from '@/features/tasks/types/tasks.types';
 import { testIds } from '@/shared/testing/test-ids';
 import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
 import { TaskRow } from '@/features/tasks/components/task-row';
-import { SubtaskList } from '@/features/tasks/components/subtask-list';
+import SubtaskList from '@/features/tasks/components/subtask-list';
 
 type TaskItemProps = {
   task: Task;
@@ -40,7 +40,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
       >
         <TaskRow task={task} titleId={`task-title-${task.id}`} actions={actions} />
 
-        <SubtaskList label={`Subtasks for ${task.title}`} subtasks={subtasks} />
+        <SubtaskList parentTitle={task.title} subtasks={subtasks} />
 
         {showDraftPanel && (
           <DraftSubtasks

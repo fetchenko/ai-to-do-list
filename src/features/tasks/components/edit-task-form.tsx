@@ -24,9 +24,9 @@ export default function EditTaskForm({ task }: EditTaskProps) {
   const updateTaskMutation = useUpdateTaskMutation();
   const resetTaskStore = useTaskStore((state) => state.reset);
 
-  // Derived, not passed in: a task IS a subtask iff it has a parent. Avoids
-  // threading a variant prop through TaskRow -> SubtaskItem/TaskItem, and
-  // can never disagree with the data.
+  // Derived, not passed in — a task IS a subtask iff it has a parent, so
+  // this can't drift out of sync the way a prop threaded through
+  // TaskRow -> SubtaskItem/TaskItem could.
   const variant = task.parentTaskId ? 'subtask' : 'task';
   const copy = TASK_FORM_COPY[variant];
 
@@ -64,7 +64,6 @@ export default function EditTaskForm({ task }: EditTaskProps) {
 
         <div className="w-full min-w-0 space-y-4">
           <TitleField
-            idPrefix={`edit-task-${task.id}`}
             register={register}
             errors={errors}
             autoFocus
@@ -72,7 +71,6 @@ export default function EditTaskForm({ task }: EditTaskProps) {
             placeholder={copy.title.placeholder}
           />
           <DescriptionField
-            idPrefix={`edit-task-${task.id}`}
             register={register}
             errors={errors}
             label={copy.description.label}

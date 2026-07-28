@@ -25,11 +25,6 @@ interface AddTaskFormProps {
   onAddTask: (values: TaskForm) => Promise<unknown>;
   className?: string;
   error?: Error | null;
-  /** Unique id namespace for this form instance. Required because AddTaskForm
-   *  can render more than once at a time (top-level + per-subtask), and ids
-   *  must stay unique across the whole page. Defaults to "add" for the
-   *  common single-instance case. */
-  idPrefix?: string;
   /** There's no Task object yet to infer this from (we're creating one),
    *  so the caller states it explicitly. Drives labels/placeholders/aria-label. */
   variant?: TaskFormVariant;
@@ -39,7 +34,6 @@ export function AddTaskForm({
   onAddTask,
   error,
   className,
-  idPrefix = 'add',
   variant = 'task',
 }: AddTaskFormProps) {
   const copy = TASK_FORM_COPY[variant];
@@ -69,7 +63,6 @@ export function AddTaskForm({
         <FormError message={error?.message} />
         <div className="flex-1 space-y-1">
           <TitleField
-            idPrefix={idPrefix}
             register={register}
             errors={errors}
             hideLabel
@@ -102,7 +95,6 @@ export function AddTaskForm({
 
             <CollapsibleContent className="pt-2">
               <DescriptionField
-                idPrefix={idPrefix}
                 register={register}
                 errors={errors}
                 hideLabel

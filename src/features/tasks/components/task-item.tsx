@@ -51,7 +51,6 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
           />
         )}
         <AddTaskForm
-          idPrefix={`add-subtask-${task.id}`}
           variant="subtask"
           error={createTaskError}
           onAddTask={(values) =>

@@ -44,7 +44,6 @@ export default function TasksManager() {
       <div className="flex flex-col gap-4 sm:gap-6">
         <div data-testid={testIds.taskSection.new}>
           <AddTaskForm
-            idPrefix="add-task"
             error={createTaskError}
             onAddTask={createTask}
           />

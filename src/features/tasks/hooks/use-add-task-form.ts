@@ -18,17 +18,16 @@ export function useAddTaskForm(
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       await onAddTask(values);
-      form.reset();
-      setIsDescriptionOpen(false);
-      // Refocus the title field so people can add several tasks in a row
-      // without reaching for the mouse.
-      form.setFocus('title');
     } catch {
-      // Swallowed intentionally: the caller surfaces the failure via the
-      // `error` state from its mutation (see AddTaskForm's `error` prop).
-      // Re-throwing here would just produce an unhandled rejection since
-      // nothing awaits this submit handler's promise.
+      // Failure is already surfaced via the mutation's `error` state
+      // (AddTaskForm's `error` prop) — nothing left to do here but bail
+      // before the reset/focus below, which are success-only steps.
+      return;
     }
+
+    form.reset();
+    setIsDescriptionOpen(false);
+    form.setFocus('title'); // let people add several tasks without reaching for the mouse
   });
 
   return {

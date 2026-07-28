@@ -43,7 +43,11 @@ export default function TasksManager() {
     <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-4 sm:gap-6">
         <div data-testid={testIds.taskSection.new}>
-          <AddTaskForm error={createTaskError} onAddTask={createTask} />
+          <AddTaskForm
+            idPrefix="add-task"
+            error={createTaskError}
+            onAddTask={createTask}
+          />
         </div>
 
         {error ? (

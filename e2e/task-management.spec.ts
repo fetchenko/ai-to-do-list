@@ -119,4 +119,38 @@ test.describe('task management', () => {
       })
       .not.toBeNull();
   });
+
+  test('the top-level and subtask "add" forms use distinct, non-interchangeable copy', async ({
+    page,
+    tasksPage,
+    taskFactory,
+  }) => {
+    const parentTitle = taskFactory.title('variant-parent');
+
+    await tasksPage.goto();
+    await tasksPage.addTask(parentTitle);
+    const parentId = await tasksPage.resolveTaskId(parentTitle);
+
+    // Top-level form: "task" copy only.
+    const topLevelForm = page.getByRole('form', { name: 'Add a new task' });
+    await expect(topLevelForm.getByPlaceholder('Add a task')).toBeVisible();
+    await expect(
+      topLevelForm.getByRole('button', { name: 'Add task' })
+    ).toBeVisible();
+
+    // Subtask form on that task's card: "subtask" copy only, and it must
+    // NOT also expose the "task" wording — this is what would break
+    // silently if TASK_FORM_COPY['subtask'] ever collapsed back to
+    // reusing TASK_FORM_COPY['task'].
+    const subtaskForm = tasksPage
+      .taskCard(parentId)
+      .getByRole('form', { name: 'Add a new subtask' });
+    await expect(subtaskForm.getByPlaceholder('Add a subtask')).toBeVisible();
+    await expect(
+      subtaskForm.getByRole('button', { name: 'Add subtask' })
+    ).toBeVisible();
+    await expect(
+      subtaskForm.getByRole('button', { name: 'Add task', exact: true })
+    ).toHaveCount(0);
+  });
 });

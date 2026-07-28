@@ -1,54 +1,56 @@
 'use client';
 
-import { useState } from 'react';
-
-import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 
 import { FormError } from '@/components/blocks/form-error';
-import { FormField } from '@/components/primitives/form-field';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { TaskForm, taskSchema } from '@/features/tasks/schema/tasks';
+import {
+  DescriptionField,
+  TitleField,
+} from '@/features/tasks/components/task-form-fields';
+import {
+  TASK_FORM_COPY,
+  TaskFormVariant,
+} from '@/features/tasks/constants/task-form-copy.constants';
+import { useAddTaskForm } from '@/features/tasks/hooks/use-add-task-form';
+import { TaskForm } from '@/features/tasks/schema/tasks';
 import { cn } from '@/lib/utils/cn';
 
 interface AddTaskFormProps {
-  onAddTask: (values: TaskForm) => Promise<null>;
+  onAddTask: (values: TaskForm) => Promise<unknown>;
   className?: string;
   error?: Error | null;
+  /** There's no Task object yet to infer this from (we're creating one),
+   *  so the caller states it explicitly. Drives labels/placeholders/aria-label. */
+  variant?: TaskFormVariant;
 }
 
-export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+export function AddTaskForm({
+  onAddTask,
+  error,
+  className,
+  variant = 'task',
+}: AddTaskFormProps) {
+  const copy = TASK_FORM_COPY[variant];
 
   const {
     register,
-    handleSubmit,
-    reset,
+    onSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TaskForm>({
-    resolver: zodResolver(taskSchema),
-    defaultValues: { title: '', description: '' },
-  });
-
-  const onSubmit = handleSubmit(async (values) => {
-    await onAddTask(values);
-    reset();
-    setIsDescriptionOpen(false);
-  });
+    isDescriptionOpen,
+    setIsDescriptionOpen,
+  } = useAddTaskForm(onAddTask);
 
   return (
     <form
       onSubmit={onSubmit}
       noValidate
-      aria-label="Add a new task"
+      aria-label={copy.formLabel}
       className={cn(
         'bg-card mx-auto w-full max-w-2xl space-y-3 rounded-xl border p-3 sm:p-4',
         className
@@ -60,20 +62,13 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
       >
         <FormError message={error?.message} />
         <div className="flex-1 space-y-1">
-          <FormField
-            idPrefix="add-title"
-            label="Task"
-            error={errors.title?.message}
+          <TitleField
+            register={register}
+            errors={errors}
             hideLabel
-          >
-            <Input
-              id="add-title"
-              placeholder="Add a task"
-              aria-invalid={!!errors?.title}
-              aria-describedby={!!errors?.title ? `add-title-error` : undefined}
-              {...register('title')}
-            />
-          </FormField>
+            label={copy.title.label}
+            placeholder={copy.title.placeholder}
+          />
           <Collapsible
             open={isDescriptionOpen}
             onOpenChange={setIsDescriptionOpen}
@@ -99,24 +94,13 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
             </CollapsibleTrigger>
 
             <CollapsibleContent className="pt-2">
-              <FormField
-                idPrefix="add-description"
-                label="Description (optional)"
-                error={errors.description?.message}
+              <DescriptionField
+                register={register}
+                errors={errors}
                 hideLabel
-              >
-                <Textarea
-                  id="add-description"
-                  rows={3}
-                  placeholder="Add detail for this task"
-                  className="resize-y"
-                  aria-invalid={!!errors.description}
-                  aria-describedby={
-                    !!errors.description ? `add-description-error` : undefined
-                  }
-                  {...register('description')}
-                />
-              </FormField>
+                label={copy.description.label}
+                placeholder={copy.description.placeholder}
+              />
             </CollapsibleContent>
           </Collapsible>
         </div>
@@ -124,12 +108,12 @@ export function AddTaskForm({ onAddTask, error, className }: AddTaskFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Adding…</span>
+              <span>{copy.submittingLabel}</span>
             </>
           ) : (
             <>
               <Plus className="size-4" aria-hidden="true" />
-              <span>Add task</span>
+              <span>{copy.submitLabel}</span>
             </>
           )}
         </Button>

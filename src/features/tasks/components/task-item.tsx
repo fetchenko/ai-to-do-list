@@ -51,6 +51,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
           />
         )}
         <AddTaskForm
+          variant="subtask"
           error={createTaskError}
           onAddTask={(values) =>
             createTask({ ...values, parentTaskId: task.id })

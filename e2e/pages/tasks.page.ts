@@ -16,13 +16,11 @@ export class TasksPage {
   // --- creating a task ------------------------------------------------
   //
   // AddTaskForm is rendered twice on screen at once: once at the top of
-  // the page (add a top-level task) and once per expanded TaskItem (add a
-  // subtask to that task) — both currently share the identical aria-label
-  // "Add a new task" (a `variant` prop to give subtask forms distinct
-  // copy — "Add a subtask" / "Subtask title" — was discussed but is not
-  // yet implemented in add-task-form.tsx). Role+name alone can't
-  // disambiguate the top-level form, so it's wrapped in a `data-testid`
-  // container and every top-level lookup is scoped inside it.
+  // the page (variant="task", aria-label "Add a new task") and once per
+  // expanded TaskItem (variant="subtask", aria-label "Add a new subtask").
+  // The two are now disambiguated by that aria-label/role alone; the
+  // top-level lookup is additionally scoped by testid for extra safety
+  // since it's the one every test touches.
   private newTaskSection(): Locator {
     return this.page.getByTestId(testIds.taskSection.new);
   }
@@ -42,18 +40,17 @@ export class TasksPage {
     ]);
   }
 
-  // Per-task subtask form. Scoped by taskCard(parentTaskId) instead of a
-  // testid — TaskItem renders exactly one AddTaskForm, for its own
-  // subtasks, so scoping to the card is sufficient today. If/when the
-  // `variant` prop lands, update the placeholder/button text below to
-  // 'Subtask title' / 'Add subtask' and this can drop the testid-free
-  // reliance on "only one form per card" and match by name instead.
+  // Per-task subtask form, variant="subtask": distinct placeholder ("Add a
+  // subtask"), button text ("Add subtask"), and form aria-label ("Add a
+  // new subtask") from the top-level form. Still scoped by taskCard() as
+  // belt-and-suspenders — TaskItem renders exactly one AddTaskForm, for
+  // its own subtasks — but the role+name match alone would now suffice.
   async addSubtask(parentTaskId: string, title: string) {
     const form = this.taskCard(parentTaskId).getByRole('form', {
-      name: 'Add a new task',
+      name: 'Add a new subtask',
     });
-    await form.getByPlaceholder('Add a task').fill(title);
-    await form.getByRole('button', { name: 'Add task' }).click();
+    await form.getByPlaceholder('Add a subtask').fill(title);
+    await form.getByRole('button', { name: 'Add subtask' }).click();
   }
 
   // --- locating a task --------------------------------------------------

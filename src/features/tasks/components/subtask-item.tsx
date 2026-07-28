@@ -17,12 +17,9 @@ export default function SubtaskItem({ task }: SubtaskItemProps) {
     <Card
       data-testid={testIds.subtask.item}
       data-task-id={task.id}
-      key={task.id}
-      className="space-y-3 p-4"
+      className="space-y-3 p-3"
     >
-      <div className="flex w-full items-center justify-between gap-3">
-        <TaskRow task={task} titleId={`subtask-title-${task.id}`} actions={actions} />
-      </div>
+      <TaskRow task={task} titleId={`subtask-title-${task.id}`} actions={actions} />
     </Card>
   );
 }

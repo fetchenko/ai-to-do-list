@@ -20,7 +20,7 @@ type TaskItemProps = {
 };
 
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
-  const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
+  const { mutateAsync: createTask, error: createTaskError } = useCreateTask(task.id);
 
   const { drafts, isPending, generate, discard } = useSubtaskDrafts(task.id);
 
@@ -53,9 +53,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
         <AddTaskForm
           variant="subtask"
           error={createTaskError}
-          onAddTask={(values) =>
-            createTask({ ...values, parentTaskId: task.id })
-          }
+          onAddTask={createTask}
         />
       </article>
     </Card>

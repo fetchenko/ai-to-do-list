@@ -2,16 +2,21 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { taskKeys } from '@/features/tasks/constants/query-keys';
+import { TaskForm } from '@/features/tasks/schema/tasks';
 import { addTask } from '@/features/tasks/services/tasks.service';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { appendToCache } from '@/features/tasks/utils/tasks-cache';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
-export function useCreateTask() {
+export function useCreateTask(parentTaskId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: addTask,
+    mutationFn: (values: TaskForm) => {
+      return parentTaskId
+        ? addTask({ ...values, parentTaskId })
+        : addTask(values);
+    },
 
     onSuccess(createdTask) {
       // The server returns the full created row (id, position, timestamps),

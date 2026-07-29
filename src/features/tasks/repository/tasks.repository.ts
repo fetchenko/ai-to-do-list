@@ -47,6 +47,10 @@ export async function softDeleteTask(id: string) {
   await updateTask(id, { deletedAt: new Date().toISOString() });
 }
 
+export async function restoreTask(id: string) {
+  await updateTask(id, { deletedAt: null });
+}
+
 export async function getLastPosition(parentTaskId?: string | null) {
   const supabase = createClient();
 

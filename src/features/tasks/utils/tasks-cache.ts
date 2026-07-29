@@ -13,6 +13,10 @@ export function updateTaskInCache(
   return tasks.map((task) => (task.id === id ? { ...task, ...patch } : task));
 }
 
+export function appendToCache(tasks: Task[], task: Task): Task[] {
+  return [...tasks, task].sort(byPosition);
+}
+
 export function removeFromCache(tasks: Task[], task: Task): Task[] {
   if (task.parentTaskId) {
     return tasks.filter((t) => t.id !== task.id);

@@ -8,7 +8,7 @@ import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
 import { TaskList } from '@/features/tasks/components/task-list';
-import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';

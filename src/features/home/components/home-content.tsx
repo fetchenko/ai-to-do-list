@@ -7,7 +7,7 @@ import {
 import { getUserClaims } from '@/features/auth/repository/auth.server.repository';
 import Hero from '@/features/home/components/hero';
 import TasksManager from '@/features/tasks/components/tasks-manager';
-import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { fetchTasksServer } from '@/features/tasks/repository/tasks.server.repository';
 
 export default async function HomeContent() {

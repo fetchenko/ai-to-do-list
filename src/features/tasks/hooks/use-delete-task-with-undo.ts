@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { taskKeys } from '@/features/tasks/constants/query-keys';
 import {
   restoreTask,
   softDeleteTask,

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { saveSubtasks } from '@/features/tasks/services/subtasks.service';
 import { TaskInsert } from '@/features/tasks/types/tasks.types';
 import { AppError } from '@/shared/errors/app-error';

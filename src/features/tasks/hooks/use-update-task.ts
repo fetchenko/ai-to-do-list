@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { taskKeys } from '@/features/tasks/constants/task.constants';
+import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { updateTask } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { updateTaskInCache } from '@/features/tasks/utils/tasks-cache';

@@ -3,15 +3,23 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import {
   mapDbTask,
   mapTaskUpdateToDb,
+  taskKeyMap,
 } from '@/features/tasks/mappers/tasks.mapper';
+import { DbTaskRow } from '@/features/tasks/types/database.types';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 
+// Derived from taskKeyMap (not hardcoded) so this can't silently drift out
+// of sync with what mapDbTask actually reads. Explicit over '*' so a future
+// column added to the tasks table doesn't get pulled into every fetch by
+// default — it only ships once someone deliberately maps it here too.
+const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
+
 export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('tasks')
-    .select('*')
+    .select<typeof TASK_COLUMNS, DbTaskRow>(TASK_COLUMNS)
     .order('position')
     .is('deleted_at', null);
 

@@ -5,7 +5,7 @@ import { updateTask } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { updateTaskInCache } from '@/features/tasks/utils/tasks-cache';
 
-export function useUpdateTaskMutation() {
+export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({

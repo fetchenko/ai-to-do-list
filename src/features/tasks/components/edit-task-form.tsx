@@ -11,7 +11,7 @@ import {
   TitleField,
 } from '@/features/tasks/components/task-form-fields';
 import { TASK_FORM_COPY } from '@/features/tasks/constants/task-form-copy.constants';
-import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
+import { useUpdateTask } from '@/features/tasks/hooks/use-update-task';
 import { TaskForm, taskSchema } from '@/features/tasks/schema/tasks';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';
@@ -21,7 +21,7 @@ type EditTaskProps = {
 };
 
 export default function EditTaskForm({ task }: EditTaskProps) {
-  const updateTaskMutation = useUpdateTaskMutation();
+  const updateTask = useUpdateTask();
   const resetTaskStore = useTaskStore((state) => state.reset);
 
   // Derived, not passed in — a task IS a subtask iff it has a parent, so
@@ -47,7 +47,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    await updateTaskMutation.mutateAsync({
+    await updateTask.mutateAsync({
       taskId: task.id,
       updates: values,
     });
@@ -55,12 +55,12 @@ export default function EditTaskForm({ task }: EditTaskProps) {
   });
 
   return (
-    <form onSubmit={onSubmit} className="w-full">
+    <form onSubmit={onSubmit} className="w-full space-y-4">
       <fieldset
-        className="flex w-full items-center justify-between gap-3"
-        disabled={isSubmitting || updateTaskMutation.isPending}
+        className="space-y-4"
+        disabled={isSubmitting || updateTask.isPending}
       >
-        <FormError message={updateTaskMutation.error?.message} />
+        <FormError message={updateTask.error?.message} />
 
         <div className="w-full min-w-0 space-y-4">
           <TitleField
@@ -78,9 +78,9 @@ export default function EditTaskForm({ task }: EditTaskProps) {
           />
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="default" size="sm" type="submit">
-            {isSubmitting || updateTaskMutation.isPending ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button variant="default" size="sm" type="submit" className="min-w-20 justify-center">
+            {isSubmitting || updateTask.isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 <span>Saving…</span>

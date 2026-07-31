@@ -25,9 +25,16 @@ export class TasksPage {
     return this.page.getByTestId(testIds.taskSection.new);
   }
 
-  async addTask(title: string) {
+  async addTask(title: string, options?: { description?: string }) {
     const section = this.newTaskSection();
     await section.getByPlaceholder('Add a task').fill(title);
+
+    if (options?.description) {
+      await section.getByRole('button', { name: 'Add description' }).click();
+      await section
+        .getByPlaceholder('Add detail for this task')
+        .fill(options.description);
+    }
 
     await Promise.all([
       this.page.waitForResponse(
@@ -153,6 +160,23 @@ export class TasksPage {
 
   async openTab(name: 'Active' | 'Done') {
     await this.page.getByRole('tab', { name }).click();
+  }
+
+  // --- search ----------------------------------------------------------
+  //
+  // <input type="search" aria-label="Search tasks"> gets the implicit
+  // "searchbox" role for free, and it's the only one on the page, so
+  // role+name is enough here — no testid needed to disambiguate.
+  searchInput(): Locator {
+    return this.page.getByRole('searchbox', { name: 'Search tasks' });
+  }
+
+  async search(query: string) {
+    await this.searchInput().fill(query);
+  }
+
+  async clearSearch() {
+    await this.page.getByRole('button', { name: 'Clear search' }).click();
   }
 
   // --- AI draft subtasks ------------------------------------------------

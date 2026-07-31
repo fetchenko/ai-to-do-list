@@ -7,8 +7,8 @@ import { Sparkles } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { DraftSubtaskRow } from '@/features/tasks/components/draft-subtask-row';
-import { useSaveSubtasks } from '@/features/tasks/hooks/use-save-subtasks';
+import { DraftSubtaskRow } from '@/features/tasks/components/forms/draft-subtask-row';
+import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
@@ -29,7 +29,7 @@ export function DraftSubtasks({ task, drafts, onDiscard, loading }: DraftSubtask
     [drafts]
   );
 
-  const { saveSubtasks, isSaving } = useSaveSubtasks(task.id);
+  const { saveSubtasks, isSaving } = useAddSubtasks(task.id);
 
   const {
     control,

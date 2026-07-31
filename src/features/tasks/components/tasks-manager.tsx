@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AddTaskForm } from '@/features/tasks/components/add-task-form';
+import { AddTaskForm } from '@/features/tasks/components/forms/add-task-form';
 import { SearchTasksInput } from '@/features/tasks/components/search-tasks-input';
 import { TaskList } from '@/features/tasks/components/task-list';
 import { taskKeys } from '@/features/tasks/constants/query-keys';

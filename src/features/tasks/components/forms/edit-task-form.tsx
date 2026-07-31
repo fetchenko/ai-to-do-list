@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import {
   DescriptionField,
   TitleField,
-} from '@/features/tasks/components/task-form-fields';
+} from '@/features/tasks/components/forms/task-form-fields';
 import { TASK_FORM_COPY } from '@/features/tasks/constants/task-form-copy.constants';
 import { useUpdateTask } from '@/features/tasks/hooks/use-update-task';
 import { TaskForm, taskSchema } from '@/features/tasks/schema/tasks';

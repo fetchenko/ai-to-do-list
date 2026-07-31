@@ -12,7 +12,7 @@ import {
 import {
   DescriptionField,
   TitleField,
-} from '@/features/tasks/components/task-form-fields';
+} from '@/features/tasks/components/forms/task-form-fields';
 import {
   TASK_FORM_COPY,
   TaskFormVariant,

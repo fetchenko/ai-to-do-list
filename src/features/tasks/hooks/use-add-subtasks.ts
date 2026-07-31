@@ -7,7 +7,7 @@ import { TaskInsert } from '@/features/tasks/types/tasks.types';
 import { AppError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
-export function useSaveSubtasks(parentTaskId: string) {
+export function useAddSubtasks(parentTaskId: string) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({

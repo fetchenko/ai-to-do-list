@@ -70,7 +70,7 @@ export function DescriptionField({
         rows={3}
         maxLength={DESCRIPTION_MAX_LENGTH}
         placeholder={placeholder}
-        className="resize-y"
+        className="field-sizing-fixed w-full min-w-0 max-w-full resize-y break-words"
         aria-invalid={!!errors.description}
         aria-describedby={errors.description ? `${id}-error` : undefined}
         {...register('description')}

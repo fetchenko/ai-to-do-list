@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-import EditTaskForm from '@/features/tasks/components/edit-task-form';
+import EditTaskForm from '@/features/tasks/components/forms/edit-task-form';
 import { TaskCheckbox } from '@/features/tasks/components/task-checkbox';
 import { useTaskStore } from '@/features/tasks/stores/use-task-store';
 import { Task } from '@/features/tasks/types/tasks.types';

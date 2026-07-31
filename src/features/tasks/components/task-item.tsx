@@ -3,8 +3,8 @@
 import { memo } from 'react';
 
 import { Card } from '@/components/ui/card';
-import { AddTaskForm } from '@/features/tasks/components/add-task-form';
-import { DraftSubtasks } from '@/features/tasks/components/draft-subtasks';
+import { AddTaskForm } from '@/features/tasks/components/forms/add-task-form';
+import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { Task } from '@/features/tasks/types/tasks.types';

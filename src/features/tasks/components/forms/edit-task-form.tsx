@@ -62,7 +62,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
       >
         <FormError message={updateTask.error?.message} />
 
-        <div className="w-full min-w-0 space-y-4">
+        <div className="w-full min-w-0 max-w-full space-y-4">
           <TitleField
             register={register}
             errors={errors}

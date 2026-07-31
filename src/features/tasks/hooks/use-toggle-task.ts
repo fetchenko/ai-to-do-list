@@ -1,11 +1,11 @@
 import { CheckedState } from '@radix-ui/react-checkbox';
 
 import { taskStatus } from '@/features/tasks/constants/task.constants';
-import { useUpdateTaskMutation } from '@/features/tasks/hooks/use-update-task';
+import { useUpdateTask } from '@/features/tasks/hooks/use-update-task';
 import { Task } from '@/features/tasks/types/tasks.types';
 
 export function useToggleTask(task: Task) {
-  const { mutate, isPending } = useUpdateTaskMutation();
+  const { mutate, isPending } = useUpdateTask();
 
   const toggle = (checked: CheckedState) => {
     mutate({

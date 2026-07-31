@@ -8,6 +8,7 @@ export const testIds = {
    */
   taskSection: {
     new: 'new-task-section',
+    search: 'task-search-input',
   },
   /**
    * Parent task card. Role="article" + accessible name (task title) is the

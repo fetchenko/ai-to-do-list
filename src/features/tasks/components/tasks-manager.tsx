@@ -1,18 +1,19 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
 import { ErrorAlert } from '@/components/primitives/error-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddTaskForm } from '@/features/tasks/components/add-task-form';
+import { SearchTasksInput } from '@/features/tasks/components/search-tasks-input';
 import { TaskList } from '@/features/tasks/components/task-list';
 import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
+import { filterGroupsByQuery, groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { testIds } from '@/shared/testing/test-ids';
 
@@ -37,7 +38,16 @@ export default function TasksManager() {
 
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask();
 
+  const [query, setQuery] = useState('');
+
   const tasksByStatus = useMemo(() => groupTasksByStatus(tasks), [tasks]);
+  const filteredByStatus = useMemo(
+    () => ({
+      active: filterGroupsByQuery(tasksByStatus.active, query),
+      done: filterGroupsByQuery(tasksByStatus.done, query),
+    }),
+    [tasksByStatus, query]
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
@@ -48,6 +58,8 @@ export default function TasksManager() {
             onAddTask={createTask}
           />
         </div>
+
+        <SearchTasksInput value={query} onChange={setQuery} />
 
         {error ? (
           <ErrorAlert
@@ -71,8 +83,8 @@ export default function TasksManager() {
               >
                 <TaskList
                   loading={isPending}
-                  groups={tasksByStatus[tab.value]}
-                  emptyLabel={tab.emptyLabel}
+                  groups={filteredByStatus[tab.value]}
+                  emptyLabel={query ? `No tasks match "${query}"` : tab.emptyLabel}
                 />
               </TabsContent>
             ))}

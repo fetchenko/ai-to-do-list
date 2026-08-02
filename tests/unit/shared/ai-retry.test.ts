@@ -19,8 +19,7 @@ describe('shouldRetry', () => {
       ErrorCode.AI_UNAVAILABLE,
       ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
       'Temporary failure',
-      undefined,
-      true
+      undefined
     );
 
     expect(shouldRetry(0, error)).toBe(true);
@@ -31,8 +30,7 @@ describe('shouldRetry', () => {
       ErrorCode.AI_UNAVAILABLE,
       ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
       'Temporary failure',
-      undefined,
-      true
+      undefined
     );
 
     expect(shouldRetry(MAX_AI_RETRIES, error)).toBe(false);
@@ -43,8 +41,7 @@ describe('shouldRetry', () => {
       ErrorCode.INVALID_REQUEST,
       ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
       'Invalid request',
-      undefined,
-      false
+      undefined
     );
 
     expect(shouldRetry(0, error)).toBe(false);
@@ -76,8 +73,7 @@ describe('shouldRetry', () => {
         ErrorCode.AI_UNAVAILABLE,
         ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
         '',
-        undefined,
-        true
+        undefined
       ),
       expected: true,
     },
@@ -88,8 +84,7 @@ describe('shouldRetry', () => {
         ErrorCode.INVALID_REQUEST,
         ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
         '',
-        undefined,
-        false
+        undefined
       ),
       expected: false,
     },
@@ -100,8 +95,7 @@ describe('shouldRetry', () => {
         ErrorCode.AI_UNAVAILABLE,
         ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
         '',
-        undefined,
-        true
+        undefined
       ),
       expected: false,
     },

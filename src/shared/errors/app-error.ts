@@ -7,13 +7,15 @@ export class AppError extends Error {
     public code: ErrorCode,
     public status: number,
     message: string,
-    public details?: unknown,
-    public retryable?: boolean
+    public details?: unknown
   ) {
     super(message);
 
     this.name = 'AppError';
-    this.retryable = isRetryableError(code);
+  }
+
+  get retryable(): boolean {
+    return isRetryableError(this.code);
   }
 }
 

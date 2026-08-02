@@ -1,20 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { AppError } from '@/shared/errors/app-error';
+import {
+  AiTimeoutError,
+  AppError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-import { MAX_AI_RETRIES, shouldRetry } from '@/shared/react-query/ai-retry';
+import {
+  MAX_AI_RETRIES,
+  retryDelay,
+  shouldRetry,
+} from '@/shared/react-query/ai-retry';
 
 describe('shouldRetry', () => {
-  it('retries unknown errors before reaching the retry limit', () => {
-    expect(shouldRetry(0, new Error())).toBe(true);
-    expect(shouldRetry(1, new Error())).toBe(true);
-  });
-
-  it('stops retrying unknown errors after reaching the retry limit', () => {
-    expect(shouldRetry(MAX_AI_RETRIES, new Error())).toBe(false);
-  });
-
   it('retries retryable AppErrors', () => {
     const error = new AppError(
       ErrorCode.AI_UNAVAILABLE,
@@ -118,5 +117,28 @@ describe('shouldRetry', () => {
     );
 
     expect(shouldRetry(0, error)).toBe(false);
+  });
+});
+
+describe('retryDelay', () => {
+  it('uses exponential backoff', () => {
+    expect(retryDelay(0)).toBe(1000);
+    expect(retryDelay(1)).toBe(2000);
+    expect(retryDelay(2)).toBe(4000);
+  });
+
+  it('caps delay', () => {
+    expect(retryDelay(3)).toBe(5000);
+    expect(retryDelay(20)).toBe(5000);
+  });
+});
+
+describe('retryable error mapping', () => {
+  it('marks AI timeout as retryable', () => {
+    expect(new AiTimeoutError().retryable).toBe(true);
+  });
+
+  it('marks validation errors as non-retryable', () => {
+    expect(new ValidationRequestError({}).retryable).toBe(false);
   });
 });

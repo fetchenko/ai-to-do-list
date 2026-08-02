@@ -9,7 +9,7 @@ import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-import { getRetryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
+import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
 export function useSubtaskDrafts(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
@@ -26,7 +26,7 @@ export function useSubtaskDrafts(taskId: string) {
       return await generateSubtasks(taskId);
     },
     retry: shouldRetry,
-    retryDelay: getRetryDelay,
+    retryDelay: retryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
     },

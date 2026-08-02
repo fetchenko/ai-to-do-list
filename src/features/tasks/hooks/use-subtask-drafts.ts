@@ -8,6 +8,8 @@ import { AiTask } from '@/features/tasks/types/tasks.types';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
+import { getRetryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
 export function useSubtaskDrafts(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
@@ -15,10 +17,16 @@ export function useSubtaskDrafts(taskId: string) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!taskId) {
-        throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
+        throw new AppError(
+          ErrorCode.INVALID_REQUEST,
+          ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
+          'Missing task id'
+        );
       }
       return await generateSubtasks(taskId);
     },
+    retry: shouldRetry,
+    retryDelay: getRetryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
     },

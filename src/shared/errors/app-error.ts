@@ -1,5 +1,6 @@
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
+import { RETRYABLE_ERRORS } from '@/shared/errors/retryable-errors';
 
 export class AppError extends Error {
   constructor(
@@ -10,7 +11,9 @@ export class AppError extends Error {
     public retryable?: boolean
   ) {
     super(message);
+
     this.name = 'AppError';
+    this.retryable = RETRYABLE_ERRORS.has(code);
   }
 }
 
@@ -41,9 +44,7 @@ export class AiTimeoutError extends AppError {
     super(
       ErrorCode.AI_TIMEOUT,
       ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
-      'Subtasks generation timed out',
-      undefined,
-      true
+      'Subtasks generation timed out'
     );
   }
 }

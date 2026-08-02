@@ -28,8 +28,7 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
       body?.error?.code ?? ErrorCode.UNKNOWN,
       res.status,
       body?.error?.message ?? 'Failed to generate subtasks',
-      body?.error?.details,
-      body?.error?.retryable
+      body?.error?.details
     );
   }
 

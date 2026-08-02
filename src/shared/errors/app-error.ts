@@ -1,16 +1,20 @@
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
+import { isRetryableError } from '@/shared/errors/retryable-errors';
 
 export class AppError extends Error {
   constructor(
-    public code: ErrorCode,
-    public status: number,
+    public readonly code: ErrorCode,
+    public readonly status: number,
     message: string,
-    public details?: unknown,
-    public retryable?: boolean
+    public readonly details?: unknown
   ) {
     super(message);
     this.name = 'AppError';
+  }
+
+  get retryable(): boolean {
+    return isRetryableError(this.code);
   }
 }
 
@@ -41,9 +45,7 @@ export class AiTimeoutError extends AppError {
     super(
       ErrorCode.AI_TIMEOUT,
       ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
-      'Subtasks generation timed out',
-      undefined,
-      true
+      'Subtasks generation timed out'
     );
   }
 }

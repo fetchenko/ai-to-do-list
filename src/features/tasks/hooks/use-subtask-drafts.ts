@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 
 import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { AppError } from '@/shared/errors/app-error';
-import { ErrorCode } from '@/shared/errors/code';
+import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
 export function useSubtaskDrafts(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
@@ -15,10 +15,12 @@ export function useSubtaskDrafts(taskId: string) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!taskId) {
-        throw new AppError(ErrorCode.INVALID_REQUEST, 400, 'Missing task id');
+        throw new ValidationRequestError('Missing task id');
       }
       return await generateSubtasks(taskId);
     },
+    retry: shouldRetry,
+    retryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
     },

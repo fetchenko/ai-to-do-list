@@ -63,3 +63,6 @@ launch.json
 playwright/.auth/
 playwright-report/
 test-results/
+
+dnd-sandbox/node_modules/
+dnd-sandbox/

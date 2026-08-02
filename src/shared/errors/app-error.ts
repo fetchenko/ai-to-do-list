@@ -4,13 +4,12 @@ import { isRetryableError } from '@/shared/errors/retryable-errors';
 
 export class AppError extends Error {
   constructor(
-    public code: ErrorCode,
-    public status: number,
+    public readonly code: ErrorCode,
+    public readonly status: number,
     message: string,
-    public details?: unknown
+    public readonly details?: unknown
   ) {
     super(message);
-
     this.name = 'AppError';
   }
 

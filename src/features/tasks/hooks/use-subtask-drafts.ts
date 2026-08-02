@@ -26,7 +26,7 @@ export function useSubtaskDrafts(taskId: string) {
       return await generateSubtasks(taskId);
     },
     retry: shouldRetry,
-    retryDelay: retryDelay,
+    retryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
     },

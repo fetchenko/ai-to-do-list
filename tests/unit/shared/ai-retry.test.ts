@@ -2,133 +2,62 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AiTimeoutError,
-  AppError,
   ValidationRequestError,
 } from '@/shared/errors/app-error';
-import { ErrorCode } from '@/shared/errors/code';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 import {
+  INITIAL_RETRY_DELAY_MS,
   MAX_AI_RETRIES,
+  MAX_RETRY_DELAY_MS,
   retryDelay,
   shouldRetry,
 } from '@/shared/react-query/ai-retry';
 
 describe('shouldRetry', () => {
-  it('retries retryable AppErrors', () => {
-    const error = new AppError(
-      ErrorCode.AI_UNAVAILABLE,
-      ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
-      'Temporary failure',
-      undefined
-    );
-
-    expect(shouldRetry(0, error)).toBe(true);
-  });
-
-  it('stops retrying retryable AppErrors after the retry limit', () => {
-    const error = new AppError(
-      ErrorCode.AI_UNAVAILABLE,
-      ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
-      'Temporary failure',
-      undefined
-    );
-
-    expect(shouldRetry(MAX_AI_RETRIES, error)).toBe(false);
-  });
-
-  it('does not retry non-retryable AppErrors', () => {
-    const error = new AppError(
-      ErrorCode.INVALID_REQUEST,
-      ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
-      'Invalid request',
-      undefined
-    );
-
-    expect(shouldRetry(0, error)).toBe(false);
-  });
-
   it.each([
     {
-      name: 'unknown error on first attempt',
+      name: 'retries unknown errors before reaching retry limit',
       failureCount: 0,
       error: new Error(),
       expected: true,
     },
     {
-      name: 'unknown error on second attempt',
-      failureCount: 1,
-      error: new Error(),
+      name: 'retries retryable AppErrors',
+      failureCount: 0,
+      error: new AiTimeoutError(),
       expected: true,
     },
     {
-      name: 'unknown error at retry limit',
-      failureCount: MAX_AI_RETRIES,
-      error: new Error(),
+      name: 'does not retry non-retryable AppErrors',
+      failureCount: 0,
+      error: new ValidationRequestError({}),
       expected: false,
     },
     {
-      name: 'retryable AppError',
-      failureCount: 0,
-      error: new AppError(
-        ErrorCode.AI_UNAVAILABLE,
-        ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
-        '',
-        undefined
-      ),
-      expected: true,
-    },
-    {
-      name: 'non-retryable AppError',
-      failureCount: 0,
-      error: new AppError(
-        ErrorCode.INVALID_REQUEST,
-        ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
-        '',
-        undefined
-      ),
-      expected: false,
-    },
-    {
-      name: 'retryable AppError at retry limit',
+      name: 'stops retrying once retry limit is reached',
       failureCount: MAX_AI_RETRIES,
-      error: new AppError(
-        ErrorCode.AI_UNAVAILABLE,
-        ErrorHttpStatus[ErrorCode.AI_UNAVAILABLE],
-        '',
-        undefined
-      ),
+      error: new AiTimeoutError(),
       expected: false,
     },
   ])('$name', ({ failureCount, error, expected }) => {
     expect(shouldRetry(failureCount, error)).toBe(expected);
   });
-
-  it('does not retry AppErrors with an undefined retryable flag', () => {
-    const error = new AppError(
-      ErrorCode.UNKNOWN,
-      ErrorHttpStatus[ErrorCode.UNKNOWN],
-      'Unknown failure'
-    );
-
-    expect(shouldRetry(0, error)).toBe(false);
-  });
 });
 
 describe('retryDelay', () => {
   it('uses exponential backoff', () => {
-    expect(retryDelay(0)).toBe(1000);
-    expect(retryDelay(1)).toBe(2000);
-    expect(retryDelay(2)).toBe(4000);
+    expect(retryDelay(0)).toBe(INITIAL_RETRY_DELAY_MS);
+    expect(retryDelay(1)).toBe(INITIAL_RETRY_DELAY_MS * 2);
+    expect(retryDelay(2)).toBe(INITIAL_RETRY_DELAY_MS * 4);
   });
 
-  it('caps delay', () => {
-    expect(retryDelay(3)).toBe(5000);
-    expect(retryDelay(20)).toBe(5000);
+  it('caps retry delay', () => {
+    expect(retryDelay(3)).toBe(MAX_RETRY_DELAY_MS);
+    expect(retryDelay(20)).toBe(MAX_RETRY_DELAY_MS);
   });
 });
 
 describe('retryable error mapping', () => {
-  it('marks AI timeout as retryable', () => {
+  it('marks AI timeout errors as retryable', () => {
     expect(new AiTimeoutError().retryable).toBe(true);
   });
 

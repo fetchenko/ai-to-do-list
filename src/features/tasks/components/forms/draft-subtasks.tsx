@@ -16,13 +16,12 @@ import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
 
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { AppError } from '@/shared/errors/app-error';
 
 type DraftSubtasksProps = {
   task: Task;
   drafts: AiTask[];
 
-  error: AppError | null;
+  error: Error | null;
 
   onRetry: () => void;
   onDiscard: () => void;

@@ -269,4 +269,83 @@ describe('useSubtaskDrafts', () => {
     expect(mockedGenerateSubtasks)
       .toHaveBeenCalledTimes(2);
   });
+
+  it('clears error immediately when retry starts', async () => {
+    mockedGenerateSubtasks
+      .mockRejectedValueOnce(new Error('Initial failure'))
+      .mockResolvedValueOnce([
+        {
+          id: '1',
+          title: 'Recovered draft',
+        },
+      ] as AiTask[]);
+
+    const { result } = renderHook(
+      () => useSubtaskDrafts('task-1'),
+      {
+        wrapper: createWrapper(),
+      },
+    );
+
+    act(() => {
+      result.current.generate();
+    });
+
+    await waitFor(() => {
+      expect(result.current.error)
+        .not
+        .toBeNull();
+    });
+
+    act(() => {
+      result.current.retry();
+    });
+
+    expect(result.current.error)
+      .toBeNull();
+
+    await waitFor(() => {
+      expect(result.current.drafts)
+        .toHaveLength(1);
+    });
+  });
+
+  it('sets generating state during retry', async () => {
+    let resolveRequest!: (value: AiTask[]) => void;
+
+    mockedGenerateSubtasks.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+
+    const { result } = renderHook(
+      () => useSubtaskDrafts('task-1'),
+      {
+        wrapper: createWrapper(),
+      },
+    );
+
+    act(() => {
+      result.current.generate();
+    });
+
+    expect(result.current.isGenerating)
+      .toBe(true);
+
+    await act(async () => {
+      resolveRequest([
+        {
+          id: '1',
+          title: 'Done',
+        },
+      ] as AiTask[]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isGenerating)
+        .toBe(false);
+    });
+  });
 });

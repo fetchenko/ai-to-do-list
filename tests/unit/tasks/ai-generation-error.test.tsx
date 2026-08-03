@@ -4,10 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
-
+import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
+import { AiUnavailableError } from '@/shared/errors/app-error';
+import { createTask } from '@tests/factories/task.factory';
 
 describe('AiGenerationError', () => {
-
   it('renders error message', () => {
     render(
       <AiGenerationError
@@ -153,4 +154,31 @@ describe('AiGenerationError', () => {
       .toHaveBeenCalled();
   });
 
+  it('calls dismiss when dismiss button is clicked', async () => {
+    const user = userEvent.setup();
+
+    const onDiscard = vi.fn();
+
+    const task = createTask({ id: '1', title: 'task 1' })
+
+    render(
+      <DraftSubtasks
+        task={task}
+        drafts={[]}
+        error={new AiUnavailableError('AI unavailable')}
+        loading={false}
+        onRetry={vi.fn()}
+        onDiscard={onDiscard}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Dismiss',
+      }),
+    );
+
+    expect(onDiscard)
+      .toHaveBeenCalledTimes(1);
+  });
 });

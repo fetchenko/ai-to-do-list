@@ -13,15 +13,22 @@ import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
 
 type DraftSubtasksProps = {
   task: Task;
   drafts: AiTask[];
+
+  error: Error | null;
+
+  onRetry: () => void;
   onDiscard: () => void;
+
   loading: boolean;
 };
 
-export function DraftSubtasks({ task, drafts, onDiscard, loading }: DraftSubtasksProps) {
+export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading }: DraftSubtasksProps) {
   const formDefaults = useMemo<DraftForm>(
     () => ({
       drafts: normalizeAiTasks(drafts),
@@ -58,6 +65,16 @@ export function DraftSubtasks({ task, drafts, onDiscard, loading }: DraftSubtask
         <TasksSkeleton />
       </div>
     )
+  }
+
+  if (error) {
+    return (
+      <AiGenerationError
+        message={getFriendlyErrorMessage(error)}
+        onRetry={onRetry}
+        onDismiss={onDiscard}
+      />
+    );
   }
 
   if (fields.length === 0) {

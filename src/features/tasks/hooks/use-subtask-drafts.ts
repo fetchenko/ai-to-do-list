@@ -11,6 +11,7 @@ import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
 export function useSubtaskDrafts(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -23,9 +24,11 @@ export function useSubtaskDrafts(taskId: string) {
     retryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
+      setError(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       setDrafts(null);
+      setError(error);
 
       const message =
         error instanceof AppError
@@ -36,13 +39,17 @@ export function useSubtaskDrafts(taskId: string) {
     },
   });
 
-  const discard = () => setDrafts(null);
+  const discard = () => {
+    setDrafts(null);
+    setError(null);
+  };
 
   return {
     drafts,
+    error,
     isPending: mutation.isPending,
-    isError: mutation.isError,
     generate: mutation.mutate,
+    retry: mutation.mutate,
     discard,
   };
 }

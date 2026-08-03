@@ -123,7 +123,7 @@ describe('useSubtaskDrafts', () => {
     );
 
 
-    await act(async () => {
+    act(async () => {
       result.current.generate();
     });
 
@@ -217,5 +217,17 @@ describe('useSubtaskDrafts', () => {
     expect(mockedGenerateSubtasks)
       .not
       .toHaveBeenCalled();
+  });
+
+  it('exposes retry action', () => {
+    const { result } = renderHook(
+      () => useSubtaskDrafts('task-1'),
+      {
+        wrapper: createWrapper()
+      }
+    );
+
+    expect(result.current.retry)
+      .toBeTypeOf('function');
   });
 });

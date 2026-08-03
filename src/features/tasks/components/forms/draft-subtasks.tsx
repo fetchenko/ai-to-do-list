@@ -13,8 +13,9 @@ import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
+
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 type DraftSubtasksProps = {
   task: Task;
@@ -73,6 +74,7 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
         message={getFriendlyErrorMessage(error)}
         onRetry={onRetry}
         onDismiss={onDiscard}
+        retrying={loading}
       />
     );
   }

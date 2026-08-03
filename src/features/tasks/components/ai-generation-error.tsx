@@ -7,7 +7,6 @@ type AiGenerationErrorProps = {
   retrying?: boolean;
 };
 
-
 export function AiGenerationError({
   message,
   onRetry,
@@ -17,8 +16,7 @@ export function AiGenerationError({
   return (
     <div
       role="alert"
-      aria-live="assertive"
-      className="rounded-md border border-destructive/50 p-4 space-y-3"
+      className="space-y-3 rounded-md border border-destructive/50 p-4"
     >
       <div>
         <p className="font-medium">
@@ -32,18 +30,20 @@ export function AiGenerationError({
 
       <div className="flex gap-2">
         <Button
+          type="button"
           onClick={onRetry}
           disabled={retrying}
         >
-          {retrying ? 'Retrying...' : 'Retry'}
+          {retrying ? 'Retrying…' : 'Retry'}
         </Button>
 
         <Button
+          type="button"
           variant="outline"
           onClick={onDismiss}
           disabled={retrying}
         >
-          Cancel
+          Dismiss
         </Button>
       </div>
     </div>

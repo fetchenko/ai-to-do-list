@@ -44,12 +44,21 @@ export function useSubtaskDrafts(taskId: string) {
     setError(null);
   };
 
+  const generate = () => {
+    mutation.mutate();
+  };
+
+  const retry = () => {
+    setError(null);
+    mutation.mutate();
+  };
+
   return {
     drafts,
     error,
     isPending: mutation.isPending,
-    generate: mutation.mutate,
-    retry: mutation.mutate,
+    generate,
+    retry,
     discard,
   };
 }

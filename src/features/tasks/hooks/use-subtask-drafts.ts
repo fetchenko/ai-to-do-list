@@ -49,7 +49,6 @@ export function useSubtaskDrafts(taskId: string) {
   };
 
   const retry = () => {
-    setError(null);
     mutation.mutate();
   };
 

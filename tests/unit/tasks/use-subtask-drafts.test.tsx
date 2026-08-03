@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
@@ -24,7 +25,7 @@ function createWrapper() {
   return function Wrapper({
     children,
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
   }) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -135,7 +136,7 @@ describe('useSubtaskDrafts', () => {
     });
 
 
-    await act(async () => {
+    act(async () => {
       result.current.retry();
     });
 
@@ -168,7 +169,7 @@ describe('useSubtaskDrafts', () => {
     );
 
 
-    await act(async () => {
+    act(async () => {
       result.current.generate();
     });
 
@@ -229,5 +230,55 @@ describe('useSubtaskDrafts', () => {
 
     expect(result.current.retry)
       .toBeTypeOf('function');
+  });
+
+  it('retries generation after failure', async () => {
+    mockedGenerateSubtasks
+      .mockRejectedValueOnce(new Error('Temporary failure'))
+      .mockResolvedValueOnce([
+        {
+          id: '1',
+          title: 'Recovered draft',
+        },
+      ] as AiTask[]);
+
+
+    const { result } = renderHook(
+      () => useSubtaskDrafts('task-1'),
+      {
+        wrapper: createWrapper(),
+      },
+    );
+
+
+    act(() => {
+      result.current.generate();
+    });
+
+
+    await waitFor(() => {
+      expect(result.current.error)
+        .not
+        .toBeNull();
+    });
+
+
+    act(() => {
+      result.current.retry();
+    });
+
+
+    await waitFor(() => {
+      expect(result.current.drafts)
+        .toHaveLength(1);
+    });
+
+
+    expect(result.current.error)
+      .toBeNull();
+
+
+    expect(mockedGenerateSubtasks)
+      .toHaveBeenCalledTimes(2);
   });
 });

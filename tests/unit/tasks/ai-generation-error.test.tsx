@@ -78,7 +78,7 @@ describe('AiGenerationError', () => {
 
     await user.click(
       screen.getByRole('button', {
-        name: 'Cancel',
+        name: 'Dismiss',
       }),
     );
 
@@ -86,7 +86,6 @@ describe('AiGenerationError', () => {
     expect(onDismiss)
       .toHaveBeenCalledTimes(1);
   });
-
 
   it('disables actions while retrying', () => {
     render(
@@ -98,23 +97,20 @@ describe('AiGenerationError', () => {
       />,
     );
 
-
     expect(
       screen.getByRole('button', {
-        name: 'Retrying...',
+        name: /Retrying/,
       }),
     )
       .toBeDisabled();
 
-
     expect(
       screen.getByRole('button', {
-        name: 'Cancel',
+        name: 'Dismiss',
       }),
     )
       .toBeDisabled();
   });
-
 
   it('has accessible alert role', () => {
     render(
@@ -130,6 +126,31 @@ describe('AiGenerationError', () => {
       screen.getByRole('alert'),
     )
       .toBeInTheDocument();
+  });
+
+  it('does not call retry while retrying', async () => {
+    const user = userEvent.setup();
+
+    const onRetry = vi.fn();
+
+    render(
+      <AiGenerationError
+        message="Failed"
+        retrying
+        onRetry={onRetry}
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: /Retrying/,
+      }),
+    );
+
+    expect(onRetry)
+      .not
+      .toHaveBeenCalled();
   });
 
 });

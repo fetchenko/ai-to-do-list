@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
 
 import type { Task } from '@/features/tasks/types/tasks.types';
+import { AiUnavailableError } from '@/shared/errors/app-error';
 
 vi.mock('@/features/tasks/hooks/use-add-subtasks', () => ({
   useAddSubtasks: () => ({
@@ -25,7 +26,7 @@ describe('DraftSubtasks', () => {
       <DraftSubtasks
         task={task}
         drafts={[]}
-        error={new Error('AI unavailable')}
+        error={new AiUnavailableError('AI unavailable')}
         loading={false}
         onRetry={vi.fn()}
         onDiscard={vi.fn()}
@@ -57,7 +58,7 @@ describe('DraftSubtasks', () => {
       <DraftSubtasks
         task={task}
         drafts={[]}
-        error={new Error('AI unavailable')}
+        error={new AiUnavailableError('AI unavailable')}
         loading={false}
         onRetry={onRetry}
         onDiscard={vi.fn()}
@@ -82,7 +83,7 @@ describe('DraftSubtasks', () => {
       <DraftSubtasks
         task={task}
         drafts={[]}
-        error={new Error('AI unavailable')}
+        error={new AiUnavailableError('AI unavailable')}
         loading
         onRetry={vi.fn()}
         onDiscard={vi.fn()}

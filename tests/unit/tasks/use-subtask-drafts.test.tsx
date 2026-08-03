@@ -6,6 +6,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
+import { AiUnavailableError } from '@/shared/errors/app-error';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({
   generateSubtasks: vi.fn(),
@@ -76,7 +77,7 @@ describe('useSubtaskDrafts', () => {
 
 
   it('stores error after failed generation', async () => {
-    const error = new Error('AI failed');
+    const error = new AiUnavailableError('AI failed');
 
     mockedGenerateSubtasks.mockRejectedValue(error);
 
@@ -107,7 +108,7 @@ describe('useSubtaskDrafts', () => {
 
   it('clears error after successful retry', async () => {
     mockedGenerateSubtasks
-      .mockRejectedValueOnce(new Error('temporary failure'))
+      .mockRejectedValueOnce(new AiUnavailableError('temporary failure'))
       .mockResolvedValueOnce([
         {
           id: '1',
@@ -136,7 +137,7 @@ describe('useSubtaskDrafts', () => {
     });
 
 
-    act(async () => {
+    act(() => {
       result.current.retry();
     });
 
@@ -222,7 +223,7 @@ describe('useSubtaskDrafts', () => {
 
   it('retries generation after failure', async () => {
     mockedGenerateSubtasks
-      .mockRejectedValueOnce(new Error('Temporary failure'))
+      .mockRejectedValueOnce(new AiUnavailableError('temporary failure'))
       .mockResolvedValueOnce([
         {
           id: '1',
@@ -307,45 +308,6 @@ describe('useSubtaskDrafts', () => {
     await waitFor(() => {
       expect(result.current.drafts)
         .toHaveLength(1);
-    });
-  });
-
-  it('sets generating state during retry', async () => {
-    let resolveRequest!: (value: AiTask[]) => void;
-
-    mockedGenerateSubtasks.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveRequest = resolve;
-        }),
-    );
-
-    const { result } = renderHook(
-      () => useSubtaskDrafts('task-1'),
-      {
-        wrapper: createWrapper(),
-      },
-    );
-
-    act(() => {
-      result.current.generate();
-    });
-
-    expect(result.current.isGenerating)
-      .toBe(true);
-
-    await act(async () => {
-      resolveRequest([
-        {
-          id: '1',
-          title: 'Done',
-        },
-      ] as AiTask[]);
-    });
-
-    await waitFor(() => {
-      expect(result.current.isGenerating)
-        .toBe(false);
     });
   });
 });

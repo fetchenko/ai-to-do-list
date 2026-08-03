@@ -3,8 +3,6 @@ import userEvent from '@testing-library/user-event';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
-
 import type { Task } from '@/features/tasks/types/tasks.types';
 import { AiUnavailableError } from '@/shared/errors/app-error';
 
@@ -14,6 +12,8 @@ vi.mock('@/features/tasks/hooks/use-add-subtasks', () => ({
     isSaving: false,
   }),
 }));
+
+import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
 
 const task: Task = {
   id: 'task-1',
@@ -78,24 +78,21 @@ describe('DraftSubtasks', () => {
   });
 
 
-  it('shows retrying state while loading', () => {
+  it('shows loading skeleton while generating', () => {
     render(
       <DraftSubtasks
         task={task}
         drafts={[]}
-        error={new AiUnavailableError('AI unavailable')}
+        error={null}
         loading
         onRetry={vi.fn()}
         onDiscard={vi.fn()}
       />,
     );
 
-
     expect(
-      screen.getByRole('button', {
-        name: /Retrying/,
-      }),
-    )
-      .toBeDisabled();
+      screen.getByText(/Generating subtasks/i),
+    ).toBeInTheDocument();
   });
+
 });

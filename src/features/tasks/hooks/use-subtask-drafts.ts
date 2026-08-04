@@ -45,10 +45,6 @@ export function useSubtaskDrafts(taskId: string) {
   };
 
   const generate = () => {
-    mutation.mutate();
-  };
-
-  const retry = () => {
     setError(null);
     mutation.mutate();
   };
@@ -58,7 +54,6 @@ export function useSubtaskDrafts(taskId: string) {
     error,
     isGenerating: mutation.isPending,
     generate,
-    retry,
     discard,
   };
 }

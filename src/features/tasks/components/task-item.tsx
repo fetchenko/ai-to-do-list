@@ -22,7 +22,7 @@ type TaskItemProps = {
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask(task.id);
 
-  const { drafts, error, retry, isGenerating, generate, discard } = useSubtaskDrafts(task.id);
+  const { drafts, error, isGenerating, generate, discard } = useSubtaskDrafts(task.id);
 
   const actions = useTaskActions(task, generate);
 
@@ -48,7 +48,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
             task={task}
             drafts={drafts ?? []}
             onDiscard={discard}
-            onRetry={retry}
+            onRetry={generate}
             error={error}
           />
         )}

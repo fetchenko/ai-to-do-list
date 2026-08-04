@@ -14,6 +14,7 @@ vi.mock('@/features/tasks/hooks/use-add-subtasks', () => ({
 }));
 
 import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
+import { createTask } from '@tests/factories/task.factory';
 
 const task: Task = {
   id: 'task-1',
@@ -91,8 +92,35 @@ describe('DraftSubtasks', () => {
     );
 
     expect(
-      screen.getByText(/Generating subtasks/i),
-    ).toBeInTheDocument();
+      screen.queryByRole('alert'),
+    ).not.toBeInTheDocument();
   });
 
+  it('calls dismiss when dismiss button is clicked', async () => {
+    const user = userEvent.setup();
+
+    const onDiscard = vi.fn();
+
+    const task = createTask({ id: '1', title: 'task 1' })
+
+    render(
+      <DraftSubtasks
+        task={task}
+        drafts={[]}
+        error={new AiUnavailableError('AI unavailable')}
+        loading={false}
+        onRetry={vi.fn()}
+        onDiscard={onDiscard}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Dismiss',
+      }),
+    );
+
+    expect(onDiscard)
+      .toHaveBeenCalledTimes(1);
+  });
 });

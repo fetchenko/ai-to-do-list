@@ -273,7 +273,7 @@ describe('useSubtaskDrafts', () => {
 
   it('clears error immediately when retry starts', async () => {
     mockedGenerateSubtasks
-      .mockRejectedValueOnce(new Error('Initial failure'))
+      .mockRejectedValueOnce(new AiUnavailableError('Initial failure'))
       .mockResolvedValueOnce([
         {
           id: '1',

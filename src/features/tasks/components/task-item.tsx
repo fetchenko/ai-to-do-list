@@ -26,7 +26,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
   const actions = useTaskActions(task, generate);
 
-  const showDraftPanel = isGenerating || drafts !== null;
+  const showDraftPanel = isGenerating || drafts !== null || error !== null;
 
   return (
     <Card

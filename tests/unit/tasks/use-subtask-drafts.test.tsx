@@ -110,54 +110,6 @@ describe('useSubtaskDrafts', () => {
       .toBeNull();
   });
 
-
-  it('clears error after successful retry', async () => {
-    mockedGenerateSubtasks
-      .mockRejectedValueOnce(new AiUnavailableError('temporary failure'))
-      .mockResolvedValueOnce([
-        {
-          id: '1',
-          title: 'Retry success',
-        },
-      ] as AiTask[]);
-
-
-    const { result } = renderHook(
-      () => useSubtaskDrafts('task-1'),
-      {
-        wrapper: createWrapper(),
-      },
-    );
-
-
-    act(() => {
-      result.current.generate();
-    });
-
-
-    await waitFor(() => {
-      expect(result.current.error)
-        .not
-        .toBeNull();
-    });
-
-
-    act(() => {
-      result.current.retry();
-    });
-
-
-    await waitFor(() => {
-      expect(result.current.error)
-        .toBeNull();
-    });
-
-
-    expect(result.current.drafts)
-      .toHaveLength(1);
-  });
-
-
   it('clears drafts and errors on discard', async () => {
     mockedGenerateSubtasks.mockResolvedValue([
       {

@@ -12,6 +12,11 @@ vi.mock('@/features/tasks/services/subtasks.service', () => ({
   generateSubtasks: vi.fn(),
 }));
 
+vi.mock('@/shared/react-query/ai-retry', () => ({
+  shouldRetry: () => false,
+  retryDelay: () => 0,
+}));
+
 const mockedGenerateSubtasks = vi.mocked(generateSubtasks);
 
 function createWrapper() {

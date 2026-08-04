@@ -123,4 +123,32 @@ describe('DraftSubtasks', () => {
     expect(onDiscard)
       .toHaveBeenCalledTimes(1);
   });
+
+  it('calls dismiss when dismiss button is clicked', async () => {
+    const user = userEvent.setup();
+
+    const onDiscard = vi.fn();
+
+    const task = createTask({ id: '1', title: 'task 1' })
+
+    render(
+      <DraftSubtasks
+        task={task}
+        drafts={[]}
+        error={new AiUnavailableError('AI unavailable')}
+        loading={false}
+        onRetry={vi.fn()}
+        onDiscard={onDiscard}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Dismiss',
+      }),
+    );
+
+    expect(onDiscard)
+      .toHaveBeenCalledTimes(1);
+  });
 });

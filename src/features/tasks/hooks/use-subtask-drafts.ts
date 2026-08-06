@@ -23,7 +23,6 @@ export function useSubtaskDrafts(taskId: string) {
     retryDelay,
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
-      mutation.reset();
     },
     onError: (error: Error) => {
       setDrafts(null);

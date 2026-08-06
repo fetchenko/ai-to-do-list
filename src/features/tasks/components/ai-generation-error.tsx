@@ -1,51 +1,48 @@
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 type AiGenerationErrorProps = {
   message: string;
   onRetry: () => void;
   onDismiss: () => void;
-  retrying?: boolean;
+  retryable: boolean;
 };
 
 export function AiGenerationError({
   message,
   onRetry,
   onDismiss,
-  retrying = false,
+  retryable
 }: AiGenerationErrorProps) {
   return (
-    <div
-      role="alert"
-      className="space-y-3 rounded-md border border-destructive/50 p-4"
-    >
-      <div>
-        <p className="font-medium">
-          Couldn&apos;t generate subtasks
-        </p>
+    <Alert variant="destructive">
+      <AlertCircle className="h-4 w-4" />
 
-        <p className="text-sm text-muted-foreground">
-          {message}
-        </p>
-      </div>
+      <AlertTitle>Couldn&apos;t generate subtasks</AlertTitle>
 
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          onClick={onRetry}
-          disabled={retrying}
-        >
-          {retrying ? 'Retrying…' : 'Retry'}
-        </Button>
+      <AlertDescription className="space-y-4">
+        <p>{message}</p>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onDismiss}
-          disabled={retrying}
-        >
-          Dismiss
-        </Button>
-      </div>
-    </div>
+        <div className="flex gap-2">
+          {retryable && <Button
+            type="button"
+            onClick={onRetry}
+          >
+            Retry
+          </Button>
+          }
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onDismiss}
+          >
+            Dismiss
+          </Button>
+        </div>
+      </AlertDescription>
+    </Alert>
   );
 }

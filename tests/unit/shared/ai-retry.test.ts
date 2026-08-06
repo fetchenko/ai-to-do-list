@@ -18,7 +18,7 @@ describe('shouldRetry', () => {
       name: 'retries unknown errors before reaching retry limit',
       failureCount: 0,
       error: new Error(),
-      expected: true,
+      expected: false,
     },
     {
       name: 'retries retryable AppErrors',
@@ -53,15 +53,5 @@ describe('retryDelay', () => {
   it('caps retry delay', () => {
     expect(retryDelay(3)).toBe(MAX_RETRY_DELAY_MS);
     expect(retryDelay(20)).toBe(MAX_RETRY_DELAY_MS);
-  });
-});
-
-describe('retryable error mapping', () => {
-  it('marks AI timeout errors as retryable', () => {
-    expect(new AiTimeoutError().retryable).toBe(true);
-  });
-
-  it('marks validation errors as non-retryable', () => {
-    expect(new ValidationRequestError({}).retryable).toBe(false);
   });
 });

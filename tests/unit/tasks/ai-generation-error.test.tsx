@@ -12,6 +12,7 @@ describe('AiGenerationError', () => {
         message="AI service unavailable"
         onRetry={vi.fn()}
         onDismiss={vi.fn()}
+        retryable
       />,
     );
 
@@ -43,6 +44,7 @@ describe('AiGenerationError', () => {
         message="Failed"
         onRetry={onRetry}
         onDismiss={vi.fn()}
+        retryable
       />,
     );
 
@@ -70,6 +72,7 @@ describe('AiGenerationError', () => {
         message="Failed"
         onRetry={vi.fn()}
         onDismiss={onDismiss}
+        retryable={false}
       />,
     );
 
@@ -85,37 +88,13 @@ describe('AiGenerationError', () => {
       .toHaveBeenCalledTimes(1);
   });
 
-  it('disables actions while retrying', () => {
-    render(
-      <AiGenerationError
-        message="Retrying"
-        retrying
-        onRetry={vi.fn()}
-        onDismiss={vi.fn()}
-      />,
-    );
-
-    expect(
-      screen.getByRole('button', {
-        name: /Retrying/,
-      }),
-    )
-      .toBeDisabled();
-
-    expect(
-      screen.getByRole('button', {
-        name: 'Dismiss',
-      }),
-    )
-      .toBeDisabled();
-  });
-
   it('has accessible alert role', () => {
     render(
       <AiGenerationError
         message="Failed"
         onRetry={vi.fn()}
         onDismiss={vi.fn()}
+        retryable
       />,
     );
 
@@ -124,30 +103,5 @@ describe('AiGenerationError', () => {
       screen.getByRole('alert'),
     )
       .toBeInTheDocument();
-  });
-
-  it('does not call retry while retrying', async () => {
-    const user = userEvent.setup();
-
-    const onRetry = vi.fn();
-
-    render(
-      <AiGenerationError
-        message="Failed"
-        retrying
-        onRetry={onRetry}
-        onDismiss={vi.fn()}
-      />,
-    );
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /Retrying/,
-      }),
-    );
-
-    expect(onRetry)
-      .not
-      .toHaveBeenCalled();
   });
 });

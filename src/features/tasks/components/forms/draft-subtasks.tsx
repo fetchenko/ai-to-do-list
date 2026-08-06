@@ -16,6 +16,7 @@ import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
 
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { isRetryableError } from '@/shared/errors/retryable-errors';
 
 type DraftSubtasksProps = {
   task: Task;
@@ -74,7 +75,7 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
         message={getFriendlyErrorMessage(error)}
         onRetry={onRetry}
         onDismiss={onDiscard}
-        retrying={loading}
+        retryable={isRetryableError(error)}
       />
     );
   }

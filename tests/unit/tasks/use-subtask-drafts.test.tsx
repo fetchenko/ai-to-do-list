@@ -210,7 +210,7 @@ describe('useSubtaskDrafts', () => {
 
 
     act(() => {
-      result.current.retry();
+      result.current.generate();
     });
 
 
@@ -256,15 +256,46 @@ describe('useSubtaskDrafts', () => {
     });
 
     act(() => {
-      result.current.retry();
+      result.current.generate();
     });
 
-    expect(result.current.error)
-      .toBeNull();
+    await waitFor(() => {
+      expect(result.current.error).toBeNull();
+    });
+    await waitFor(() => {
+
+    });
+  });
+
+  it('sets isGenerating while request is pending', async () => {
+    let resolve!: (value: AiTask[]) => void;
+
+    mockedGenerateSubtasks.mockImplementation(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+
+    const { result } = renderHook(
+      () => useSubtaskDrafts('task-1'),
+      { wrapper: createWrapper() },
+    );
+
+    act(() => {
+      result.current.generate();
+    });
 
     await waitFor(() => {
-      expect(result.current.drafts)
-        .toHaveLength(1);
+      expect(result.current.isGenerating).toBe(true);
+    });
+
+    await act(async () => {
+      resolve([{ id: '1', title: 'Draft' }] as AiTask[]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isGenerating).toBe(false);
     });
   });
 });

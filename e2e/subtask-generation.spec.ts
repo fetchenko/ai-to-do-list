@@ -75,11 +75,9 @@ test.describe('AI subtask generation', () => {
 
     await tasksPage.generateSubtasks(taskId);
 
-    await expect(
-      page.getByText(
-        'Lots of generations happening right now — try again in a moment.'
-      )
-    ).toBeVisible();
+    await expect(card.getByRole('alert')).toContainText(
+      'Lots of generations happening right now — try again in a moment.'
+    );
 
     await expect(tasksPage.draftRows()).toHaveCount(0);
     expect(await getSubtaskRows(taskId)).toHaveLength(0);

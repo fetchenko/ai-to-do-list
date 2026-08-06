@@ -1,4 +1,5 @@
 import { AppError } from '@/shared/errors/app-error';
+import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
 export const MAX_AI_RETRIES = 2;
 export const MAX_RETRY_DELAY_MS = 5000;
@@ -10,10 +11,10 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   }
 
   if (!(error instanceof AppError)) {
-    return true;
+    return false;
   }
 
-  return error.retryable === true;
+  return isRetryableError(error);
 }
 
 export function retryDelay(attempt: number): number {

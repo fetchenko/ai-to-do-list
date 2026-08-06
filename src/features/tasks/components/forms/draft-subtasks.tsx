@@ -13,15 +13,24 @@ import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
+import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
+
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
 type DraftSubtasksProps = {
   task: Task;
   drafts: AiTask[];
+
+  error: Error | null;
+
+  onRetry: () => void;
   onDiscard: () => void;
+
   loading: boolean;
 };
 
-export function DraftSubtasks({ task, drafts, onDiscard, loading }: DraftSubtasksProps) {
+export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading }: DraftSubtasksProps) {
   const formDefaults = useMemo<DraftForm>(
     () => ({
       drafts: normalizeAiTasks(drafts),
@@ -58,6 +67,17 @@ export function DraftSubtasks({ task, drafts, onDiscard, loading }: DraftSubtask
         <TasksSkeleton />
       </div>
     )
+  }
+
+  if (error) {
+    return (
+      <AiGenerationError
+        message={getFriendlyErrorMessage(error)}
+        onRetry={onRetry}
+        onDismiss={onDiscard}
+        retryable={isRetryableError(error)}
+      />
+    );
   }
 
   if (fields.length === 0) {

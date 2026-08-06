@@ -24,7 +24,7 @@ export function useSubtaskDrafts(taskId: string) {
     onSuccess: (data: AiTask[]) => {
       setDrafts(data);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       setDrafts(null);
 
       const message =
@@ -36,13 +36,23 @@ export function useSubtaskDrafts(taskId: string) {
     },
   });
 
-  const discard = () => setDrafts(null);
+  const discard = () => {
+    setDrafts(null);
+    mutation.reset();
+  };
+
+  const generate = () => {
+    setDrafts(null);
+
+    mutation.reset();
+    mutation.mutate();
+  };
 
   return {
     drafts,
-    isPending: mutation.isPending,
-    isError: mutation.isError,
-    generate: mutation.mutate,
+    error: mutation.error,
+    isGenerating: mutation.isPending,
+    generate,
     discard,
   };
 }

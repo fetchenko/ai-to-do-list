@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     if (aiLogId) {
       await updateAiLog(aiLogId, getFailedAiLogs(error));
     }
-    return NextResponse.json(error, { status });
+    return NextResponse.json({ error }, { status });
   } finally {
     clearTimeout(timeout);
 

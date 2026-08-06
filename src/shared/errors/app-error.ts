@@ -1,6 +1,5 @@
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-import { isRetryableError } from '@/shared/errors/retryable-errors';
 
 export class AppError extends Error {
   constructor(
@@ -11,10 +10,6 @@ export class AppError extends Error {
   ) {
     super(message);
     this.name = 'AppError';
-  }
-
-  get retryable(): boolean {
-    return isRetryableError(this.code);
   }
 }
 

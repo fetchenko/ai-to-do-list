@@ -1,7 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 
 type AiGenerationErrorProps = {
   message: string;
@@ -14,25 +13,33 @@ export function AiGenerationError({
   message,
   onRetry,
   onDismiss,
-  retryable
+  retryable,
 }: AiGenerationErrorProps) {
   return (
-    <Alert variant="destructive">
+    <Alert
+      variant="destructive"
+      role="alert"
+      aria-live="assertive"
+    >
       <AlertCircle className="h-4 w-4" />
 
-      <AlertTitle>Couldn&apos;t generate subtasks</AlertTitle>
+      <AlertTitle>
+        Couldn&apos;t generate subtasks
+      </AlertTitle>
 
       <AlertDescription className="space-y-4">
         <p>{message}</p>
 
         <div className="flex gap-2">
-          {retryable && <Button
-            type="button"
-            onClick={onRetry}
-          >
-            Retry
-          </Button>
-          }
+          {retryable && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onRetry}
+            >
+              Retry
+            </Button>
+          )}
 
           <Button
             type="button"

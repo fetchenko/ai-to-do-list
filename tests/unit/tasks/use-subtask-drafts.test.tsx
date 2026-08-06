@@ -259,11 +259,9 @@ describe('useSubtaskDrafts', () => {
       result.current.generate();
     });
 
+
     await waitFor(() => {
       expect(result.current.error).toBeNull();
-    });
-    await waitFor(() => {
-
     });
   });
 

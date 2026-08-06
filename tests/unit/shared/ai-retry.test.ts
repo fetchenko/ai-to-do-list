@@ -18,7 +18,7 @@ describe('shouldRetry', () => {
       name: 'retries unknown errors before reaching retry limit',
       failureCount: 0,
       error: new Error(),
-      expected: false,
+      expected: true,
     },
     {
       name: 'retries retryable AppErrors',

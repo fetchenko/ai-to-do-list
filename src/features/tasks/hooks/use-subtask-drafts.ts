@@ -43,6 +43,7 @@ export function useSubtaskDrafts(taskId: string) {
 
   const generate = () => {
     mutation.reset();
+    setDrafts(null);
     mutation.mutate();
   };
 

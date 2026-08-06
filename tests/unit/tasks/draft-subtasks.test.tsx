@@ -94,4 +94,23 @@ describe('DraftSubtasks', () => {
       screen.queryByRole('alert'),
     ).not.toBeInTheDocument();
   });
+
+  it('shows retry button for retryable errors', () => {
+    render(
+      <DraftSubtasks
+        task={task}
+        drafts={[]}
+        error={new AiUnavailableError('AI unavailable')}
+        loading={false}
+        onRetry={vi.fn()}
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Retry',
+      }),
+    ).toBeInTheDocument();
+  });
 });

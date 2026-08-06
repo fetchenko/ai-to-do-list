@@ -137,20 +137,10 @@ describe('POST /api/subtasks/generate', () => {
     });
   });
 
-  it('updates failed AI logs when generation fails after log creation', async () => {
+  it('does not update AI logs when generation fails before returning log id', async () => {
     mocks.generateSubtasksForTask.mockRejectedValue(
       new Error('AI unavailable')
     );
-
-    mocks.generateSubtasksForTask.mockImplementation(async () => {
-      throw new Error('AI unavailable');
-    });
-
-    mocks.normalizeAiError.mockReturnValue({
-      status: 500,
-      message: 'AI unavailable',
-      code: 'AI_GENERATION_FAILED',
-    });
 
     const request = new Request('http://localhost/api/subtasks/generate', {
       method: 'POST',

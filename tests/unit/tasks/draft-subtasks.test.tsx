@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { Task } from '@/features/tasks/types/tasks.types';
-import { AiUnavailableError } from '@/shared/errors/app-error';
+import { AiUnavailableError, ValidationRequestError } from '@/shared/errors/app-error';
 
 vi.mock('@/features/tasks/hooks/use-add-subtasks', () => ({
   useAddSubtasks: () => ({
@@ -112,5 +112,25 @@ describe('DraftSubtasks', () => {
         name: 'Retry',
       }),
     ).toBeInTheDocument();
+  });
+
+
+  it('hides retry button for non retryable errors', () => {
+    render(
+      <DraftSubtasks
+        task={task}
+        drafts={[]}
+        error={new ValidationRequestError({})}
+        loading={false}
+        onRetry={vi.fn()}
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Retry',
+      }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { AppError } from '@/shared/errors/app-error';
-import { isRetryableError } from '@/shared/errors/retryable-errors';
+import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
 export const MAX_AI_RETRIES = 2;
 export const MAX_RETRY_DELAY_MS = 5000;

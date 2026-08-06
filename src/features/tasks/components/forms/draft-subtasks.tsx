@@ -16,7 +16,7 @@ import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
 
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { isRetryableError } from '@/shared/errors/retryable-errors';
+import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
 type DraftSubtasksProps = {
   task: Task;

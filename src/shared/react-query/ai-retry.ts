@@ -10,11 +10,11 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
     return false;
   }
 
-  if (error instanceof AppError) {
-    return isRetryableError(error);
+  if (!(error instanceof AppError)) {
+    return false;
   }
 
-  return true;
+  return isRetryableError(error);
 }
 
 export function retryDelay(attempt: number): number {

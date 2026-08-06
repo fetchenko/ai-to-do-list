@@ -15,10 +15,10 @@ import {
 describe('shouldRetry', () => {
   it.each([
     {
-      name: 'retries unknown errors before reaching retry limit',
+      name: "doesn't retries unknown errors before reaching retry limit",
       failureCount: 0,
       error: new Error(),
-      expected: true,
+      expected: false,
     },
     {
       name: 'retries retryable AppErrors',

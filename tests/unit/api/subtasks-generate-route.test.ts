@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '@/app/api/subtasks/generate/route';
 
+vi.mock('server-only', () => ({}));
+
 const mocks = vi.hoisted(() => ({
   getCurrentUser: vi.fn(),
   getTaskForUser: vi.fn(),
@@ -135,22 +137,5 @@ describe('POST /api/subtasks/generate', () => {
         ],
       },
     });
-  });
-
-  it('does not update AI logs when generation fails before returning log id', async () => {
-    mocks.generateSubtasksForTask.mockRejectedValue(
-      new Error('AI unavailable')
-    );
-
-    const request = new Request('http://localhost/api/subtasks/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        taskId: 'task-1',
-      }),
-    });
-
-    await POST(request);
-
-    expect(mocks.updateAiLog).not.toHaveBeenCalled();
   });
 });

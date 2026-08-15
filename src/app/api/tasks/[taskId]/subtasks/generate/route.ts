@@ -2,11 +2,6 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/features/auth/repository/auth.server.repository';
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
-import {
-  getFailedAiLogs,
-  normalizeAiError,
-  parseAiParams,
-} from '@/infrastructure/ai/helpers/ai.helpers';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import {
   checkAiQuotaLimit,
@@ -15,6 +10,11 @@ import {
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import {
+  getFailedAiLogs,
+  normalizeAiError,
+  parseAiParams,
+} from '@/infrastructure/ai/utils/ai.utils';
 
 export async function POST(
   _request: Request,

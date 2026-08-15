@@ -1,8 +1,8 @@
-import { parseResponseJson } from '@/infrastructure/ai/helpers/ai.helpers';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import { parseResponseJson } from '@/infrastructure/ai/utils/ai.utils';
 import { aiEnv } from '@/shared/env/ai-env';
 import { ResponseFormatError } from '@/shared/errors/app-error';
 

@@ -15,17 +15,16 @@ import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
 export async function parseAiParams(params: Promise<RequestGenSubtasks>) {
-  const { data, success, error } = requestGenSubtasksSchema.safeParse(
-    await params
-  );
+  const result = requestGenSubtasksSchema.safeParse(await params);
 
-  if (!success) {
+  if (!result.success) {
     throw new ValidationRequestError(
-      error.issues[0]?.message ?? 'Invalid request payload, taskId is required'
+      result.error.issues[0]?.message ??
+        'Invalid request payload, taskId is required'
     );
   }
 
-  return data;
+  return result.data;
 }
 
 export function normalizeAiError(err: unknown): AiErrorResult {

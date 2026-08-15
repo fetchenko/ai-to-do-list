@@ -19,6 +19,9 @@ import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const encoder = new TextEncoder();
 
 function encodeEvent(event: AiSubtaskStreamEvent) {
@@ -132,7 +135,7 @@ export async function POST(
       headers: {
         'Content-Type': 'application/x-ndjson; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
+        'Content-Encoding': 'identity',
         'X-Accel-Buffering': 'no',
       },
     });

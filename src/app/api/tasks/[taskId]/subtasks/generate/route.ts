@@ -110,9 +110,8 @@ export async function POST(
                 type: 'error',
                 error: {
                   code: error.code,
-                  message: error.message,
+                  message: error.error ?? 'Failed to generate subtasks',
                   status,
-                  details: error.details,
                 },
               })
             );

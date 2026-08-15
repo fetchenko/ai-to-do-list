@@ -2,6 +2,9 @@ import { expect, getSubtaskRows, test } from '@e2e/fixtures/tasks.fixture';
 
 const MOCK_ENDPOINT = '**/api/tasks/*/subtasks/generate';
 
+const streamBody = (...events: unknown[]) =>
+  events.map((event) => JSON.stringify(event)).join('\n') + '\n';
+
 test.describe.configure({ mode: 'serial' });
 
 test.describe('AI subtask generation', () => {
@@ -13,15 +16,12 @@ test.describe('AI subtask generation', () => {
     await page.route(MOCK_ENDPOINT, (route) =>
       route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: {
-            subtasks: [
-              { title: 'Mocked subtask one' },
-              { title: 'Mocked subtask two' },
-            ],
-          },
-        }),
+        contentType: 'application/x-ndjson',
+        body: streamBody(
+          { type: 'subtask', subtask: { title: 'Mocked subtask one' } },
+          { type: 'subtask', subtask: { title: 'Mocked subtask two' } },
+          { type: 'done' }
+        ),
       })
     );
 
@@ -91,13 +91,14 @@ test.describe('AI subtask generation', () => {
     taskFactory,
   }) => {
     await page.route(MOCK_ENDPOINT, async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 150)); // force the pending window to be observable
+      await new Promise((resolve) => setTimeout(resolve, 150));
       return route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: { subtasks: [{ title: 'Mocked subtask one' }] },
-        }),
+        contentType: 'application/x-ndjson',
+        body: streamBody(
+          { type: 'subtask', subtask: { title: 'Mocked subtask one' } },
+          { type: 'done' }
+        ),
       });
     });
 
@@ -108,7 +109,6 @@ test.describe('AI subtask generation', () => {
 
     await tasksPage.generateSubtasks(taskId);
 
-    // this is the exact state that was reading from the wrong hook instance
     await expect(page.getByText('Generating subtasks…')).toBeVisible();
 
     const drafts = tasksPage.draftRows();

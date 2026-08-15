@@ -5,6 +5,7 @@ import {
   createAiLog,
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
+import { AIProviderStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   getInitialAiLog,
   getSuccessAiLogs,
@@ -31,4 +32,26 @@ export async function generateSubtasksForTask({
   }
 
   return { data, aiLogId };
+}
+
+export async function prepareSubtasksStream({
+  task,
+  userId,
+  signal,
+}: {
+  task: TaskPreview;
+  userId: string;
+  signal: AbortSignal;
+}): Promise<{
+  aiLogId: string | null;
+  stream: AsyncIterable<AIProviderStreamEvent>;
+}> {
+  const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
+  const prompt = taskDecomposerPrompt(task.title);
+  const provider = getAIProvider();
+
+  return {
+    aiLogId,
+    stream: provider.generateStream(prompt, signal),
+  };
 }

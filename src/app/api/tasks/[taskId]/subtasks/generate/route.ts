@@ -5,8 +5,9 @@ import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.reposito
 import {
   getFailedAiLogs,
   normalizeAiError,
-  parseAiRequest,
+  parseAiParams,
 } from '@/infrastructure/ai/helpers/ai.helpers';
+import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import {
   checkAiQuotaLimit,
   checkRequestLock,
@@ -15,7 +16,10 @@ import {
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 
-export async function POST(request: Request) {
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<RequestGenSubtasks> }
+) {
   let aiLogId: string | null = null;
   let userId;
 
@@ -29,7 +33,7 @@ export async function POST(request: Request) {
     await checkRequestLock(user.id);
     await checkAiQuotaLimit(user.id);
 
-    const { taskId } = await parseAiRequest(request);
+    const { taskId } = await parseAiParams(params);
 
     const task = await getTaskForUser(taskId, user.id);
 

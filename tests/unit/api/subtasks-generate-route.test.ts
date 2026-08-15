@@ -38,15 +38,15 @@ vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
   updateAiLog: mocks.updateAiLog,
 }));
 
-vi.mock('@/infrastructure/ai/helpers/ai-log.utils', () => ({
+vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
   getFailedAiLogs: mocks.getFailedAiLogs,
 }));
 
-vi.mock('@/infrastructure/ai/helpers/ai-error.utils', () => ({
+vi.mock('@/infrastructure/ai/utils/ai-error.utils', () => ({
   normalizeAiError: mocks.normalizeAiError,
 }));
 
-vi.mock('@/infrastructure/ai/helpers/ai-params.utils', () => ({
+vi.mock('@/infrastructure/ai/utils/ai-params.utils', () => ({
   parseAiParams: mocks.parseAiParams,
 }));
 

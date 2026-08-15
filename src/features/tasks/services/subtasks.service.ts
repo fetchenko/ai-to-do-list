@@ -13,7 +13,31 @@ import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
-export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
+const streamEventSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('subtask'),
+    subtask: subtasksResponseSchema.shape.subtasks.element,
+  }),
+  z.object({ type: z.literal('done') }),
+  z.object({
+    type: z.literal('error'),
+    error: z.object({
+      code: z.string(),
+      message: z.string(),
+      status: z.number(),
+      details: z.unknown().optional(),
+    }),
+  }),
+]);
+
+type GenerateSubtasksOptions = {
+  onSubtask?: (subtask: AiTask) => void;
+};
+
+export async function generateSubtasks(
+  taskId: string,
+  options?: GenerateSubtasksOptions
+): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
     method: 'POST',
   });
@@ -28,29 +52,96 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
     );
   }
 
-  const { data } = await res.json();
-
-  const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
-
-  if (!success) {
+  if (!res.body) {
     throw new AppError(
-      ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-      ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-      'Invalid AI response format'
+      ErrorCode.UNKNOWN,
+      ErrorHttpStatus[ErrorCode.UNKNOWN],
+      'AI stream is unavailable'
     );
   }
-  if (!parsed.subtasks?.length) {
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const subtasks: AiTask[] = [];
+  let completed = false;
+
+  const processLine = (line: string) => {
+    if (!line.trim()) {
+      return;
+    }
+
+    const parsed = streamEventSchema.safeParse(JSON.parse(line));
+
+    if (!parsed.success) {
+      throw new AppError(
+        ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+        ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
+        'Invalid AI stream event'
+      );
+    }
+
+    if (parsed.data.type === 'subtask') {
+      const subtask = {
+        ...parsed.data.subtask,
+        id: crypto.randomUUID(),
+      };
+
+      subtasks.push(subtask);
+      options?.onSubtask?.(subtask);
+      return;
+    }
+
+    if (parsed.data.type === 'error') {
+      throw new AppError(
+        parsed.data.error.code as (typeof ErrorCode)[keyof typeof ErrorCode],
+        parsed.data.error.status,
+        parsed.data.error.message,
+        parsed.data.error.details
+      );
+    }
+
+    completed = true;
+  };
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        processLine(line);
+      }
+    }
+
+    buffer += decoder.decode();
+    processLine(buffer);
+  } finally {
+    reader.releaseLock();
+  }
+
+  if (!completed) {
+    throw new AppError(
+      ErrorCode.UNKNOWN,
+      ErrorHttpStatus[ErrorCode.UNKNOWN],
+      'AI stream ended unexpectedly'
+    );
+  }
+
+  if (!subtasks.length) {
     throw new AppError(
       ErrorCode.AI_EMPTY_RESPONSE,
       ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
       'No meaningful subtasks could be generated.'
     );
   }
-
-  const subtasks = parsed.subtasks.map((subtask) => ({
-    ...subtask,
-    id: crypto.randomUUID(),
-  }));
 
   return subtasks;
 }

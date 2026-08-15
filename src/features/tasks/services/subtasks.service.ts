@@ -16,9 +16,6 @@ import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!res.ok) {

@@ -17,7 +17,12 @@ export function useSubtaskDrafts(taskId: string) {
       if (!taskId) {
         throw new ValidationRequestError('Missing task id');
       }
-      return await generateSubtasks(taskId);
+
+      return await generateSubtasks(taskId, {
+        onSubtask: (subtask) => {
+          setDrafts((current) => [...(current ?? []), subtask]);
+        },
+      });
     },
     retry: shouldRetry,
     retryDelay,
@@ -25,7 +30,7 @@ export function useSubtaskDrafts(taskId: string) {
       setDrafts(data);
     },
     onError: (error: Error) => {
-      setDrafts(null);
+      setDrafts((current) => (current?.length ? current : null));
 
       const message =
         error instanceof AppError

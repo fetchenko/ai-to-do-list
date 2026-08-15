@@ -7,7 +7,7 @@ vi.mock('server-only', () => ({}));
 const mocks = vi.hoisted(() => ({
   getCurrentUser: vi.fn(),
   getTaskForUser: vi.fn(),
-  generateSubtasksForTask: vi.fn(),
+  prepareSubtasksStream: vi.fn(),
 
   checkAiQuotaLimit: vi.fn(),
   checkRequestLock: vi.fn(),
@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
 
   parseAiParams: vi.fn(),
   getFailedAiLogs: vi.fn(),
+  getSuccessAiLogs: vi.fn(),
   normalizeAiError: vi.fn(),
 }));
 
@@ -28,7 +29,7 @@ vi.mock('@/features/tasks/repository/tasks.admin.repository', () => ({
 }));
 
 vi.mock('@/infrastructure/ai/services/subtasks.service', () => ({
-  generateSubtasksForTask: mocks.generateSubtasksForTask,
+  prepareSubtasksStream: mocks.prepareSubtasksStream,
 }));
 
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
@@ -40,6 +41,7 @@ vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
 
 vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
   getFailedAiLogs: mocks.getFailedAiLogs,
+  getSuccessAiLogs: mocks.getSuccessAiLogs,
 }));
 
 vi.mock('@/infrastructure/ai/utils/ai-error.utils', () => ({
@@ -49,6 +51,12 @@ vi.mock('@/infrastructure/ai/utils/ai-error.utils', () => ({
 vi.mock('@/infrastructure/ai/utils/ai-params.utils', () => ({
   parseAiParams: mocks.parseAiParams,
 }));
+
+async function* streamEvents(events: unknown[]) {
+  for (const event of events) {
+    yield event;
+  }
+}
 
 describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
   beforeEach(() => {
@@ -61,7 +69,6 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
     });
 
     mocks.checkRequestLock.mockResolvedValue(undefined);
-
     mocks.checkAiQuotaLimit.mockResolvedValue(undefined);
 
     mocks.parseAiParams.mockResolvedValue({
@@ -73,6 +80,8 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
       title: 'Test task',
     });
 
+    mocks.getSuccessAiLogs.mockReturnValue({ status: 'success' });
+
     mocks.normalizeAiError.mockImplementation((error: Error) => ({
       status: 500,
       message: error.message,
@@ -81,7 +90,7 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
   });
 
   it('returns errors in a consistent shape', async () => {
-    mocks.generateSubtasksForTask.mockRejectedValue(
+    mocks.prepareSubtasksStream.mockRejectedValue(
       new Error('AI unavailable')
     );
 
@@ -108,17 +117,31 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
     });
   });
 
-  it('returns generated subtasks on success', async () => {
-    mocks.generateSubtasksForTask.mockResolvedValue({
+  it('streams generated subtasks and completes successfully', async () => {
+    mocks.prepareSubtasksStream.mockResolvedValue({
       aiLogId: 'log-1',
-      data: {
-        subtasks: [
-          {
-            id: 'subtask-1',
-            title: 'Write tests',
+      stream: streamEvents([
+        {
+          type: 'content',
+          content: '{"subtasks":[{"title":"Write tests"}]}',
+        },
+        {
+          type: 'complete',
+          response: {
+            data: {
+              subtasks: [{ title: 'Write tests' }],
+            },
+            aiLogs: {
+              model: 'test-model',
+              response: '{"subtasks":[{"title":"Write tests"}]}',
+              input_tokens: 1,
+              output_tokens: 2,
+              total_tokens: 3,
+            },
+            raw: '{}',
           },
-        ],
-      },
+        },
+      ]),
     });
 
     const request = new Request(
@@ -133,19 +156,26 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
     });
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('application/x-ndjson');
 
-    const body = await response.json();
+    const text = await response.text();
+    const events = text
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
 
-    expect(body).toEqual({
-      success: true,
-      data: {
-        subtasks: [
-          {
-            id: 'subtask-1',
-            title: 'Write tests',
-          },
-        ],
+    expect(events).toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'Write tests' },
       },
-    });
+      { type: 'done' },
+    ]);
+
+    expect(mocks.updateAiLog).toHaveBeenCalledWith(
+      'log-1',
+      { status: 'success' }
+    );
+    expect(mocks.releaseRequestLock).toHaveBeenCalledWith('user-1');
   });
 });

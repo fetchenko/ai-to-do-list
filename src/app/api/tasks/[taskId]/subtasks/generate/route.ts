@@ -2,11 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/features/auth/repository/auth.server.repository';
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
-import {
-  getFailedAiLogs,
-  normalizeAiError,
-  parseAiRequest,
-} from '@/infrastructure/ai/helpers/ai.helpers';
+import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import {
   checkAiQuotaLimit,
   checkRequestLock,
@@ -14,8 +10,14 @@ import {
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
+import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
+import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
 
-export async function POST(request: Request) {
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<RequestGenSubtasks> }
+) {
   let aiLogId: string | null = null;
   let userId;
 
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
     await checkRequestLock(user.id);
     await checkAiQuotaLimit(user.id);
 
-    const { taskId } = await parseAiRequest(request);
+    const { taskId } = await parseAiParams(params);
 
     const task = await getTaskForUser(taskId, user.id);
 

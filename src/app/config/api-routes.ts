@@ -1,3 +1,4 @@
 export const API_ROUTES = {
-  generateSubtasks: '/api/subtasks/generate',
+  generateSubtasks: (taskId: string) =>
+    `/api/tasks/${taskId}/subtasks/generate`,
 };

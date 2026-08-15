@@ -1,14 +1,14 @@
 import { TaskPreview } from '@/features/tasks/types/database.types';
-import {
-  getInitialAiLog,
-  getSuccessAiLogs,
-} from '@/infrastructure/ai/helpers/ai.helpers';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {
   createAiLog,
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
+import {
+  getInitialAiLog,
+  getSuccessAiLogs,
+} from '@/infrastructure/ai/utils/ai-log.utils';
 
 export async function generateSubtasksForTask({
   task,

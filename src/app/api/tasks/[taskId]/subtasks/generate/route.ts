@@ -79,6 +79,8 @@ export async function POST(
             }
 
             if (event.type === 'complete') {
+              parser.finish();
+
               if (!event.response.data.subtasks.length || !emittedSubtasks) {
                 throw new AppError(
                   ErrorCode.AI_EMPTY_RESPONSE,

@@ -47,7 +47,7 @@ export async function generateSubtasks(
     throw new AppError(
       body?.error?.code ?? ErrorCode.UNKNOWN,
       res.status,
-      body?.error?.message ?? 'Failed to generate subtasks',
+      body?.error?.message ?? body?.error?.error ?? 'Failed to generate subtasks',
       body?.error?.details
     );
   }

@@ -96,14 +96,14 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
       }),
     });
 
-    expect(response.status).toBe(502);
+    expect(response.status).toBe(500);
 
     const body = await response.json();
 
     expect(body).toEqual({
       error: {
         code: 'AI_GENERATION_FAILED',
-        success: false,
+        message: 'AI unavailable',
       },
     });
   });

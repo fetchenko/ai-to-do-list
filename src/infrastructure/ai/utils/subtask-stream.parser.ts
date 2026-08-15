@@ -1,5 +1,12 @@
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
+const subtaskSchema = subtasksResponseSchema.shape.subtasks.element;
+
+export type StreamedSubtask = {
+  title: string;
+  description?: string;
+};
+
 export class SubtaskStreamParser {
   private buffer = '';
   private cursor = 0;
@@ -9,19 +16,19 @@ export class SubtaskStreamParser {
   private inString = false;
   private escaped = false;
 
-  push(chunk: string) {
+  push(chunk: string): StreamedSubtask[] {
     this.buffer += chunk;
 
-    const subtasksStart = this.arrayStarted
-      ? -1
-      : this.buffer.indexOf('"subtasks"');
+    if (!this.arrayStarted) {
+      const subtasksStart = this.buffer.indexOf('"subtasks"');
 
-    if (subtasksStart >= 0) {
-      const arrayStart = this.buffer.indexOf('[', subtasksStart);
+      if (subtasksStart >= 0) {
+        const arrayStart = this.buffer.indexOf('[', subtasksStart);
 
-      if (arrayStart >= 0) {
-        this.arrayStarted = true;
-        this.cursor = Math.max(this.cursor, arrayStart + 1);
+        if (arrayStart >= 0) {
+          this.arrayStarted = true;
+          this.cursor = Math.max(this.cursor, arrayStart + 1);
+        }
       }
     }
 
@@ -29,10 +36,7 @@ export class SubtaskStreamParser {
       return [];
     }
 
-    const subtasks: Array<{
-      title: string;
-      description?: string;
-    }> = [];
+    const subtasks: StreamedSubtask[] = [];
 
     for (; this.cursor < this.buffer.length; this.cursor += 1) {
       const char = this.buffer[this.cursor];
@@ -76,16 +80,22 @@ export class SubtaskStreamParser {
           this.objectStart,
           this.cursor + 1
         );
-        const parsed = subtasksResponseSchema.shape.subtasks.element.safeParse(
-          JSON.parse(rawObject)
-        );
 
-        if (parsed.success) {
-          subtasks.push(parsed.data);
-        } else {
+        let parsedObject: unknown;
+
+        try {
+          parsedObject = JSON.parse(rawObject);
+        } catch {
+          throw new Error('Invalid streamed subtask JSON');
+        }
+
+        const parsed = subtaskSchema.safeParse(parsedObject);
+
+        if (!parsed.success) {
           throw new Error('Invalid streamed subtask format');
         }
 
+        subtasks.push(parsed.data);
         this.objectStart = -1;
       }
     }
@@ -96,5 +106,15 @@ export class SubtaskStreamParser {
     }
 
     return subtasks;
+  }
+
+  finish(): void {
+    if (!this.arrayStarted) {
+      throw new Error('AI stream did not contain a subtasks array');
+    }
+
+    if (this.objectStart !== -1 || this.inString) {
+      throw new Error('AI stream ended with incomplete JSON');
+    }
   }
 }

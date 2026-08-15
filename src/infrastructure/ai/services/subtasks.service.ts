@@ -8,7 +8,7 @@ import {
 import {
   getInitialAiLog,
   getSuccessAiLogs,
-} from '@/infrastructure/ai/utils/ai.utils';
+} from '@/infrastructure/ai/utils/ai-log.utils';
 
 export async function generateSubtasksForTask({
   task,

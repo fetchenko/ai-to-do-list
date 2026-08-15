@@ -10,11 +10,9 @@ import {
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import {
-  getFailedAiLogs,
-  normalizeAiError,
-  parseAiParams,
-} from '@/infrastructure/ai/utils/ai.utils';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
+import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
+import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
 
 export async function POST(
   _request: Request,

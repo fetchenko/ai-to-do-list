@@ -1,5 +1,7 @@
 import { expect, getSubtaskRows, test } from '@e2e/fixtures/tasks.fixture';
 
+const MOCK_ENDPOINT = '**/api/tasks/*/subtasks/generate';
+
 test.describe.configure({ mode: 'serial' });
 
 test.describe('AI subtask generation', () => {
@@ -8,7 +10,7 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    await page.route('**/api/subtasks/generate', (route) =>
+    await page.route(MOCK_ENDPOINT, (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -55,7 +57,7 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    await page.route('**/api/subtasks/generate', (route) =>
+    await page.route(MOCK_ENDPOINT, (route) =>
       route.fulfill({
         status: 429,
         contentType: 'application/json',
@@ -88,7 +90,7 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    await page.route('**/api/subtasks/generate', async (route) => {
+    await page.route(MOCK_ENDPOINT, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 150)); // force the pending window to be observable
       return route.fulfill({
         status: 200,

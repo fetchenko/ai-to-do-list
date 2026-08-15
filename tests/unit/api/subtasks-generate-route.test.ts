@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { POST } from '@/app/api/subtasks/generate/route';
+import { POST } from '@/app/api/tasks/[taskId]/subtasks/generate/route';
 
 vi.mock('server-only', () => ({}));
 
@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   releaseRequestLock: vi.fn(),
   updateAiLog: vi.fn(),
 
-  parseAiRequest: vi.fn(),
+  parseAiParams: vi.fn(),
   getFailedAiLogs: vi.fn(),
   normalizeAiError: vi.fn(),
 }));
@@ -38,13 +38,19 @@ vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
   updateAiLog: mocks.updateAiLog,
 }));
 
-vi.mock('@/infrastructure/ai/helpers/ai.helpers', () => ({
-  parseAiRequest: mocks.parseAiRequest,
+vi.mock('@/infrastructure/ai/helpers/ai-log.utils', () => ({
   getFailedAiLogs: mocks.getFailedAiLogs,
+}));
+
+vi.mock('@/infrastructure/ai/helpers/ai-error.utils', () => ({
   normalizeAiError: mocks.normalizeAiError,
 }));
 
-describe('POST /api/subtasks/generate', () => {
+vi.mock('@/infrastructure/ai/helpers/ai-params.utils', () => ({
+  parseAiParams: mocks.parseAiParams,
+}));
+
+describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -58,7 +64,7 @@ describe('POST /api/subtasks/generate', () => {
 
     mocks.checkAiQuotaLimit.mockResolvedValue(undefined);
 
-    mocks.parseAiRequest.mockResolvedValue({
+    mocks.parseAiParams.mockResolvedValue({
       taskId: 'task-1',
     });
 
@@ -79,23 +85,25 @@ describe('POST /api/subtasks/generate', () => {
       new Error('AI unavailable')
     );
 
-    const request = new Request('http://localhost/api/subtasks/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        taskId: 'task-1',
+    const request = new Request(
+      'http://localhost/api/tasks/9d3f8e2a-4b1c-4a5e-8f6d-1a2b3c4d5e6f/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: '9d3f8e2a-4b1c-4a5e-8f6d-1a2b3c4d5e6f',
       }),
     });
 
-    const response = await POST(request);
-
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(502);
 
     const body = await response.json();
 
     expect(body).toEqual({
       error: {
-        message: 'AI unavailable',
         code: 'AI_GENERATION_FAILED',
+        success: false,
       },
     });
   });
@@ -113,14 +121,16 @@ describe('POST /api/subtasks/generate', () => {
       },
     });
 
-    const request = new Request('http://localhost/api/subtasks/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        taskId: 'task-1',
+    const request = new Request(
+      'http://localhost/api/tasks/9d3f8e2a-4b1c-4a5e-8f6d-1a2b3c4d5e6f/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: '9d3f8e2a-4b1c-4a5e-8f6d-1a2b3c4d5e6f',
       }),
     });
-
-    const response = await POST(request);
 
     expect(response.status).toBe(200);
 

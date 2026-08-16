@@ -50,7 +50,6 @@ export async function POST(_request: Request, { params }: { params: Promise<Requ
         const parser = new SubtaskStreamParser();
         let emittedSubtasks = 0;
         let completed = false;
-        let cancelled = false;
 
         try {
           for await (const event of result.stream) {
@@ -84,16 +83,24 @@ export async function POST(_request: Request, { params }: { params: Promise<Requ
           const { status, ...error } = normalizeAiError(err);
           if (aiLogId) await updateAiLog(aiLogId, getFailedAiLogs(error));
 
-          if (timedOut && !cancelled) {
-            streamController.enqueue(encodeEvent({
-              type: 'error',
-              error: { code: ErrorCode.AI_TIMEOUT, message: 'AI request timed out', status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT] },
-            }));
-          } else if (!controller.signal.aborted && !cancelled) {
-            streamController.enqueue(encodeEvent({
-              type: 'error',
-              error: { code: error.code, message: error.error ?? 'Failed to generate subtasks', status },
-            }));
+          if (timedOut) {
+            try {
+              streamController.enqueue(encodeEvent({
+                type: 'error',
+                error: { code: ErrorCode.AI_TIMEOUT, message: 'AI request timed out', status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT] },
+              }));
+            } catch {
+              // The client may have cancelled the stream while the timeout was firing.
+            }
+          } else if (!controller.signal.aborted) {
+            try {
+              streamController.enqueue(encodeEvent({
+                type: 'error',
+                error: { code: error.code, message: error.error ?? 'Failed to generate subtasks', status },
+              }));
+            } catch {
+              // The client disconnected before the error could be delivered.
+            }
           }
         } finally {
           clearTimeout(timeout);
@@ -103,11 +110,6 @@ export async function POST(_request: Request, { params }: { params: Promise<Requ
             streamController.close();
           }
         }
-
-        // Keep this local state available to the stream cancellation callback.
-        return () => {
-          cancelled = true;
-        };
       },
       cancel() {
         if (!timedOut) controller.abort();

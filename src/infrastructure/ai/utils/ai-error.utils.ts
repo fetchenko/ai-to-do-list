@@ -18,6 +18,16 @@ export function normalizeAiError(err: unknown): AiErrorResult {
       success: false,
       status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
       code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
+      error: err.message,
+    };
+  }
+
+  if (err instanceof Error) {
+    return {
+      success: false,
+      status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
+      code: ErrorCode.AI_GENERATION_FAILED,
+      error: err.message,
     };
   }
 

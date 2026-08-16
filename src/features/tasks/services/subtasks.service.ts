@@ -14,10 +14,7 @@ import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 const streamEventSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('subtask'),
-    subtask: subtasksResponseSchema.shape.subtasks.element,
-  }),
+  z.object({ type: z.literal('subtask'), subtask: subtasksResponseSchema.shape.subtasks.element }),
   z.object({ type: z.literal('done') }),
   z.object({
     type: z.literal('error'),
@@ -30,17 +27,10 @@ const streamEventSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-type GenerateSubtasksOptions = {
-  onSubtask?: (subtask: AiTask) => void;
-};
+type GenerateSubtasksOptions = { onSubtask?: (subtask: AiTask) => void };
 
-export async function generateSubtasks(
-  taskId: string,
-  options?: GenerateSubtasksOptions
-): Promise<AiTask[]> {
-  const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
-    method: 'POST',
-  });
+export async function generateSubtasks(taskId: string, options?: GenerateSubtasksOptions): Promise<AiTask[]> {
+  const res = await fetch(API_ROUTES.generateSubtasks(taskId), { method: 'POST' });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -53,11 +43,7 @@ export async function generateSubtasks(
   }
 
   if (!res.body) {
-    throw new AppError(
-      ErrorCode.UNKNOWN,
-      ErrorHttpStatus[ErrorCode.UNKNOWN],
-      'AI stream is unavailable'
-    );
+    throw new AppError(ErrorCode.UNKNOWN, ErrorHttpStatus[ErrorCode.UNKNOWN], 'AI stream is unavailable');
   }
 
   const reader = res.body.getReader();
@@ -67,12 +53,20 @@ export async function generateSubtasks(
   let completed = false;
 
   const processLine = (line: string) => {
-    if (!line.trim()) {
-      return;
+    if (!line.trim()) return;
+
+    let json: unknown;
+    try {
+      json = JSON.parse(line);
+    } catch {
+      throw new AppError(
+        ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+        ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
+        'Invalid AI stream event'
+      );
     }
 
-    const parsed = streamEventSchema.safeParse(JSON.parse(line));
-
+    const parsed = streamEventSchema.safeParse(json);
     if (!parsed.success) {
       throw new AppError(
         ErrorCode.AI_INVALID_RESPONSE_FORMAT,
@@ -82,11 +76,7 @@ export async function generateSubtasks(
     }
 
     if (parsed.data.type === 'subtask') {
-      const subtask = {
-        ...parsed.data.subtask,
-        id: crypto.randomUUID(),
-      };
-
+      const subtask = { ...parsed.data.subtask, id: crypto.randomUUID() };
       subtasks.push(subtask);
       options?.onSubtask?.(subtask);
       return;
@@ -101,38 +91,35 @@ export async function generateSubtasks(
       );
     }
 
+    if (completed) {
+      throw new AppError(
+        ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+        ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
+        'AI stream contained duplicate completion events'
+      );
+    }
     completed = true;
   };
 
   try {
     while (true) {
       const { done, value } = await reader.read();
-
-      if (done) {
-        break;
-      }
+      if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() ?? '';
-
-      for (const line of lines) {
-        processLine(line);
-      }
+      for (const line of lines) processLine(line);
     }
 
     buffer += decoder.decode();
-    processLine(buffer);
+    if (buffer.trim()) processLine(buffer);
   } finally {
     reader.releaseLock();
   }
 
   if (!completed) {
-    throw new AppError(
-      ErrorCode.UNKNOWN,
-      ErrorHttpStatus[ErrorCode.UNKNOWN],
-      'AI stream ended unexpectedly'
-    );
+    throw new AppError(ErrorCode.UNKNOWN, ErrorHttpStatus[ErrorCode.UNKNOWN], 'AI stream ended unexpectedly');
   }
 
   if (!subtasks.length) {
@@ -146,23 +133,13 @@ export async function generateSubtasks(
   return subtasks;
 }
 
-export async function saveSubtasks(
-  parentTaskId: string,
-  subtasks: TaskInsert[]
-) {
+export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
   const supabase = createClient();
-
   const lastPosition = await getLastPosition(parentTaskId);
-
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
-    const {
-      data: parsedSubtask,
-      success,
-      error,
-    } = taskSchema.safeParse(subtask);
-
+    const { data: parsedSubtask, success, error } = taskSchema.safeParse(subtask);
     if (!success) {
       throw new AppError(
         ErrorCode.INVALID_REQUEST,
@@ -171,22 +148,12 @@ export async function saveSubtasks(
         z.treeifyError(error)
       );
     }
-
     const next = generateKeyBetween(prev, null);
     prev = next;
-
-    return mapTaskInsertToDb({
-      ...parsedSubtask,
-      position: next,
-      parentTaskId,
-    });
+    return mapTaskInsertToDb({ ...parsedSubtask, position: next, parentTaskId });
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-
-  if (error) {
-    throw fromSupabaseError(error);
-  }
-
+  if (error) throw fromSupabaseError(error);
   return data;
 }

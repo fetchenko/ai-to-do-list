@@ -6,7 +6,7 @@ export const ollamaChatResponseSchema = z.object({
 
   response: z.string(),
   done: z.boolean(),
-  done_reason: z.string(),
+  done_reason: z.string().optional(),
 
   context: z.array(z.number()).optional(),
 

@@ -57,7 +57,7 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
     reset(formDefaults);
   }, [formDefaults, reset]);
 
-  if (loading) {
+  if (loading && fields.length === 0) {
     return (
       <div aria-live="polite" className="space-y-2">
         <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
@@ -69,7 +69,7 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
     )
   }
 
-  if (error) {
+  if (error && fields.length === 0) {
     return (
       <AiGenerationError
         message={getFriendlyErrorMessage(error)}
@@ -105,16 +105,34 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
 
   return (
     <div aria-live="polite" className="space-y-2">
+      {error && (
+        <AiGenerationError
+          message={getFriendlyErrorMessage(error)}
+          onRetry={onRetry}
+          onDismiss={onDiscard}
+          retryable={isRetryableError(error)}
+        />
+      )}
+
+      {loading && (
+        <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+          <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+          Generating subtasks…
+        </p>
+      )}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-3"
         aria-label={`AI-generated draft subtasks for ${task.title}`}
         data-testid="draft-subtasks-form"
       >
-        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-          <span>AI-generated — tap any field to edit before adding</span>
-        </div>
+        {!loading && !error && (
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+            <span>AI-generated — tap any field to edit before adding</span>
+          </div>
+        )}
         <ul className="space-y-2">
           {fields.map((field, index) => (
             <DraftSubtaskRow
@@ -127,21 +145,23 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
           ))}
         </ul>
 
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onDiscard}
-            disabled={isSaving}
-          >
-            Discard
-          </Button>
-          <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
-            {isSaving
-              ? 'Adding…'
-              : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
-          </Button>
-        </div>
+        {!loading && !error && (
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onDiscard}
+              disabled={isSaving}
+            >
+              Discard
+            </Button>
+            <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
+              {isSaving
+                ? 'Adding…'
+                : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );

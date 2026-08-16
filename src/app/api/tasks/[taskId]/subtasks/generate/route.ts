@@ -7,22 +7,32 @@ import {
   checkAiQuotaLimit,
   checkRequestLock,
   releaseRequestLock,
-  updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
-import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import {
+  generateSubtasksStream,
+  SubtaskGenerationEvent,
+} from '@/infrastructure/ai/services/subtasks.service';
+import { AiSubtaskStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
+
+const encoder = new TextEncoder();
+const STREAM_TIMEOUT_MS = 60_000;
+
+function encodeEvent(event: AiSubtaskStreamEvent): Uint8Array {
+  return encoder.encode(`${JSON.stringify(event)}\n`);
+}
+
+function encodeGenerationEvent(event: SubtaskGenerationEvent): Uint8Array {
+  return encodeEvent(event);
+}
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  let aiLogId: string | null = null;
-  let userId;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+  let userId: string | undefined;
+  let streamStarted = false;
 
   try {
     const { user } = await getCurrentUser();
@@ -32,36 +42,84 @@ export async function POST(
     await checkAiQuotaLimit(user.id);
 
     const { taskId } = await parseAiParams(params);
-
     const task = await getTaskForUser(taskId, user.id);
+    const controller = new AbortController();
 
-    const result = await generateSubtasksForTask({
-      task,
-      userId: user.id,
-      signal: controller.signal,
+    streamStarted = true;
+
+    const stream = new ReadableStream<Uint8Array>({
+      async start(streamController) {
+        let timedOut = false;
+        const timeout = setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+        }, STREAM_TIMEOUT_MS);
+
+        try {
+          for await (const event of generateSubtasksStream({
+            task,
+            userId: user.id,
+            signal: controller.signal,
+          })) {
+            streamController.enqueue(encodeGenerationEvent(event));
+          }
+        } catch (error) {
+          // Client cancellation is not an application error.
+          if (controller.signal.aborted && !timedOut) {
+            return;
+          }
+
+          const normalized = normalizeAiError(error);
+
+          try {
+            streamController.enqueue(
+              encodeEvent({
+                type: 'error',
+                error: {
+                  code: normalized.code,
+                  message:
+                    normalized.error ?? 'Failed to generate subtasks',
+                  status: normalized.status,
+                },
+              })
+            );
+          } catch {
+            // The client disconnected before the error could be delivered.
+          }
+        } finally {
+          clearTimeout(timeout);
+
+          try {
+            await releaseRequestLock(user.id);
+          } finally {
+            streamController.close();
+          }
+        }
+      },
+      cancel() {
+        controller.abort();
+      },
     });
 
-    aiLogId = result.aiLogId;
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/x-ndjson; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Content-Encoding': 'identity',
+        'X-Accel-Buffering': 'no',
+      },
+    });
+  } catch (error) {
+    const { status, ...normalized } = normalizeAiError(error);
 
     return NextResponse.json(
-      {
-        success: true,
-        data: { subtasks: result.data.subtasks },
-      },
-      {
-        status: 200,
-      }
+      { error: normalized },
+      { status }
     );
-  } catch (err: unknown) {
-    const { status, ...error } = normalizeAiError(err);
-
-    if (aiLogId) {
-      await updateAiLog(aiLogId, getFailedAiLogs(error));
-    }
-    return NextResponse.json({ error }, { status });
   } finally {
-    clearTimeout(timeout);
-
-    await releaseRequestLock(userId);
+    if (!streamStarted) {
+      await releaseRequestLock(userId);
+    }
   }
 }

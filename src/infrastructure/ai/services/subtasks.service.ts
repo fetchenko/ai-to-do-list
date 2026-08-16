@@ -89,20 +89,11 @@ export async function* generateSubtasksStream({
 
       parser.finish();
 
-      const subtasks = event.response.data.subtasks;
-      if (!subtasks.length || emittedSubtasks === 0) {
+      if (emittedSubtasks === 0) {
         throw new AppError(
           ErrorCode.AI_EMPTY_RESPONSE,
           ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
           'No meaningful subtasks could be generated.'
-        );
-      }
-
-      if (emittedSubtasks !== subtasks.length) {
-        throw new AppError(
-          ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-          ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-          'Streamed subtasks do not match the completed AI response.'
         );
       }
 

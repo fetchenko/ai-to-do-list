@@ -10,6 +10,7 @@ import {
   getInitialAiLog,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { SubtaskStreamParser } from '@/infrastructure/ai/utils/subtask-stream.parser';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
@@ -39,7 +40,7 @@ export async function generateSubtasksForTask({
     return { data, aiLogId };
   } catch (error) {
     if (aiLogId) {
-      const { error: normalizedError } = normalizeServiceError(error);
+      const { status: _status, ...normalizedError } = normalizeAiError(error);
       await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
     }
 
@@ -123,30 +124,10 @@ export async function* generateSubtasksStream({
     );
   } catch (error) {
     if (aiLogId) {
-      const { error: normalizedError } = normalizeServiceError(error);
+      const { status: _status, ...normalizedError } = normalizeAiError(error);
       await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
     }
 
     throw error;
   }
-}
-
-function normalizeServiceError(error: unknown) {
-  if (error instanceof AppError) {
-    return {
-      error: {
-        code: error.code,
-        error: error.message,
-        status: error.status,
-      },
-    };
-  }
-
-  return {
-    error: {
-      code: ErrorCode.UNKNOWN,
-      error: error instanceof Error ? error.message : 'AI generation failed',
-      status: ErrorHttpStatus[ErrorCode.UNKNOWN],
-    },
-  };
 }

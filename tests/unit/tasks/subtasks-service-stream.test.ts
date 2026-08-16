@@ -32,6 +32,18 @@ async function* providerStream(...events: unknown[]) {
   for (const event of events) yield event;
 }
 
+async function collectEvents(
+  args: Parameters<typeof generateSubtasksStream>[0]
+) {
+  const events = [];
+
+  for await (const event of generateSubtasksStream(args)) {
+    events.push(event);
+  }
+
+  return events;
+}
+
 describe('generateSubtasksStream', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,7 +60,8 @@ describe('generateSubtasksStream', () => {
         providerStream(
           {
             type: 'content',
-            content: '{"subtasks":[{"title":"One","description":"First"}',
+            content:
+              '{"subtasks":[{"title":"One","description":"First"}',
           },
           {
             type: 'content',
@@ -70,14 +83,11 @@ describe('generateSubtasksStream', () => {
         ),
     });
 
-    const events = [];
-    for await (const event of generateSubtasksStream({
+    const events = await collectEvents({
       task: { id: 'task-1', title: 'Test task' },
       userId: 'user-1',
       signal: new AbortController().signal,
-    })) {
-      events.push(event);
-    }
+    });
 
     expect(events).toEqual([
       {
@@ -181,11 +191,6 @@ describe('generateSubtasksStream', () => {
     );
 
     mocks.getAIProvider.mockReturnValue({
-      generateStream: () => providerStream({ type: 'content', content: '{"subtasks":[' },),
-    });
-
-    // Replace the provider stream with an iterator that throws after yielding content.
-    mocks.getAIProvider.mockReturnValue({
       generateStream: async function* () {
         yield { type: 'content', content: '{"subtasks":[' };
         throw error;
@@ -207,13 +212,3 @@ describe('generateSubtasksStream', () => {
     );
   });
 });
-
-async function collectEvents(args: Parameters<typeof generateSubtasksStream>[0]) {
-  const events = [];
-
-  for await (const event of generateSubtasksStream(args)) {
-    events.push(event);
-  }
-
-  return events;
-}

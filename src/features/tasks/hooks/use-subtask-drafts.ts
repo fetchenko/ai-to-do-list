@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -11,46 +11,48 @@ import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
 export function useSubtaskDrafts(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
+  const generationRef = useRef(0);
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      if (!taskId) {
-        throw new ValidationRequestError('Missing task id');
-      }
+    mutationFn: async (generation: number) => {
+      if (!taskId) throw new ValidationRequestError('Missing task id');
 
-      return await generateSubtasks(taskId, {
+      return generateSubtasks(taskId, {
         onSubtask: (subtask) => {
+          if (generation !== generationRef.current) return;
           setDrafts((current) => [...(current ?? []), subtask]);
         },
       });
     },
     retry: shouldRetry,
     retryDelay,
-    onSuccess: (data: AiTask[]) => {
-      setDrafts(data);
+    onSuccess: (data: AiTask[], generation: number) => {
+      if (generation === generationRef.current) setDrafts(data);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, generation: number) => {
+      if (generation !== generationRef.current) return;
       setDrafts((current) => (current?.length ? current : null));
 
       const message =
         error instanceof AppError
           ? getFriendlyErrorMessage(error)
           : 'Something went wrong generating subtasks. Try again.';
-
       toast.info(message);
     },
   });
 
   const discard = () => {
+    generationRef.current += 1;
     setDrafts(null);
     mutation.reset();
   };
 
   const generate = () => {
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
     setDrafts(null);
-
     mutation.reset();
-    mutation.mutate();
+    mutation.mutate(generation);
   };
 
   return {

@@ -64,6 +64,7 @@ export async function POST(
             streamController.enqueue(encodeGenerationEvent(event));
           }
         } catch (error) {
+          // Client cancellation is not an application error.
           if (controller.signal.aborted && !timedOut) {
             return;
           }
@@ -75,7 +76,7 @@ export async function POST(
               encodeEvent({
                 type: 'error',
                 error: {
-                  code: timedOut ? normalized.code : normalized.code,
+                  code: normalized.code,
                   message:
                     normalized.error ?? 'Failed to generate subtasks',
                   status: normalized.status,

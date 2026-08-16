@@ -3,12 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/features/auth/repository/auth.server.repository';
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import {
-  checkAiQuotaLimit,
-  checkRequestLock,
-  releaseRequestLock,
-  updateAiLog,
-} from '@/infrastructure/ai/services/ai-log.admin.service';
+import { checkAiQuotaLimit, checkRequestLock, releaseRequestLock, updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { prepareSubtasksStream } from '@/infrastructure/ai/services/subtasks.service';
 import { AiSubtaskStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
@@ -26,10 +21,7 @@ function encodeEvent(event: AiSubtaskStreamEvent) {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-export async function POST(
-  _request: Request,
-  { params }: { params: Promise<RequestGenSubtasks> }
-) {
+export async function POST(_request: Request, { params }: { params: Promise<RequestGenSubtasks> }) {
   let userId: string | undefined;
   let aiLogId: string | null = null;
   let streamStarted = false;
@@ -50,7 +42,6 @@ export async function POST(
     const { taskId } = await parseAiParams(params);
     const task = await getTaskForUser(taskId, user.id);
     const result = await prepareSubtasksStream({ task, userId: user.id, signal: controller.signal });
-
     aiLogId = result.aiLogId;
     streamStarted = true;
 
@@ -59,18 +50,14 @@ export async function POST(
         const parser = new SubtaskStreamParser();
         let emittedSubtasks = 0;
         let completed = false;
+        let cancelled = false;
 
         try {
           for await (const event of result.stream) {
             if (event.type === 'content') {
               if (completed) {
-                throw new AppError(
-                  ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-                  ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-                  'AI stream contained content after completion'
-                );
+                throw new AppError(ErrorCode.AI_INVALID_RESPONSE_FORMAT, ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT], 'AI stream contained content after completion');
               }
-
               for (const subtask of parser.push(event.content)) {
                 emittedSubtasks += 1;
                 streamController.enqueue(encodeEvent({ type: 'subtask', subtask }));
@@ -79,61 +66,34 @@ export async function POST(
             }
 
             if (completed) {
-              throw new AppError(
-                ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-                ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-                'AI stream contained duplicate completion events'
-              );
+              throw new AppError(ErrorCode.AI_INVALID_RESPONSE_FORMAT, ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT], 'AI stream contained duplicate completion events');
             }
 
             parser.finish();
             completed = true;
-
             if (!event.response.data.subtasks.length || !emittedSubtasks) {
-              throw new AppError(
-                ErrorCode.AI_EMPTY_RESPONSE,
-                ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
-                'No meaningful subtasks could be generated.'
-              );
+              throw new AppError(ErrorCode.AI_EMPTY_RESPONSE, ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE], 'No meaningful subtasks could be generated.');
             }
 
             if (aiLogId) {
               await updateAiLog(aiLogId, getSuccessAiLogs(event.response.aiLogs, event.response.raw));
             }
-
             streamController.enqueue(encodeEvent({ type: 'done' }));
           }
         } catch (err: unknown) {
           const { status, ...error } = normalizeAiError(err);
-
           if (aiLogId) await updateAiLog(aiLogId, getFailedAiLogs(error));
 
-          // A timeout is a real application error and must reach the client. A normal
-          // consumer cancellation is intentionally silent because the connection is gone.
-          if (timedOut && !streamController.desiredSize) {
-            // The consumer has already gone away; there is nowhere useful to send the error.
-          } else if (timedOut) {
-            streamController.enqueue(
-              encodeEvent({
-                type: 'error',
-                error: {
-                  code: ErrorCode.AI_TIMEOUT,
-                  message: 'AI request timed out',
-                  status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
-                },
-              })
-            );
-          } else if (!controller.signal.aborted) {
-            streamController.enqueue(
-              encodeEvent({
-                type: 'error',
-                error: {
-                  code: error.code,
-                  message: error.error ?? 'Failed to generate subtasks',
-                  status,
-                },
-              })
-            );
+          if (timedOut && !cancelled) {
+            streamController.enqueue(encodeEvent({
+              type: 'error',
+              error: { code: ErrorCode.AI_TIMEOUT, message: 'AI request timed out', status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT] },
+            }));
+          } else if (!controller.signal.aborted && !cancelled) {
+            streamController.enqueue(encodeEvent({
+              type: 'error',
+              error: { code: error.code, message: error.error ?? 'Failed to generate subtasks', status },
+            }));
           }
         } finally {
           clearTimeout(timeout);
@@ -143,6 +103,11 @@ export async function POST(
             streamController.close();
           }
         }
+
+        // Keep this local state available to the stream cancellation callback.
+        return () => {
+          cancelled = true;
+        };
       },
       cancel() {
         if (!timedOut) controller.abort();
@@ -161,7 +126,6 @@ export async function POST(
   } catch (err: unknown) {
     clearTimeout(timeout);
     const { status, ...error } = normalizeAiError(err);
-
     if (aiLogId) await updateAiLog(aiLogId, getFailedAiLogs(error));
     return NextResponse.json({ error }, { status });
   } finally {

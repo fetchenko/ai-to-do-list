@@ -1,98 +1,219 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
+import { generateSubtasksStream } from '@/infrastructure/ai/services/subtasks.service';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 
-vi.mock('@/infrastructure/supabase/client', () => ({ createClient: vi.fn() }));
-vi.mock('@/features/tasks/repository/tasks.repository', () => ({ getLastPosition: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  createAiLog: vi.fn(),
+  updateAiLog: vi.fn(),
+  getAIProvider: vi.fn(),
+  getInitialAiLog: vi.fn(),
+  getSuccessAiLogs: vi.fn(),
+  getFailedAiLogs: vi.fn(),
+}));
 
-describe('generateSubtasks stream', () => {
-  beforeEach(() => vi.restoreAllMocks());
+vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
+  createAiLog: mocks.createAiLog,
+  updateAiLog: mocks.updateAiLog,
+}));
 
-  const responseFromChunks = (chunks: string[]) => {
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        const encoder = new TextEncoder();
-        for (const chunk of chunks) controller.enqueue(encoder.encode(chunk));
-        controller.close();
+vi.mock('@/infrastructure/ai/providers/ai-provider', () => ({
+  getAIProvider: mocks.getAIProvider,
+}));
+
+vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
+  getInitialAiLog: mocks.getInitialAiLog,
+  getSuccessAiLogs: mocks.getSuccessAiLogs,
+  getFailedAiLogs: mocks.getFailedAiLogs,
+}));
+
+async function* providerStream(...events: unknown[]) {
+  for (const event of events) yield event;
+}
+
+describe('generateSubtasksStream', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mocks.createAiLog.mockResolvedValue('log-1');
+    mocks.getInitialAiLog.mockReturnValue({ status: 'pending' });
+    mocks.getSuccessAiLogs.mockReturnValue({ status: 'success' });
+    mocks.getFailedAiLogs.mockReturnValue({ status: 'failed' });
+  });
+
+  it('emits completed subtasks and then done', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: () =>
+        providerStream(
+          {
+            type: 'content',
+            content: '{"subtasks":[{"title":"One","description":"First"}',
+          },
+          {
+            type: 'content',
+            content: ',{"title":"Two"}]}',
+          },
+          {
+            type: 'complete',
+            response: {
+              data: {
+                subtasks: [
+                  { title: 'One', description: 'First' },
+                  { title: 'Two' },
+                ],
+              },
+              aiLogs: { model: 'test' },
+              raw: '{"subtasks":[{"title":"One"},{"title":"Two"}]}',
+            },
+          }
+        ),
+    });
+
+    const events = [];
+    for await (const event of generateSubtasksStream({
+      task: { id: 'task-1', title: 'Test task' },
+      userId: 'user-1',
+      signal: new AbortController().signal,
+    })) {
+      events.push(event);
+    }
+
+    expect(events).toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'One', description: 'First' },
+      },
+      { type: 'subtask', subtask: { title: 'Two' } },
+      { type: 'done' },
+    ]);
+
+    expect(mocks.updateAiLog).toHaveBeenCalledWith(
+      'log-1',
+      { status: 'success' }
+    );
+  });
+
+  it('fails when the provider completes without subtasks', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: () =>
+        providerStream(
+          { type: 'content', content: '{"subtasks":[]}' },
+          {
+            type: 'complete',
+            response: {
+              data: { subtasks: [] },
+              aiLogs: {},
+              raw: '{"subtasks":[]}',
+            },
+          }
+        ),
+    });
+
+    await expect(
+      collectEvents({
+        task: { id: 'task-1', title: 'Test task' },
+        userId: 'user-1',
+        signal: new AbortController().signal,
+      })
+    ).rejects.toMatchObject({ code: ErrorCode.AI_EMPTY_RESPONSE });
+
+    expect(mocks.getFailedAiLogs).toHaveBeenCalled();
+  });
+
+  it('fails when the provider ends without a completion event', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: () =>
+        providerStream({
+          type: 'content',
+          content: '{"subtasks":[{"title":"One"}]}',
+        }),
+    });
+
+    await expect(
+      collectEvents({
+        task: { id: 'task-1', title: 'Test task' },
+        userId: 'user-1',
+        signal: new AbortController().signal,
+      })
+    ).rejects.toMatchObject({
+      code: ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+    });
+  });
+
+  it('fails when streamed subtasks do not match the completed response', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: () =>
+        providerStream(
+          {
+            type: 'content',
+            content: '{"subtasks":[{"title":"One"}]}',
+          },
+          {
+            type: 'complete',
+            response: {
+              data: {
+                subtasks: [{ title: 'One' }, { title: 'Two' }],
+              },
+              aiLogs: {},
+              raw: '{"subtasks":[{"title":"One"},{"title":"Two"}]}',
+            },
+          }
+        ),
+    });
+
+    await expect(
+      collectEvents({
+        task: { id: 'task-1', title: 'Test task' },
+        userId: 'user-1',
+        signal: new AbortController().signal,
+      })
+    ).rejects.toMatchObject({
+      code: ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+    });
+  });
+
+  it('preserves provider errors and records a failed log', async () => {
+    const error = new AppError(
+      ErrorCode.AI_UNAVAILABLE,
+      503,
+      'AI unavailable'
+    );
+
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: () => providerStream({ type: 'content', content: '{"subtasks":[' },),
+    });
+
+    // Replace the provider stream with an iterator that throws after yielding content.
+    mocks.getAIProvider.mockReturnValue({
+      generateStream: async function* () {
+        yield { type: 'content', content: '{"subtasks":[' };
+        throw error;
       },
     });
-    return new Response(stream, { status: 200 });
-  };
 
-  it('handles NDJSON split across chunks and reports progressive subtasks', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks([
-        '{"type":"sub',
-        'task","subtask":{"title":"One"}}\n{"type":"subtask","subtask":{"title":"Two"}}\n',
-        '{"type":"done"}\n',
-      ])
+    await expect(
+      collectEvents({
+        task: { id: 'task-1', title: 'Test task' },
+        userId: 'user-1',
+        signal: new AbortController().signal,
+      })
+    ).rejects.toBe(error);
+
+    expect(mocks.getFailedAiLogs).toHaveBeenCalled();
+    expect(mocks.updateAiLog).toHaveBeenCalledWith(
+      'log-1',
+      { status: 'failed' }
     );
-
-    const onSubtask = vi.fn();
-    const result = await generateSubtasks('task-1', { onSubtask });
-
-    expect(result).toHaveLength(2);
-    expect(result.map(({ title }) => title)).toEqual(['One', 'Two']);
-    expect(onSubtask).toHaveBeenCalledTimes(2);
-  });
-
-  it('maps malformed JSON to the application error instead of leaking SyntaxError', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks(['{"type":"subtask"\n'])
-    );
-
-    await expect(generateSubtasks('task-1')).rejects.toMatchObject({
-      code: ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-    });
-  });
-
-  it('rejects a stream that ends without a done event', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks(['{"type":"subtask","subtask":{"title":"One"}}\n'])
-    );
-
-    await expect(generateSubtasks('task-1')).rejects.toMatchObject({
-      code: ErrorCode.UNKNOWN,
-      message: 'AI stream ended unexpectedly',
-    });
-  });
-
-  it('preserves partial subtasks when the server emits an error event', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks([
-        '{"type":"subtask","subtask":{"title":"One"}}\n',
-        '{"type":"error","error":{"code":"AI_GENERATION_FAILED","message":"Provider failed","status":503}}\n',
-      ])
-    );
-
-    const onSubtask = vi.fn();
-    await expect(generateSubtasks('task-1', { onSubtask })).rejects.toBeInstanceOf(AppError);
-    expect(onSubtask).toHaveBeenCalledTimes(1);
-    expect(onSubtask.mock.calls[0][0]).toMatchObject({ title: 'One' });
-  });
-
-  it('rejects duplicate done events', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks([
-        '{"type":"subtask","subtask":{"title":"One"}}\n',
-        '{"type":"done"}\n{"type":"done"}\n',
-      ])
-    );
-
-    await expect(generateSubtasks('task-1')).rejects.toMatchObject({
-      code: ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-    });
-  });
-
-  it('rejects an empty successful response', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      responseFromChunks(['{"type":"done"}\n'])
-    );
-
-    await expect(generateSubtasks('task-1')).rejects.toMatchObject({
-      code: ErrorCode.AI_EMPTY_RESPONSE,
-    });
   });
 });
+
+async function collectEvents(args: Parameters<typeof generateSubtasksStream>[0]) {
+  const events = [];
+
+  for await (const event of generateSubtasksStream(args)) {
+    events.push(event);
+  }
+
+  return events;
+}

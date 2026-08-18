@@ -1,6 +1,6 @@
 import { TaskPreview } from '@/features/tasks/types/database.types';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
-import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {
   createAiLog,
   updateAiLog,
@@ -14,15 +14,16 @@ export async function generateSubtasksForTask({
   task,
   userId,
   signal,
+  provider,
 }: {
   task: TaskPreview;
   userId: string;
   signal: AbortSignal;
+  provider: AIProvider;
 }) {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
 
   const prompt = taskDecomposerPrompt(task.title);
-  const provider = getAIProvider();
 
   const { data, aiLogs, raw } = await provider.generate(prompt, signal);
 

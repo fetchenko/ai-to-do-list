@@ -7,6 +7,8 @@ import * as appError from '@/shared/errors/app-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export class OllamaProvider implements AIProvider {
+  quotaLimit = Infinity;
+
   async generate(
     prompt: string,
     signal?: AbortSignal

@@ -33,7 +33,9 @@ export async function POST(
 
     const provider = getAIProvider();
 
-    await checkAiQuotaLimit(user.id, provider.quotaLimit);
+    if (provider.quotaLimit) {
+      await checkAiQuotaLimit(user.id, provider.quotaLimit);
+    }
 
     const { taskId } = await parseAiParams(params);
 

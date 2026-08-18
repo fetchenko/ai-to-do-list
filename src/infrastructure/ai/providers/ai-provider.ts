@@ -4,7 +4,7 @@ import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { aiEnv } from '@/shared/env/ai-env';
 
 export interface AIProvider {
-  quotaLimit: number;
+  quotaLimit?: number;
 
   generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse>;
 }

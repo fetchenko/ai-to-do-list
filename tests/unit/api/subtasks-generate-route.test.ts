@@ -32,10 +32,16 @@ vi.mock('@/infrastructure/ai/services/subtasks.service', () => ({
 }));
 
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
+  updateAiLog: mocks.updateAiLog,
+}));
+
+vi.mock('@/infrastructure/ai/services/ai-quota-limit.admin.service', () => ({
   checkAiQuotaLimit: mocks.checkAiQuotaLimit,
+}));
+
+vi.mock('@/infrastructure/ai/services/ai-lock.admin.service', () => ({
   checkRequestLock: mocks.checkRequestLock,
   releaseRequestLock: mocks.releaseRequestLock,
-  updateAiLog: mocks.updateAiLog,
 }));
 
 vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({

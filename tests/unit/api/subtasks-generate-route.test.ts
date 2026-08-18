@@ -230,4 +230,92 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
 
     expect(mocks.checkAiQuotaLimit).not.toHaveBeenCalled();
   });
+
+  it('checks the provider quota and passes the same provider to generation', async () => {
+    const provider = {
+      quotaLimit: 20,
+    };
+
+    mocks.getAIProvider.mockReturnValue(provider);
+    mocks.checkAiQuotaLimit.mockResolvedValue(undefined);
+
+    mocks.generateSubtasksForTask.mockResolvedValue({
+      aiLogId: 'log-1',
+      data: {
+        subtasks: [
+          {
+            id: 'subtask-1',
+            title: 'Write tests',
+          },
+        ],
+      },
+    });
+
+    const request = new Request(
+      'http://localhost/api/tasks/task-1/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: 'task-1',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    expect(mocks.getAIProvider).toHaveBeenCalledOnce();
+
+    expect(mocks.checkAiQuotaLimit).toHaveBeenCalledWith(
+      'user-1',
+      provider.quotaLimit
+    );
+
+    expect(mocks.generateSubtasksForTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider,
+      })
+    );
+  });
+
+  it('does not check the quota when the provider has no quota limit', async () => {
+    const provider = {
+      quotaLimit: undefined,
+    };
+
+    mocks.getAIProvider.mockReturnValue(provider);
+
+    mocks.generateSubtasksForTask.mockResolvedValue({
+      aiLogId: 'log-1',
+      data: {
+        subtasks: [
+          {
+            id: 'subtask-1',
+            title: 'Write tests',
+          },
+        ],
+      },
+    });
+
+    const request = new Request(
+      'http://localhost/api/tasks/task-1/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: 'task-1',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    expect(mocks.checkAiQuotaLimit).not.toHaveBeenCalled();
+
+    expect(mocks.generateSubtasksForTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider,
+      })
+    );
+  });
 });

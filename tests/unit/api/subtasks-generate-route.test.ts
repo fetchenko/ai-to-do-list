@@ -7,6 +7,7 @@ vi.mock('server-only', () => ({}));
 const mocks = vi.hoisted(() => ({
   getCurrentUser: vi.fn(),
   getTaskForUser: vi.fn(),
+  getAIProvider: vi.fn(),
   generateSubtasksForTask: vi.fn(),
 
   checkAiQuotaLimit: vi.fn(),
@@ -17,6 +18,10 @@ const mocks = vi.hoisted(() => ({
   parseAiParams: vi.fn(),
   getFailedAiLogs: vi.fn(),
   normalizeAiError: vi.fn(),
+}));
+
+vi.mock('@/infrastructure/ai/providers/ai-provider', () => ({
+  getAIProvider: mocks.getAIProvider,
 }));
 
 vi.mock('@/features/auth/repository/auth.server.repository', () => ({
@@ -64,6 +69,10 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
       user: {
         id: 'user-1',
       },
+    });
+
+    mocks.getAIProvider.mockReturnValue({
+      quotaLimit: 20,
     });
 
     mocks.checkRequestLock.mockResolvedValue(undefined);
@@ -153,5 +162,72 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
         ],
       },
     });
+  });
+
+  it('checks the quota when the provider has a quota limit', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      quotaLimit: 20,
+    });
+
+    mocks.generateSubtasksForTask.mockResolvedValue({
+      aiLogId: 'log-1',
+      data: {
+        subtasks: [
+          {
+            id: 'subtask-1',
+            title: 'Write tests',
+          },
+        ],
+      },
+    });
+
+    const request = new Request(
+      'http://localhost/api/tasks/task-1/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: 'task-1',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    expect(mocks.getAIProvider).toHaveBeenCalled();
+    expect(mocks.checkAiQuotaLimit).toHaveBeenCalledWith('user-1', 20);
+  });
+
+  it('does not check the quota when the provider has no quota limit', async () => {
+    mocks.getAIProvider.mockReturnValue({
+      quotaLimit: undefined,
+    });
+
+    mocks.generateSubtasksForTask.mockResolvedValue({
+      aiLogId: 'log-1',
+      data: {
+        subtasks: [
+          {
+            id: 'subtask-1',
+            title: 'Write tests',
+          },
+        ],
+      },
+    });
+
+    const request = new Request(
+      'http://localhost/api/tasks/task-1/subtasks/generate',
+      { method: 'POST' }
+    );
+
+    const response = await POST(request, {
+      params: Promise.resolve({
+        taskId: 'task-1',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    expect(mocks.checkAiQuotaLimit).not.toHaveBeenCalled();
   });
 });

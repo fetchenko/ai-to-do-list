@@ -9,7 +9,7 @@ import {
   releaseRequestLock,
 } from '@/infrastructure/ai/services/ai-lock.admin.service';
 import { updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
-import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.service';
+import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
@@ -33,7 +33,7 @@ export async function POST(
 
     const provider = getAIProvider();
 
-    if (provider.quotaLimit) {
+    if (provider.quotaLimit !== undefined) {
       await checkAiQuotaLimit(user.id, provider.quotaLimit);
     }
 

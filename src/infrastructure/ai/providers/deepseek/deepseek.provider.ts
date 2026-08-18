@@ -6,7 +6,11 @@ import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import { aiEnv } from '@/shared/env/ai-env';
 import { ResponseFormatError } from '@/shared/errors/app-error';
 
+const DEFAULT_DEEPSEEK_QUOTA_LIMIT = 20;
+
 export default class DeepSeekProvider implements AIProvider {
+  quotaLimit = DEFAULT_DEEPSEEK_QUOTA_LIMIT;
+
   async generate(
     prompt: string,
     signal?: AbortSignal

@@ -1,19 +1,18 @@
-import {
-  DeepSeekStreamChunk,
-  PendingToolCall,
-} from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.types';
+import { PendingToolCall } from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.types';
 import { parseToolCall } from '@/infrastructure/ai/providers/deepseek/stream/parse-tool-call';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
 export async function* normilizeDeepSeekStream(
-  chunks: AsyncIterable<DeepSeekStreamChunk>
+  body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamChunk> {
   let currentToolCall: PendingToolCall | null = null;
   let lastToolCallIndex = -1;
 
-  for await (const chunk of chunks) {
-    const choice = chunk.choices?.[0];
+  for await (const chunk of readSseStream(body)) {
+    const result = JSON.parse(chunk);
+    const choice = result.choices?.[0];
 
     if (!choice) {
       continue;

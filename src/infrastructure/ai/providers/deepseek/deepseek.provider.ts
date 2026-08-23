@@ -2,7 +2,6 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { normilizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.normilize';
-import { readDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.utils';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask.tool';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
@@ -87,6 +86,6 @@ export default class DeepSeekProvider implements AIProvider {
       throw new AiEmptyResponseError('DeepSeek response has no body');
     }
 
-    yield* normilizeDeepSeekStream(readDeepSeekStream(response.body));
+    yield* normilizeDeepSeekStream(response.body);
   }
 }

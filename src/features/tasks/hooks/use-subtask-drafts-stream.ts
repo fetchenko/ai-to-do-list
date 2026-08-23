@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
+import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
 import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
-export function useSubtaskDrafts(taskId: string) {
+export function useSubtaskDraftsStream(taskId: string) {
   const [drafts, setDrafts] = useState<AiTask[] | null>(null);
 
   const mutation = useMutation({
@@ -17,13 +17,22 @@ export function useSubtaskDrafts(taskId: string) {
       if (!taskId) {
         throw new ValidationRequestError('Missing task id');
       }
-      return await generateSubtasks(taskId);
+
+      for await (const chunk of streamSubtasks(taskId)) {
+        if (chunk.type !== 'subtask') {
+          continue;
+        }
+
+        const draft = {
+          ...chunk.subtask,
+          id: crypto.randomUUID(),
+        };
+
+        setDrafts((prev) => [...(prev ?? []), draft]);
+      }
     },
     retry: shouldRetry,
     retryDelay,
-    onSuccess: (data: AiTask[]) => {
-      setDrafts(data);
-    },
     onError: (error: Error) => {
       setDrafts(null);
 

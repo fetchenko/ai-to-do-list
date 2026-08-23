@@ -1,6 +1,7 @@
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
+import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import * as appError from '@/shared/errors/app-error';
@@ -38,5 +39,12 @@ export class OllamaProvider implements AIProvider {
       ...normalizeOllamaResponse(data),
       raw: JSON.stringify(parsedResponse),
     };
+  }
+
+  async *stream(
+    prompt: string,
+    signal?: AbortSignal
+  ): AsyncIterable<AiStreamChunk> {
+    yield { type: 'done' };
   }
 }

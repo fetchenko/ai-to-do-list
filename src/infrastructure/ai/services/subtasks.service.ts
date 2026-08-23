@@ -1,5 +1,6 @@
 import { TaskPreview } from '@/features/tasks/types/database.types';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
+import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {
   createAiLog,
@@ -32,4 +33,42 @@ export async function generateSubtasksForTask({
   }
 
   return { data, aiLogId };
+}
+
+export async function streamSubtasksForTask({
+  task,
+  userId,
+  signal,
+  provider,
+}: {
+  task: TaskPreview;
+  userId: string;
+  signal: AbortSignal;
+  provider: AIProvider;
+}) {
+  const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
+
+  const prompt = taskDecomposerStreamPrompt(task.title);
+
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of provider.stream(prompt, signal)) {
+          controller.enqueue(encoder.encode(JSON.stringify(chunk) + '\n'));
+        }
+
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+
+  if (aiLogId) {
+    await updateAiLog(aiLogId, getSuccessAiLogs(aiLogs, raw));
+  }
+
+  return { stream, aiLogId };
 }

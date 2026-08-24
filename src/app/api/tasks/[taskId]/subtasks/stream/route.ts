@@ -22,9 +22,6 @@ export async function POST(
   let aiLogId: string | null = null;
   let userId;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
-
   try {
     const { user } = await getCurrentUser();
     userId = user.id;
@@ -44,7 +41,6 @@ export async function POST(
     const result = await streamSubtasksForTask({
       task,
       userId: user.id,
-      signal: controller.signal,
       provider,
     });
 
@@ -64,8 +60,6 @@ export async function POST(
     }
     return NextResponse.json({ error }, { status });
   } finally {
-    clearTimeout(timeout);
-
     await releaseRequestLock(userId);
   }
 }

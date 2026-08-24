@@ -70,6 +70,9 @@ export default class DeepSeekProvider implements AIProvider {
           },
         ],
         stream: true,
+        stream_options: {
+          include_usage: true,
+        },
         tools: [createSubtaskTool],
         tool_choice: 'auto',
       }),

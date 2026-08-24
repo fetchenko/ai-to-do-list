@@ -4,7 +4,7 @@ import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
-export async function* normilizeDeepSeekStream(
+export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamChunk> {
   const accumulator = new ToolCallAccumulator();

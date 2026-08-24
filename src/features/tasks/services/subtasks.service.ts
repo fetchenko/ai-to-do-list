@@ -6,6 +6,7 @@ import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
+import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
@@ -37,32 +38,7 @@ export async function* streamSubtasks(
     throw new AiEmptyResponseError('Response body is missing');
   }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split('\n');
-
-    buffer = lines.pop() ?? '';
-
-    for (const line of lines) {
-      if (!line) continue;
-
-      const chunk: AiStreamChunk = JSON.parse(line);
-
-      yield chunk;
-    }
-  }
+  return readJsonStream(response.body);
 }
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {

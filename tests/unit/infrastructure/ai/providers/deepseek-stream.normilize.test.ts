@@ -2,13 +2,13 @@ import { collect } from '@tests/utils/collect';
 import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
-import { normilizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normilize';
+import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normilize';
 
 function deepSeekEvent(data: unknown): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 
-describe('normilizeDeepSeekStream', () => {
+describe('normalizeDeepSeekStream', () => {
   it('accumulates a tool call and emits a subtask when complete', async () => {
     const stream = createStream([
       deepSeekEvent({
@@ -50,7 +50,7 @@ describe('normilizeDeepSeekStream', () => {
       }),
     ]);
 
-    const result = await collect(normilizeDeepSeekStream(stream));
+    const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
       {
@@ -88,7 +88,7 @@ describe('normilizeDeepSeekStream', () => {
       }),
     ]);
 
-    const result = await collect(normilizeDeepSeekStream(stream));
+    const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
       { type: 'content', content: 'Hello' },
@@ -139,7 +139,7 @@ describe('normilizeDeepSeekStream', () => {
       }),
     ]);
 
-    const result = await collect(normilizeDeepSeekStream(stream));
+    const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
       {
@@ -193,7 +193,7 @@ describe('normilizeDeepSeekStream', () => {
       }),
     ]);
 
-    const result = await collect(normilizeDeepSeekStream(stream));
+    const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
       {

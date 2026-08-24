@@ -66,4 +66,74 @@ describe('readJsonStream', () => {
       },
     ]);
   });
+
+  it('parses multiple JSON objects', async () => {
+    const stream = createStream(['{"type":"done"}\n{"type":"done"}\n']);
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([{ type: 'done' }, { type: 'done' }]);
+  });
+
+  it('ignores empty lines', async () => {
+    const stream = createStream(['\n', '{"type":"done"}\n', '\n']);
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([{ type: 'done' }]);
+  });
+
+  it('ignores whitespace-only lines', async () => {
+    const stream = createStream(['  \n', '{"type":"done"}\n', '   \n']);
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([{ type: 'done' }]);
+  });
+
+  it('returns no values for an empty stream', async () => {
+    const stream = createStream([]);
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([]);
+  });
+
+  it('returns no values for a whitespace-only stream', async () => {
+    const stream = createStream(['  \n\n   ']);
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([]);
+  });
+
+  it('throws when a JSON object is malformed', async () => {
+    const stream = createStream(['{"type":"done"\n']);
+
+    await expect(collect(readJsonStream(stream))).rejects.toThrow(SyntaxError);
+  });
+
+  it('handles UTF-8 characters split across chunks', async () => {
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode('{"type":"content","content":"😀"}\n');
+
+    const split = bytes.length - 3;
+
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes.slice(0, split));
+        controller.enqueue(bytes.slice(split));
+        controller.close();
+      },
+    });
+
+    const result = await collect(readJsonStream(stream));
+
+    expect(result).toEqual([
+      {
+        type: 'content',
+        content: '😀',
+      },
+    ]);
+  });
 });

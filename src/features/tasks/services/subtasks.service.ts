@@ -38,7 +38,7 @@ export async function* streamSubtasks(
     throw new AiEmptyResponseError('Response body is missing');
   }
 
-  return readJsonStream(response.body);
+  yield* readJsonStream(response.body);
 }
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
+import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
 describe('ToolCallAccumulator', () => {
   it('starts accumulating a tool call', () => {
@@ -139,6 +140,30 @@ describe('ToolCallAccumulator', () => {
         arguments: '{"title":"First"}',
       },
     });
+  });
+
+  it('throws when a tool call index moves backwards', () => {
+    const accumulator = new ToolCallAccumulator();
+
+    accumulator.add({
+      index: 1,
+      id: 'call_1',
+      function: {
+        name: 'create_subtask',
+        arguments: '{}',
+      },
+    });
+
+    expect(() =>
+      accumulator.add({
+        index: 0,
+        id: 'call_0',
+        function: {
+          name: 'create_subtask',
+          arguments: '{}',
+        },
+      })
+    ).toThrow(AiInvalidResponseFormat);
   });
 
   it('starts accumulating the next call after the index changes', () => {

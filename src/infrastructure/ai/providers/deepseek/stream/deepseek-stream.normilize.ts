@@ -1,5 +1,5 @@
-import { PendingToolCall } from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.types';
 import { parseToolCall } from '@/infrastructure/ai/providers/deepseek/stream/parse-tool-call';
+import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
@@ -7,8 +7,7 @@ import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 export async function* normilizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamChunk> {
-  let currentToolCall: PendingToolCall | null = null;
-  let lastToolCallIndex = -1;
+  const accumulator = new ToolCallAccumulator();
 
   for await (const chunk of readSseStream(body)) {
     const result = JSON.parse(chunk);
@@ -21,42 +20,19 @@ export async function* normilizeDeepSeekStream(
     const delta = choice.delta;
     const finishReason = choice.finish_reason;
 
+    if (delta?.content) {
+      yield {
+        type: 'content',
+        content: delta.content,
+      };
+    }
+
     for (const toolCall of delta?.tool_calls ?? []) {
-      const index = toolCall.index;
+      const result = accumulator.add(toolCall);
 
-      if (index < lastToolCallIndex) {
-        throw new AiInvalidResponseFormat(
-          'DeepSeek returned tool calls out of order'
-        );
+      if (result.type === 'completed') {
+        yield parseToolCall(result.toolCall);
       }
-
-      if (currentToolCall && index !== currentToolCall.index) {
-        yield parseToolCall(currentToolCall);
-
-        lastToolCallIndex = currentToolCall.index;
-        currentToolCall = null;
-      }
-
-      if (!currentToolCall) {
-        currentToolCall = {
-          index,
-          id: toolCall.id ?? '',
-          name: toolCall.function?.name ?? '',
-          arguments: toolCall.function?.arguments ?? '',
-        };
-
-        continue;
-      }
-
-      if (toolCall.id) {
-        currentToolCall.id = toolCall.id;
-      }
-
-      if (toolCall.function?.name) {
-        currentToolCall.name = toolCall.function.name;
-      }
-
-      currentToolCall.arguments += toolCall.function?.arguments ?? '';
     }
 
     if (finishReason === 'length') {
@@ -66,8 +42,10 @@ export async function* normilizeDeepSeekStream(
     }
 
     if (finishReason === 'tool_calls') {
-      if (currentToolCall) {
-        yield parseToolCall(currentToolCall);
+      const result = accumulator.finish();
+
+      if (result.type === 'completed') {
+        yield parseToolCall(result.toolCall);
       }
 
       yield { type: 'done' };

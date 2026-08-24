@@ -11,4 +11,8 @@ export type AiStreamChunk =
   | {
       type: 'error';
       message: string;
+    }
+  | {
+      type: 'content';
+      content: string;
     };

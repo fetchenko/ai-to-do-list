@@ -1,30 +1,8 @@
+import { collect } from '@tests/utils/collect';
+import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
-
-function createStream(chunks: string[]) {
-  const encoder = new TextEncoder();
-
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk));
-      }
-
-      controller.close();
-    },
-  });
-}
-
-async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
-  const result: T[] = [];
-
-  for await (const value of iterable) {
-    result.push(value);
-  }
-
-  return result;
-}
 
 describe('readSseStream', () => {
   it('yields data from SSE events', async () => {

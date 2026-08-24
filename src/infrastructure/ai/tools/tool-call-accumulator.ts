@@ -1,29 +1,9 @@
+import {
+  PendingToolCall,
+  ToolCallAccumulatorResult,
+  ToolCallDelta,
+} from '@/infrastructure/ai/tools/tool-call.types';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
-
-export type ToolCallDelta = {
-  index: number;
-  id?: string;
-  function?: {
-    name?: string;
-    arguments?: string;
-  };
-};
-
-export type PendingToolCall = {
-  index: number;
-  id: string;
-  name: string;
-  arguments: string;
-};
-
-export type ToolCallAccumulatorResult =
-  | {
-      type: 'accumulating';
-    }
-  | {
-      type: 'completed';
-      toolCall: PendingToolCall;
-    };
 
 export class ToolCallAccumulator {
   private current: PendingToolCall | null = null;

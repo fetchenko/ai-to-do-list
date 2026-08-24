@@ -1,8 +1,8 @@
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { normilizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normilize';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
-import { normilizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/stream/deepseek-stream.normilize';
-import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask.tool';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';

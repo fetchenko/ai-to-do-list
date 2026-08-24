@@ -1,4 +1,4 @@
-import { parseToolCall } from '@/infrastructure/ai/providers/deepseek/stream/parse-tool-call';
+import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';

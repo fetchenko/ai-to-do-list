@@ -1,5 +1,5 @@
 export const mockOllamaResponse = {
-  model: 'qwen2.5-coder:1.5b',
+  model: 'qwen3:8b',
   created_at: '2026-06-19T15:02:00.219075871Z',
   response: JSON.stringify({
     subtasks: [

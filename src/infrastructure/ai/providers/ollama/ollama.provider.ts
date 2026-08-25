@@ -1,11 +1,16 @@
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import * as appError from '@/shared/errors/app-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
+
+const OLLAMA_URL = 'http://localhost:11434';
+const OLLAMA_MODEL = 'qwen3:8b';
 
 export class OllamaProvider implements AIProvider {
   async generate(
@@ -45,6 +50,36 @@ export class OllamaProvider implements AIProvider {
     prompt: string,
     signal?: AbortSignal
   ): AsyncIterable<AiStreamChunk> {
-    yield { type: 'done' };
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal,
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        tools: [createSubtaskTool],
+        stream: true,
+        think: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+
+      throw new appError.AiUnavailableError(body);
+    }
+
+    if (!response.body) {
+      throw new appError.AiEmptyResponseError('Ollama response has no body');
+    }
+
+    yield* normalizeOllamaStream(response.body);
   }
 }

@@ -1,0 +1,62 @@
+import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
+import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
+
+type OllamaStreamChunk = {
+  model: string;
+  created_at: string;
+  message?: {
+    role: string;
+    content?: string;
+    tool_calls?: Array<{
+      id?: string;
+      function: {
+        index?: number;
+        name: string;
+        arguments: Record<string, unknown>;
+      };
+    }>;
+  };
+  done: boolean;
+  done_reason?: string;
+  total_duration?: number;
+  load_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_count?: number;
+  eval_duration?: number;
+};
+
+export async function* normalizeOllamaStream(
+  body: ReadableStream<Uint8Array>
+): AsyncIterable<AiStreamChunk> {
+  for await (const rawChunk of readJsonStream(body)) {
+    const chunk = rawChunk as OllamaStreamChunk;
+
+    const message = chunk.message;
+
+    if (message?.content) {
+      yield {
+        type: 'content',
+        content: message.content,
+      };
+    }
+
+    for (const toolCall of message?.tool_calls ?? []) {
+      yield parseToolCall({
+        index: toolCall.function.index ?? 0,
+        id: toolCall.id ?? '',
+        name: toolCall.function.name,
+        arguments: JSON.stringify(toolCall.function.arguments),
+      });
+    }
+
+    if (chunk.done) {
+      yield {
+        type: 'done',
+      };
+
+      return;
+    }
+  }
+}

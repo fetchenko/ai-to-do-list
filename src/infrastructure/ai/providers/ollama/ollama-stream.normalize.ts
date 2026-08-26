@@ -1,3 +1,5 @@
+import { normalizeOllamaUsage } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
+import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
@@ -30,6 +32,8 @@ type OllamaStreamChunk = {
 export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamChunk> {
+  const generatedSubtasks = [];
+
   for await (const rawChunk of readJsonStream(body)) {
     const chunk = rawChunk as OllamaStreamChunk;
 
@@ -43,17 +47,30 @@ export async function* normalizeOllamaStream(
     }
 
     for (const toolCall of message?.tool_calls ?? []) {
-      yield parseToolCall({
+      const parsedToolCall = parseToolCall({
         index: toolCall.function.index ?? 0,
         id: toolCall.id ?? '',
         name: toolCall.function.name,
         arguments: JSON.stringify(toolCall.function.arguments),
       });
+
+      if (parsedToolCall.type === 'subtask') {
+        generatedSubtasks.push(parsedToolCall.subtask);
+      }
+
+      yield parsedToolCall;
     }
 
     if (chunk.done) {
+      const metadata = chunk as OllamaResponse;
+
       yield {
         type: 'done',
+        metadata: {
+          model: metadata.model,
+          response: JSON.stringify(generatedSubtasks),
+          usage: normalizeOllamaUsage(metadata),
+        },
       };
 
       return;

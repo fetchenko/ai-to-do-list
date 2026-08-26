@@ -112,6 +112,19 @@ describe('normalizeOllamaStream', () => {
         },
         done: true,
         done_reason: 'stop',
+        usage: {
+          prompt_tokens: 514,
+          completion_tokens: 451,
+          total_tokens: 965,
+          prompt_tokens_details: {
+            cached_tokens: 512,
+          },
+          completion_tokens_details: {
+            reasoning_tokens: 73,
+          },
+          prompt_cache_hit_tokens: 512,
+          prompt_cache_miss_tokens: 2,
+        },
       },
     ]);
 

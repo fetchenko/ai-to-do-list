@@ -1,3 +1,4 @@
+import { AiLogs } from '@/infrastructure/ai/types/ai.types';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 export type AiStreamChunk =
@@ -7,6 +8,7 @@ export type AiStreamChunk =
     }
   | {
       type: 'done';
+      metadata: AiLogs;
     }
   | {
       type: 'error';

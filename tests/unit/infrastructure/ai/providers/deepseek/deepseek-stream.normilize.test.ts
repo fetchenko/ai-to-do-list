@@ -31,6 +31,7 @@ describe('normalizeDeepSeekStream', () => {
         ],
       }),
       deepSeekEvent({
+        model: 'deepseek-v4-flash',
         choices: [
           {
             delta: {
@@ -47,6 +48,19 @@ describe('normalizeDeepSeekStream', () => {
             finish_reason: 'tool_calls',
           },
         ],
+        usage: {
+          prompt_tokens: 514,
+          completion_tokens: 451,
+          total_tokens: 965,
+          prompt_tokens_details: {
+            cached_tokens: 512,
+          },
+          completion_tokens_details: {
+            reasoning_tokens: 73,
+          },
+          prompt_cache_hit_tokens: 512,
+          prompt_cache_miss_tokens: 2,
+        },
       }),
     ]);
 
@@ -62,6 +76,20 @@ describe('normalizeDeepSeekStream', () => {
       },
       {
         type: 'done',
+        metadata: {
+          model: 'deepseek-v4-flash',
+          response:
+            '[{"title":"Buy a phone","description":"Choose a suitable phone"}]',
+          usage: {
+            input_tokens: 514,
+            output_tokens: 451,
+            total_tokens: 965,
+            finish_reason: 'tool_calls',
+            reasoning_tokens: 73,
+            cache_hit_tokens: 512,
+            cache_miss_tokens: 2,
+          },
+        },
       },
     ]);
   });

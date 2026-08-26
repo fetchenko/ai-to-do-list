@@ -7,10 +7,12 @@ import {
   createAiLog,
   updateAiLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import {
   getInitialAiLog,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
+import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 
 export async function generateSubtasksForTask({
   task,
@@ -47,7 +49,7 @@ export async function streamSubtasksForTask({
 }) {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
 
-  const signal = AbortSignal.timeout(60_000);
+  const signal = AbortSignal.timeout(600_000);
 
   const encoder = new TextEncoder();
   const prompt = taskDecomposerStreamPrompt(task.title);
@@ -56,17 +58,29 @@ export async function streamSubtasksForTask({
     async start(controller) {
       try {
         for await (const chunk of provider.stream(prompt, signal)) {
-          controller.enqueue(encoder.encode(JSON.stringify(chunk) + '\n'));
+          if (chunk.type === 'subtask') {
+            controller.enqueue(encoder.encode(JSON.stringify(chunk) + '\n'));
+          }
+
+          if (chunk.type === 'done') {
+            if (aiLogId) {
+              await updateAiLog(
+                aiLogId,
+                getSuccessAiLogs(chunk.metadata, chunk.metadata.response)
+              );
+            }
+          }
         }
 
         controller.close();
+      } catch (err) {
+        const { status, ...error } = normalizeAiError(err);
 
-        // todo: fix after integration with ollama
-        // if (aiLogId) {
-        //   await updateAiLog(aiLogId, getSuccessAiLogs(aiLogs, raw));
-        // }
-      } catch (error) {
-        controller.error(error);
+        if (aiLogId) {
+          await updateAiLog(aiLogId, getFailedAiLogs(error));
+        }
+
+        controller.error(err);
       } finally {
         await releaseRequestLock(userId);
       }

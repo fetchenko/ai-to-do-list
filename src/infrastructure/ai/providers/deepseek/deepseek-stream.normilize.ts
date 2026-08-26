@@ -1,3 +1,4 @@
+import { normalizeDeepseekUsage } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
@@ -8,10 +9,11 @@ export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamChunk> {
   const accumulator = new ToolCallAccumulator();
+  const generatedSubtasks = [];
 
   for await (const chunk of readSseStream(body)) {
-    const result = JSON.parse(chunk);
-    const choice = result.choices?.[0];
+    const parsedChunk = JSON.parse(chunk);
+    const choice = parsedChunk.choices?.[0];
 
     if (!choice) {
       continue;
@@ -31,7 +33,12 @@ export async function* normalizeDeepSeekStream(
       const result = accumulator.add(toolCall);
 
       if (result.type === 'completed') {
-        yield parseToolCall(result.toolCall);
+        const parsedToolCall = parseToolCall(result.toolCall);
+        if (parsedToolCall.type === 'subtask') {
+          generatedSubtasks.push(parsedToolCall.subtask);
+        }
+
+        yield parsedToolCall;
       }
     }
 
@@ -45,10 +52,22 @@ export async function* normalizeDeepSeekStream(
       const result = accumulator.finish();
 
       if (result.type === 'completed') {
-        yield parseToolCall(result.toolCall);
+        const parsedToolCall = parseToolCall(result.toolCall);
+        if (parsedToolCall.type === 'subtask') {
+          generatedSubtasks.push(parsedToolCall.subtask);
+        }
+
+        yield parsedToolCall;
       }
 
-      yield { type: 'done' };
+      yield {
+        type: 'done',
+        metadata: {
+          model: parsedChunk.model,
+          response: JSON.stringify(generatedSubtasks),
+          usage: normalizeDeepseekUsage(parsedChunk),
+        },
+      };
 
       return;
     }

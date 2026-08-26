@@ -9,7 +9,7 @@ describe('normalizeOllamaResponse', () => {
 
     expect(result.data.subtasks).toHaveLength(3);
     expect(result.aiLogs.model).toBe(mockOllamaResponse.model);
-    expect(result.aiLogs.total_tokens).toBe(
+    expect(result.aiLogs.usage.total_tokens).toBe(
       mockOllamaResponse.prompt_eval_count + mockOllamaResponse.eval_count
     );
   });

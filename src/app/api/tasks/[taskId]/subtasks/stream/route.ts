@@ -5,19 +5,15 @@ import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.reposito
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  let aiLogId: string | null = null;
-
   try {
     const { user } = await getCurrentUser();
 
@@ -39,8 +35,6 @@ export async function POST(
       provider,
     });
 
-    aiLogId = result.aiLogId;
-
     return new Response(result.stream, {
       headers: {
         'Content-Type': 'application/x-ndjson; charset=utf-8',
@@ -50,9 +44,6 @@ export async function POST(
   } catch (err: unknown) {
     const { status, ...error } = normalizeAiError(err);
 
-    if (aiLogId) {
-      await updateAiLog(aiLogId, getFailedAiLogs(error));
-    }
     return NextResponse.json({ error }, { status });
   }
 }

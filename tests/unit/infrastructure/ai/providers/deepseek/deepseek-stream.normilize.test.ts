@@ -13,33 +13,42 @@ describe('normalizeDeepSeekStream', () => {
   it('accumulates a tool call and emits a subtask when complete', async () => {
     const stream = createStream([
       deepSeekEvent({
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 0,
-              id: 'call_0',
-              type: 'function',
-              function: {
-                name: 'create_subtask',
-                arguments: '{"title":"Buy ',
-              },
-            }],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  type: 'function',
+                  function: {
+                    name: 'create_subtask',
+                    arguments: '{"title":"Buy ',
+                  },
+                },
+              ],
+            },
           },
-        }],
+        ],
       }),
       deepSeekEvent({
         model: 'deepseek-v4-flash',
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 0,
-              function: {
-                arguments: 'a phone","description":"Choose a suitable phone"}',
-              },
-            ],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  function: {
+                    arguments:
+                      'a phone","description":"Choose a suitable phone"}',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
           },
-          finish_reason: 'tool_calls',
-        }],
+        ],
         usage: {
           prompt_tokens: 514,
           completion_tokens: 451,
@@ -66,7 +75,8 @@ describe('normalizeDeepSeekStream', () => {
         type: 'done',
         metadata: {
           model: 'deepseek-v4-flash',
-          response: '[{"title":"Buy a phone","description":"Choose a suitable phone"}]',
+          response:
+            '[{"title":"Buy a phone","description":"Choose a suitable phone"}]',
           usage: {
             input_tokens: 514,
             output_tokens: 451,
@@ -98,34 +108,44 @@ describe('normalizeDeepSeekStream', () => {
   it('emits multiple subtasks in tool-call order', async () => {
     const stream = createStream([
       deepSeekEvent({
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 0,
-              id: 'call_0',
-              function: {
-                name: 'create_subtask',
-                arguments: '{"title":"First","description":"First description"}',
-              },
-            }],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"First","description":"First description"}',
+                  },
+                },
+              ],
+            },
           },
-        }],
+        ],
       }),
       deepSeekEvent({
         model: 'deepseek-v4-flash',
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 1,
-              id: 'call_1',
-              function: {
-                name: 'create_subtask',
-                arguments: '{"title":"Second","description":"Second description"}',
-              },
-            }],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 1,
+                  id: 'call_1',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"Second","description":"Second description"}',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
           },
-          finish_reason: 'tool_calls',
-        }],
+        ],
         usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
       }),
     ]);
@@ -145,7 +165,8 @@ describe('normalizeDeepSeekStream', () => {
         type: 'done',
         metadata: expect.objectContaining({
           model: 'deepseek-v4-flash',
-          response: '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
+          response:
+            '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
         }),
       },
     ]);
@@ -154,18 +175,23 @@ describe('normalizeDeepSeekStream', () => {
   it('flushes the current tool call before emitting done', async () => {
     const stream = createStream([
       deepSeekEvent({
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 0,
-              id: 'call_0',
-              function: {
-                name: 'create_subtask',
-                arguments: '{"title":"Buy a phone","description":"Choose a phone"}',
-              },
-            }],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"Buy a phone","description":"Choose a phone"}',
+                  },
+                },
+              ],
+            },
           },
-        }],
+        ],
       }),
       deepSeekEvent({
         model: 'deepseek-v4-flash',
@@ -193,19 +219,23 @@ describe('normalizeDeepSeekStream', () => {
   it('throws when the response is truncated before tool calls complete', async () => {
     const stream = createStream([
       deepSeekEvent({
-        choices: [{
-          delta: {
-            tool_calls: [{
-              index: 0,
-              id: 'call_0',
-              function: {
-                name: 'create_subtask',
-                arguments: '{"title":"Incomplete',
-              },
-            }],
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments: '{"title":"Incomplete',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'length',
           },
-          finish_reason: 'length',
-        }],
+        ],
       }),
     ]);
 

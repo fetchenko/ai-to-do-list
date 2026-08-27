@@ -16,7 +16,9 @@ function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
   });
 }
 
-async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
+async function collectStream(
+  stream: AsyncIterable<unknown>
+): Promise<unknown[]> {
   const result = [];
 
   for await (const chunk of stream) {
@@ -35,17 +37,19 @@ describe('normalizeOllamaStream', () => {
         message: {
           role: 'assistant',
           content: '',
-          tool_calls: [{
-            id: 'call_mmcwou63',
-            function: {
-              index: 0,
-              name: 'create_subtask',
-              arguments: {
-                title: 'Buy groceries',
-                description: 'Buy groceries from the store',
+          tool_calls: [
+            {
+              id: 'call_mmcwou63',
+              function: {
+                index: 0,
+                name: 'create_subtask',
+                arguments: {
+                  title: 'Buy groceries',
+                  description: 'Buy groceries from the store',
+                },
               },
             },
-          }],
+          ],
         },
         done: false,
       },
@@ -74,7 +78,8 @@ describe('normalizeOllamaStream', () => {
         type: 'done',
         metadata: {
           model: 'qwen3:8b',
-          response: '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
+          response:
+            '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
           usage: {
             input_tokens: 143,
             output_tokens: 22,
@@ -110,15 +115,8 @@ describe('normalizeOllamaStream', () => {
         message: { role: 'assistant', content: '' },
         done: true,
         done_reason: 'stop',
-        usage: {
-          prompt_tokens: 514,
-          completion_tokens: 451,
-          total_tokens: 965,
-          prompt_tokens_details: { cached_tokens: 512 },
-          completion_tokens_details: { reasoning_tokens: 73 },
-          prompt_cache_hit_tokens: 512,
-          prompt_cache_miss_tokens: 2,
-        },
+        prompt_eval_count: 514,
+        eval_count: 451,
       },
     ]);
 

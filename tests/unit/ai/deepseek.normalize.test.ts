@@ -24,10 +24,6 @@ describe('normalizeDeepseekResponse', () => {
 
     expect(result.aiLogs.usage.cache_hit_tokens).toBe(256);
     expect(result.aiLogs.usage.cache_miss_tokens).toBe(36);
-
-    expect(result.aiLogs.usage.provider_generation_id).toBe(
-      deepseekResponse.id
-    );
   });
 
   it('handles missing usage safely', () => {

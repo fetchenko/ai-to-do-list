@@ -3,7 +3,7 @@ import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import { aiEnv } from '@/shared/env/ai-env';
@@ -54,7 +54,7 @@ export default class DeepSeekProvider implements AIProvider {
   async *stream(
     prompt: string,
     signal?: AbortSignal
-  ): AsyncIterable<AiStreamChunk> {
+  ): AsyncIterable<AiStreamEvent> {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {

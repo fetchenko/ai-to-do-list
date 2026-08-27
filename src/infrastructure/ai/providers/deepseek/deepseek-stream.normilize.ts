@@ -1,13 +1,13 @@
 import { normalizeDeepseekUsage } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
 export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
-): AsyncIterable<AiStreamChunk> {
+): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
   const generatedSubtasks = [];
 

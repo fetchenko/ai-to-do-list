@@ -57,30 +57,64 @@ export async function streamSubtasksForTask({
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of provider.stream(prompt, signal)) {
-          if (chunk.type === 'subtask') {
-            controller.enqueue(encoder.encode(JSON.stringify(chunk) + '\n'));
-          }
+        for await (const event of provider.stream(prompt, signal)) {
+          switch (event.type) {
+            case 'subtask':
+              controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+              break;
 
-          if (chunk.type === 'done') {
-            if (aiLogId) {
-              await updateAiLog(
-                aiLogId,
-                getSuccessAiLogs(chunk.metadata, chunk.metadata.response)
+            case 'done':
+              if (aiLogId) {
+                await updateAiLog(
+                  aiLogId,
+                  getSuccessAiLogs(event.metadata, event.metadata.response)
+                );
+              }
+
+              controller.enqueue(
+                encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
               );
-            }
+              break;
+
+            case 'error':
+              if (aiLogId) {
+                await updateAiLog(
+                  aiLogId,
+                  getFailedAiLogs(normalizeAiError(event.message))
+                );
+              }
+
+              controller.enqueue(
+                encoder.encode(
+                  JSON.stringify({
+                    type: 'error',
+                    message: event.message,
+                  }) + '\n'
+                )
+              );
+
+              return;
           }
         }
 
         controller.close();
       } catch (err) {
-        const { status, ...error } = normalizeAiError(err);
+        const normalized = normalizeAiError(err);
 
         if (aiLogId) {
-          await updateAiLog(aiLogId, getFailedAiLogs(error));
+          await updateAiLog(aiLogId, getFailedAiLogs(normalized));
         }
 
-        controller.error(err);
+        controller.enqueue(
+          encoder.encode(
+            JSON.stringify({
+              type: 'error',
+              message: normalized.error,
+            }) + '\n'
+          )
+        );
+
+        controller.close();
       } finally {
         await releaseRequestLock(userId);
       }

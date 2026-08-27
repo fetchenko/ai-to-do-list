@@ -7,7 +7,7 @@ import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
-import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { SubtaskStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
   AiEmptyResponseError,
@@ -22,7 +22,7 @@ import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function* streamSubtasks(
   taskId: string
-): AsyncGenerator<AiStreamChunk> {
+): AsyncGenerator<SubtaskStreamEvent> {
   const response = await fetch(API_ROUTES.streamSubtasks(taskId), {
     method: 'POST',
     headers: {

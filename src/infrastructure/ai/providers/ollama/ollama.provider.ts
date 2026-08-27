@@ -3,7 +3,7 @@ import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/olla
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import * as appError from '@/shared/errors/app-error';
@@ -49,7 +49,7 @@ export class OllamaProvider implements AIProvider {
   async *stream(
     prompt: string,
     signal?: AbortSignal
-  ): AsyncIterable<AiStreamChunk> {
+  ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
       headers: {

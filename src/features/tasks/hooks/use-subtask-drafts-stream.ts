@@ -5,7 +5,11 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
+import {
+  AiRequestError,
+  AppError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
@@ -19,16 +23,22 @@ export function useSubtaskDraftsStream(taskId: string) {
       }
 
       for await (const chunk of streamSubtasks(taskId)) {
-        if (chunk.type !== 'subtask') {
-          continue;
+        switch (chunk.type) {
+          case 'subtask':
+            const draft = {
+              ...chunk.subtask,
+              id: crypto.randomUUID(),
+            };
+
+            setDrafts((prev) => [...(prev ?? []), draft]);
+            break;
+
+          case 'done':
+            break;
+
+          case 'error':
+            throw new AiRequestError(chunk.message);
         }
-
-        const draft = {
-          ...chunk.subtask,
-          id: crypto.randomUUID(),
-        };
-
-        setDrafts((prev) => [...(prev ?? []), draft]);
       }
     },
     retry: shouldRetry,

@@ -1,8 +1,8 @@
-import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 
 export async function* readJsonStream(
   body: ReadableStream<Uint8Array>
-): AsyncIterable<AiStreamChunk> {
+): AsyncIterable<SubtaskStreamEvent> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
 

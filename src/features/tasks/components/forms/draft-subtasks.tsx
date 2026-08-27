@@ -100,10 +100,10 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
         aria-label={`AI-generated draft subtasks for ${task.title}`}
         data-testid="draft-subtasks-form"
       >
-        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        {fields.length > 0 && <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
           <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
           <span>AI-generated — tap any field to edit before adding</span>
-        </div>
+        </div>}
         <ul className="space-y-2">
           {fields.map((field, index) => (
             <DraftSubtaskRow

@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSubtaskDraftsStream } from '@/features/tasks/hooks/use-subtask-drafts-stream';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
-import type { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { AiUnavailableError } from '@/shared/errors/app-error';
+import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({
   streamSubtasks: vi.fn(),
@@ -43,7 +43,7 @@ function createWrapper() {
   };
 }
 
-function createStream(chunks: AiStreamChunk[]): AsyncIterable<AiStreamChunk> {
+function createStream(chunks: SubtaskStreamEvent[]): AsyncGenerator<SubtaskStreamEvent> {
   return (async function* () {
     for (const chunk of chunks) {
       yield chunk;
@@ -75,7 +75,6 @@ describe('useSubtaskDraftsStream', () => {
         },
         {
           type: 'done',
-          metadata: {} as never,
         },
       ])
     );

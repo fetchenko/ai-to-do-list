@@ -1,8 +1,17 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import type { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
+import { releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
+import {
+  createAiLog,
+  updateAiLog,
+} from '@/infrastructure/ai/services/ai-log.admin.service';
+import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import {
+  getFailedAiLogs,
+  getSuccessAiLogs,
+} from '@/infrastructure/ai/utils/ai-log.utils';
 
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
   createAiLog: vi.fn(),
@@ -18,10 +27,6 @@ vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
   getSuccessAiLogs: vi.fn(() => ({ status: 'success' })),
   getFailedAiLogs: vi.fn(() => ({ status: 'failed' })),
 }));
-
-import { createAiLog, updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
-import { releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { getFailedAiLogs, getSuccessAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 
 const mockedCreateAiLog = vi.mocked(createAiLog);
 const mockedUpdateAiLog = vi.mocked(updateAiLog);
@@ -44,11 +49,12 @@ async function collectResponse(stream: ReadableStream<Uint8Array>) {
 }
 
 const task = {
+  user_id: 'user-id',
   id: 'task-1',
   title: 'Plan a trip',
 };
 
-function createProvider(chunks: AiStreamChunk[]): AIProvider {
+function createProvider(chunks: AiStreamEvent[]): AIProvider {
   return {
     generate: vi.fn(),
     stream: async function* () {

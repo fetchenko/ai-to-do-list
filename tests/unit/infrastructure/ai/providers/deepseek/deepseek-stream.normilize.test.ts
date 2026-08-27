@@ -123,7 +123,7 @@ describe('normalizeDeepSeekStream', () => {
                 arguments: '{"title":"Second","description":"Second description"}',
               },
             }],
-            },
+          },
           finish_reason: 'tool_calls',
         }],
         usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },

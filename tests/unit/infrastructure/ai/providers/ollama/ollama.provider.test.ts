@@ -17,15 +17,11 @@ function createResponse(chunks: unknown[]): Response {
 
   return new Response(body, {
     status: 200,
-    headers: {
-      'Content-Type': 'application/x-ndjson',
-    },
+    headers: { 'Content-Type': 'application/x-ndjson' },
   });
 }
 
-async function collectStream(
-  stream: AsyncIterable<unknown>
-): Promise<unknown[]> {
+async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
   const result = [];
 
   for await (const chunk of stream) {
@@ -49,29 +45,24 @@ describe('OllamaProvider.stream', () => {
           message: {
             role: 'assistant',
             content: '',
-            tool_calls: [
-              {
-                id: 'call_1',
-                function: {
-                  index: 0,
-                  name: 'create_subtask',
-                  arguments: {
-                    title: 'Buy groceries',
-                    description: 'Buy groceries from the store',
-                  },
+            tool_calls: [{
+              id: 'call_1',
+              function: {
+                index: 0,
+                name: 'create_subtask',
+                arguments: {
+                  title: 'Buy groceries',
+                  description: 'Buy groceries from the store',
                 },
               },
-            ],
+            }],
           },
           done: false,
         },
         {
           model: 'qwen3:8b',
           created_at: '2026-08-25T11:51:01.228512695Z',
-          message: {
-            role: 'assistant',
-            content: '',
-          },
+          message: { role: 'assistant', content: '' },
           done: true,
           done_reason: 'stop',
         },
@@ -79,31 +70,18 @@ describe('OllamaProvider.stream', () => {
     );
 
     const provider = new OllamaProvider();
-
-    const result = await collectStream(
-      provider.stream('Create a grocery subtask')
-    );
+    const result = await collectStream(provider.stream('Create a grocery subtask'));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-
     const [url, options] = fetchMock.mock.calls[0];
 
     expect(url).toBe('http://localhost:11434/api/chat');
-
     expect(options?.method).toBe('POST');
-
-    expect(options?.headers).toEqual({
-      'Content-Type': 'application/json',
-    });
+    expect(options?.headers).toEqual({ 'Content-Type': 'application/json' });
 
     expect(JSON.parse(options?.body as string)).toMatchObject({
       model: 'qwen3:8b',
-      messages: [
-        {
-          role: 'user',
-          content: 'Create a grocery subtask',
-        },
-      ],
+      messages: [{ role: 'user', content: 'Create a grocery subtask' }],
       stream: true,
       think: false,
     });
@@ -120,15 +98,17 @@ describe('OllamaProvider.stream', () => {
       },
       {
         type: 'done',
+        metadata: expect.objectContaining({
+          model: 'qwen3:8b',
+          response: '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
+        }),
       },
     ]);
   });
 
   it('throws when Ollama returns an error', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('Ollama unavailable', {
-        status: 500,
-      })
+      new Response('Ollama unavailable', { status: 500 })
     );
 
     const provider = new OllamaProvider();
@@ -140,9 +120,7 @@ describe('OllamaProvider.stream', () => {
 
   it('throws when Ollama returns no response body', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(null, {
-        status: 200,
-      })
+      new Response(null, { status: 200 })
     );
 
     const provider = new OllamaProvider();

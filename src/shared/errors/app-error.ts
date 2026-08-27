@@ -111,6 +111,17 @@ export class AiUnavailableError extends AppError {
   }
 }
 
+export class AiEmptyResponseError extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_EMPTY_RESPONSE,
+      ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
+      'AI response is empty',
+      details
+    );
+  }
+}
+
 export class AiLockRequestFailedError extends AppError {
   constructor(details: unknown) {
     super(
@@ -128,6 +139,28 @@ export class AiRequestLimitError extends AppError {
       ErrorCode.AI_REQUEST_LIMIT,
       ErrorHttpStatus[ErrorCode.AI_REQUEST_LIMIT],
       'Reached limit of AI requests',
+      details
+    );
+  }
+}
+
+export class AiInvalidResponseFormat extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_INVALID_RESPONSE_FORMAT,
+      ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
+      'Invalid AI response format',
+      details
+    );
+  }
+}
+
+export class AiRequestError extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_REQUEST_ERROR,
+      ErrorHttpStatus[ErrorCode.AI_REQUEST_ERROR],
+      'Failed to request AI',
       details
     );
   }

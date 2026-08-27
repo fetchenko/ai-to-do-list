@@ -10,7 +10,7 @@ export function getInitialAiLog(userId: string, taskId: string) {
   };
 }
 
-export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: string) {
+export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: string | null) {
   return {
     ...aiLogUpdates,
     response: raw,

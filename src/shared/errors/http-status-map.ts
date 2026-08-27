@@ -20,6 +20,7 @@ export const ErrorHttpStatus: Record<ErrorCode, number> = {
   AI_LOCK_ACTIVE: 500,
   AI_LOCK_REQUEST_FAILED: 409,
   AI_REQUEST_LIMIT: 409,
+  AI_REQUEST_ERROR: 400,
 
   NETWORK_ERROR: 503,
 

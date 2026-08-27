@@ -28,9 +28,10 @@ type DraftSubtasksProps = {
   onDiscard: () => void;
 
   loading: boolean;
+  isGenerated: boolean;
 };
 
-export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading }: DraftSubtasksProps) {
+export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading, isGenerated }: DraftSubtasksProps) {
   const formDefaults = useMemo<DraftForm>(
     () => ({
       drafts: normalizeAiTasks(drafts),
@@ -57,18 +58,6 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
     reset(formDefaults);
   }, [formDefaults, reset]);
 
-  if (loading) {
-    return (
-      <div aria-live="polite" className="space-y-2">
-        <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
-          <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-          Generating subtasks…
-        </p>
-        <TasksSkeleton />
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <AiGenerationError
@@ -80,7 +69,7 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
     );
   }
 
-  if (fields.length === 0) {
+  if (fields.length === 0 && loading !== true) {
     return (
       <div aria-live="polite" className="space-y-2">
         <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
@@ -127,21 +116,31 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
           ))}
         </ul>
 
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onDiscard}
-            disabled={isSaving}
-          >
-            Discard
-          </Button>
-          <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
-            {isSaving
-              ? 'Adding…'
-              : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
-          </Button>
-        </div>
+        {loading && <div aria-live="polite" className="space-y-2">
+          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+            Generating…
+          </p>
+          <TasksSkeleton />
+        </div>}
+
+        {isGenerated && (
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onDiscard}
+              disabled={isSaving}
+            >
+              Discard
+            </Button>
+            <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
+              {isSaving
+                ? 'Adding…'
+                : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );

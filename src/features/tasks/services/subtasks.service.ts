@@ -6,12 +6,40 @@ import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
+import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
+import { AiStreamChunk } from '@/infrastructure/ai/types/ai-stream.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { AppError } from '@/shared/errors/app-error';
+import {
+  AiEmptyResponseError,
+  AiInvalidResponseFormat,
+  AiRequestError,
+  AppError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
+
+export async function* streamSubtasks(
+  taskId: string
+): AsyncGenerator<AiStreamChunk> {
+  const response = await fetch(API_ROUTES.streamSubtasks(taskId), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new AiRequestError('Request failed');
+  }
+
+  if (!response.body) {
+    throw new AiEmptyResponseError('Response body is missing');
+  }
+
+  yield* readJsonStream(response.body);
+}
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
@@ -33,16 +61,10 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
 
   if (!success) {
-    throw new AppError(
-      ErrorCode.AI_INVALID_RESPONSE_FORMAT,
-      ErrorHttpStatus[ErrorCode.AI_INVALID_RESPONSE_FORMAT],
-      'Invalid AI response format'
-    );
+    throw new AiInvalidResponseFormat('Invalid AI response format');
   }
   if (!parsed.subtasks?.length) {
-    throw new AppError(
-      ErrorCode.AI_EMPTY_RESPONSE,
-      ErrorHttpStatus[ErrorCode.AI_EMPTY_RESPONSE],
+    throw new AiEmptyResponseError(
       'No meaningful subtasks could be generated.'
     );
   }
@@ -66,26 +88,17 @@ export async function saveSubtasks(
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
-    const {
-      data: parsedSubtask,
-      success,
-      error,
-    } = taskSchema.safeParse(subtask);
+    const result = taskSchema.safeParse(subtask);
 
-    if (!success) {
-      throw new AppError(
-        ErrorCode.INVALID_REQUEST,
-        ErrorHttpStatus[ErrorCode.INVALID_REQUEST],
-        'Each subtask must have a valid title',
-        z.treeifyError(error)
-      );
+    if (!result.success) {
+      throw new ValidationRequestError(z.treeifyError(result.error));
     }
 
     const next = generateKeyBetween(prev, null);
     prev = next;
 
     return mapTaskInsertToDb({
-      ...parsedSubtask,
+      ...result.data,
       position: next,
       parentTaskId,
     });

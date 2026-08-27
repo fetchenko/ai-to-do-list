@@ -16,16 +16,18 @@ describe('normalizeDeepseekResponse', () => {
 
     expect(result.aiLogs.model).toBe('deepseek-v4-flash');
 
-    expect(result.aiLogs.input_tokens).toBe(292);
-    expect(result.aiLogs.output_tokens).toBe(387);
-    expect(result.aiLogs.total_tokens).toBe(679);
+    expect(result.aiLogs.usage.input_tokens).toBe(292);
+    expect(result.aiLogs.usage.output_tokens).toBe(387);
+    expect(result.aiLogs.usage.total_tokens).toBe(679);
 
-    expect(result.aiLogs.reasoning_tokens).toBe(257);
+    expect(result.aiLogs.usage.reasoning_tokens).toBe(257);
 
-    expect(result.aiLogs.cache_hit_tokens).toBe(256);
-    expect(result.aiLogs.cache_miss_tokens).toBe(36);
+    expect(result.aiLogs.usage.cache_hit_tokens).toBe(256);
+    expect(result.aiLogs.usage.cache_miss_tokens).toBe(36);
 
-    expect(result.aiLogs.provider_generation_id).toBe(deepseekResponse.id);
+    expect(result.aiLogs.usage.provider_generation_id).toBe(
+      deepseekResponse.id
+    );
   });
 
   it('handles missing usage safely', () => {
@@ -41,8 +43,8 @@ describe('normalizeDeepseekResponse', () => {
 
     const result = normalizeDeepseekResponse(input as any);
 
-    expect(result.aiLogs.input_tokens).toBe(0);
-    expect(result.aiLogs.output_tokens).toBe(0);
+    expect(result.aiLogs.usage.input_tokens).toBe(0);
+    expect(result.aiLogs.usage.output_tokens).toBe(0);
   });
 
   it('throws on invalid JSON content', () => {

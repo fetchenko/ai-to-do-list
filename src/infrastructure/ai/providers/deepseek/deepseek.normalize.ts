@@ -1,40 +1,41 @@
-import { DeepSeekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import {
+  DeepSeekResponse,
+  DeepSeekUsage,
+} from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
+import {
+  AiGenerationMetadata,
   AiGenerationUsage,
-  AiLogs,
   NormilizedAiResponse,
 } from '@/infrastructure/ai/types/ai.types';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function normalizeDeepseekUsage(
-  response: DeepSeekResponse
+  usage?: DeepSeekUsage
 ): AiGenerationUsage {
-  const choice = response.choices?.[0];
-
   return {
-    input_tokens: response.usage?.prompt_tokens ?? 0,
-    output_tokens: response.usage?.completion_tokens ?? 0,
-    total_tokens: response.usage?.total_tokens ?? 0,
+    inputTokens: usage?.prompt_tokens ?? null,
+    outputTokens: usage?.completion_tokens ?? null,
+    totalTokens: usage?.total_tokens ?? null,
 
-    finish_reason: choice?.finish_reason ?? null,
+    reasoningTokens: usage?.completion_tokens_details?.reasoning_tokens ?? null,
 
-    reasoning_tokens:
-      response.usage?.completion_tokens_details?.reasoning_tokens ?? 0,
+    cacheHitTokens: usage?.prompt_cache_hit_tokens ?? null,
 
-    cache_hit_tokens: response.usage?.prompt_cache_hit_tokens ?? 0,
-
-    cache_miss_tokens: response.usage?.prompt_cache_miss_tokens ?? 0,
+    cacheMissTokens: usage?.prompt_cache_miss_tokens ?? null,
   };
 }
 
-export function normalizeDeepseekMetadata(response: DeepSeekResponse): AiLogs {
+export function normalizeDeepseekMetadata(
+  response: DeepSeekResponse
+): AiGenerationMetadata {
   const choice = response.choices?.[0];
 
   return {
     model: response.model ?? null,
     response: choice?.message?.content ?? null,
+    finishReason: choice?.finish_reason ?? null,
 
-    usage: normalizeDeepseekUsage(response),
+    usage: normalizeDeepseekUsage(response.usage),
   };
 }
 
@@ -46,6 +47,6 @@ export function normalizeDeepseekResponse(
   return {
     data: subtasksResponseSchema.parse(JSON.parse(choice.message.content)),
 
-    aiLogs: normalizeDeepseekMetadata(response),
+    metadata: normalizeDeepseekMetadata(response),
   };
 }

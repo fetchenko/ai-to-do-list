@@ -1,33 +1,12 @@
 import { normalizeOllamaUsage } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
-import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
+import {
+  OllamaResponse,
+  OllamaStreamChunk,
+} from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
-
-type OllamaStreamChunk = {
-  model: string;
-  created_at: string;
-  message?: {
-    role: string;
-    content?: string;
-    tool_calls?: Array<{
-      id?: string;
-      function: {
-        index?: number;
-        name: string;
-        arguments: Record<string, unknown>;
-      };
-    }>;
-  };
-  done: boolean;
-  done_reason?: string;
-  total_duration?: number;
-  load_duration?: number;
-  prompt_eval_count?: number;
-  prompt_eval_duration?: number;
-  eval_count?: number;
-  eval_duration?: number;
-};
+import { AiGenerationError } from '@/shared/errors/app-error';
 
 export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>
@@ -44,6 +23,10 @@ export async function* normalizeOllamaStream(
         type: 'content',
         content: message.content,
       };
+    }
+
+    if (chunk.error) {
+      throw new AiGenerationError(`Ollama stream error: ${chunk.error}`);
     }
 
     for (const toolCall of message?.tool_calls ?? []) {
@@ -69,6 +52,7 @@ export async function* normalizeOllamaStream(
         metadata: {
           model: metadata.model,
           response: JSON.stringify(generatedSubtasks),
+          finishReason: metadata.done_reason,
           usage: normalizeOllamaUsage(metadata),
         },
       };

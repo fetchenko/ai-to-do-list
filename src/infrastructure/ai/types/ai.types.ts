@@ -4,28 +4,27 @@ import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
 
 export type AiGenerationUsage = {
-  input_tokens: number;
-  output_tokens: number;
-  total_tokens: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
 
-  finish_reason?: string | null;
-  provider_generation_id?: string | null;
-
-  reasoning_tokens?: number | null;
-  cache_hit_tokens?: number | null;
-  cache_miss_tokens?: number | null;
-  duration_ms?: number | null;
+  reasoningTokens?: number | null;
+  cacheHitTokens?: number | null;
+  cacheMissTokens?: number | null;
+  durationMs?: number | null;
 };
 
-export type AiLogs = {
+export type AiGenerationMetadata = {
   model: string | null;
   response: string | null;
+  finishReason?: string | null;
+  providerGenerationId?: string | null;
   usage: AiGenerationUsage;
 };
 
 export type NormilizedAiResponse = {
   data: SubtasksResponse;
-  aiLogs: AiLogs;
+  metadata: AiGenerationMetadata;
 };
 export interface AiErrorResult {
   success: false;

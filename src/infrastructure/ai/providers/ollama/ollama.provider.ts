@@ -6,7 +6,11 @@ import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
-import * as appError from '@/shared/errors/app-error';
+import {
+  AiEmptyResponseError,
+  AiUnavailableError,
+  ResponseFormatError,
+} from '@/shared/errors/app-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 const OLLAMA_URL = 'http://localhost:11434';
@@ -37,7 +41,7 @@ export class OllamaProvider implements AIProvider {
       ollamaChatResponseSchema.safeParse(parsedResponse);
 
     if (!success) {
-      throw new appError.ResponseFormatError('Invalid format of AI response');
+      throw new ResponseFormatError('Invalid format of AI response');
     }
 
     return {
@@ -73,11 +77,11 @@ export class OllamaProvider implements AIProvider {
     if (!response.ok) {
       const body = await response.text();
 
-      throw new appError.AiUnavailableError(body);
+      throw new AiUnavailableError(body);
     }
 
     if (!response.body) {
-      throw new appError.AiEmptyResponseError('Ollama response has no body');
+      throw new AiEmptyResponseError('Ollama response has no body');
     }
 
     yield* normalizeOllamaStream(response.body);

@@ -75,15 +75,15 @@ describe('streamSubtasksForTask', () => {
     const metadata = {
       model: 'deepseek-v4-flash',
       response: '[{"title":"Book hotel"}]',
+      finishReason: 'tool_calls',
       usage: {
-        input_tokens: 10,
-        output_tokens: 20,
-        total_tokens: 30,
-        finish_reason: 'tool_calls',
-        reasoning_tokens: 0,
-        cache_hit_tokens: 0,
-        cache_miss_tokens: 0,
-        duration_ms: null,
+        inputTokens: 10,
+        outputTokens: 20,
+        totalTokens: 30,
+        reasoningTokens: 0,
+        cacheHitTokens: 0,
+        cacheMissTokens: 0,
+        durationMs: null,
       },
     };
 
@@ -106,7 +106,7 @@ describe('streamSubtasksForTask', () => {
 
     expect(aiLogId).toBe('log-1');
     expect(await collectResponse(stream)).toBe(
-      '{"type":"subtask","subtask":{"title":"Book hotel"}}\n'
+      '{"type":"subtask","subtask":{"title":"Book hotel"}}\n{"type":"done"}\n'
     );
 
     expect(mockedGetSuccessAiLogs).toHaveBeenCalledWith(
@@ -126,15 +126,16 @@ describe('streamSubtasksForTask', () => {
         metadata: {
           model: 'ollama',
           response: '[]',
+          finishReason: 'stop',
+
           usage: {
-            input_tokens: 1,
-            output_tokens: 2,
-            total_tokens: 3,
-            finish_reason: 'stop',
-            reasoning_tokens: 0,
-            cache_hit_tokens: 0,
-            cache_miss_tokens: 0,
-            duration_ms: null,
+            inputTokens: 1,
+            outputTokens: 2,
+            totalTokens: 3,
+            reasoningTokens: 0,
+            cacheHitTokens: 0,
+            cacheMissTokens: 0,
+            durationMs: null,
           },
         },
       },
@@ -146,7 +147,7 @@ describe('streamSubtasksForTask', () => {
       provider,
     });
 
-    expect(await collectResponse(stream)).toBe('');
+    expect(await collectResponse(stream)).toBe('{"type":"done"}\n');
   });
 
   it('records a failed generation and releases the lock when the provider fails', async () => {
@@ -183,15 +184,15 @@ describe('streamSubtasksForTask', () => {
         metadata: {
           model: 'deepseek-v4-flash',
           response: '[]',
+          finishReason: 'tool_calls',
           usage: {
-            input_tokens: 1,
-            output_tokens: 1,
-            total_tokens: 2,
-            finish_reason: 'tool_calls',
-            reasoning_tokens: 0,
-            cache_hit_tokens: 0,
-            cache_miss_tokens: 0,
-            duration_ms: null,
+            inputTokens: 1,
+            outputTokens: 1,
+            totalTokens: 2,
+            reasoningTokens: 0,
+            cacheHitTokens: 0,
+            cacheMissTokens: 0,
+            durationMs: null,
           },
         },
       },

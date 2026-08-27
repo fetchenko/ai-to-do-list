@@ -1,4 +1,5 @@
 import { normalizeDeepseekUsage } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
+import { DeepSeekStreamChunk } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
@@ -12,7 +13,7 @@ export async function* normalizeDeepSeekStream(
   const generatedSubtasks = [];
 
   for await (const chunk of readSseStream(body)) {
-    const parsedChunk = JSON.parse(chunk);
+    const parsedChunk = JSON.parse(chunk) as DeepSeekStreamChunk;
     const choice = parsedChunk.choices?.[0];
 
     if (!choice) {
@@ -48,6 +49,18 @@ export async function* normalizeDeepSeekStream(
       );
     }
 
+    if (finishReason === 'content_filter') {
+      throw new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of its content filter'
+      );
+    }
+
+    if (finishReason === 'insufficient_system_resource') {
+      throw new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of insufficient system resources'
+      );
+    }
+
     if (finishReason === 'tool_calls') {
       const result = accumulator.finish();
 
@@ -65,7 +78,8 @@ export async function* normalizeDeepSeekStream(
         metadata: {
           model: parsedChunk.model,
           response: JSON.stringify(generatedSubtasks),
-          usage: normalizeDeepseekUsage(parsedChunk),
+          finishReason: choice?.finish_reason ?? null,
+          usage: normalizeDeepseekUsage(parsedChunk.usage),
         },
       };
 

@@ -29,10 +29,10 @@ export async function generateSubtasksForTask({
 
   const prompt = taskDecomposerPrompt(task.title);
 
-  const { data, aiLogs, raw } = await provider.generate(prompt, signal);
+  const { data, metadata, raw } = await provider.generate(prompt, signal);
 
   if (aiLogId) {
-    await updateAiLog(aiLogId, getSuccessAiLogs(aiLogs, raw));
+    await updateAiLog(aiLogId, getSuccessAiLogs(metadata, raw));
   }
 
   return { data, aiLogId };
@@ -58,63 +58,31 @@ export async function streamSubtasksForTask({
     async start(controller) {
       try {
         for await (const event of provider.stream(prompt, signal)) {
-          switch (event.type) {
-            case 'subtask':
-              controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
-              break;
+          if (event.type === 'subtask') {
+            controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+          }
 
-            case 'done':
-              if (aiLogId) {
-                await updateAiLog(
-                  aiLogId,
-                  getSuccessAiLogs(event.metadata, event.metadata.response)
-                );
-              }
-
-              controller.enqueue(
-                encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
+          if (event.type === 'done') {
+            if (aiLogId) {
+              await updateAiLog(
+                aiLogId,
+                getSuccessAiLogs(event.metadata, event.metadata.response)
               );
-              break;
+            }
 
-            case 'error':
-              if (aiLogId) {
-                await updateAiLog(
-                  aiLogId,
-                  getFailedAiLogs(normalizeAiError(event.message))
-                );
-              }
-
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: 'error',
-                    message: event.message,
-                  }) + '\n'
-                )
-              );
-
-              return;
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
+            );
           }
         }
 
         controller.close();
-      } catch (err) {
-        const normalized = normalizeAiError(err);
-
+      } catch (error) {
         if (aiLogId) {
-          await updateAiLog(aiLogId, getFailedAiLogs(normalized));
+          await updateAiLog(aiLogId, getFailedAiLogs(normalizeAiError(error)));
         }
 
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({
-              type: 'error',
-              message: normalized.error,
-            }) + '\n'
-          )
-        );
-
-        controller.close();
+        controller.error(error);
       } finally {
         await releaseRequestLock(userId);
       }

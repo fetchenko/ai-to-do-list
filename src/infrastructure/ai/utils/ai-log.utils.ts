@@ -1,4 +1,7 @@
-import { AiErrorResult, AiLogs } from '@/infrastructure/ai/types/ai.types';
+import {
+  AiErrorResult,
+  AiGenerationMetadata,
+} from '@/infrastructure/ai/types/ai.types';
 
 export function getInitialAiLog(userId: string, taskId: string) {
   return {
@@ -10,10 +13,26 @@ export function getInitialAiLog(userId: string, taskId: string) {
   };
 }
 
-export function getSuccessAiLogs(aiLogUpdates: AiLogs, raw: string | null) {
+export function getSuccessAiLogs(
+  metadataUpdates: AiGenerationMetadata,
+  raw: string | null
+) {
+  const { model, finishReason, providerGenerationId, usage } = metadataUpdates;
+
   return {
-    ...aiLogUpdates,
+    model,
     response: raw,
+    finish_reason: finishReason,
+    provider_generation_id: providerGenerationId,
+
+    input_tokens: usage.inputTokens,
+    output_tokens: usage.outputTokens,
+    total_tokens: usage.totalTokens,
+    reasoning_tokens: usage.reasoningTokens,
+    cache_hit_tokens: usage.cacheHitTokens,
+    cache_miss_tokens: usage.cacheMissTokens,
+    duration_ms: usage.durationMs,
+
     status: 'success',
     finished_at: new Date().toISOString(),
   };

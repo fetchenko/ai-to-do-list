@@ -1,7 +1,7 @@
 import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import {
+  AiGenerationMetadata,
   AiGenerationUsage,
-  AiLogs,
   NormilizedAiResponse,
 } from '@/infrastructure/ai/types/ai.types';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
@@ -11,14 +11,17 @@ export function normalizeOllamaResponse(
 ): NormilizedAiResponse {
   return {
     data: subtasksResponseSchema.parse(JSON.parse(response.response)),
-    aiLogs: normalizeOllamaMetadata(response),
+    metadata: normalizeOllamaMetadata(response),
   };
 }
 
-export function normalizeOllamaMetadata(response: OllamaResponse): AiLogs {
+export function normalizeOllamaMetadata(
+  response: OllamaResponse
+): AiGenerationMetadata {
   return {
     model: response.model ?? null,
     response: response.response ?? null,
+    finishReason: response.done_reason,
     usage: normalizeOllamaUsage(response),
   };
 }
@@ -27,18 +30,15 @@ export function normalizeOllamaUsage(
   response: OllamaResponse
 ): AiGenerationUsage {
   return {
-    input_tokens: response.prompt_eval_count ?? 0,
-    output_tokens: response.eval_count ?? 0,
-    total_tokens:
-      (response.prompt_eval_count ?? 0) + (response.eval_count ?? 0),
+    inputTokens: response.prompt_eval_count ?? 0,
+    outputTokens: response.eval_count ?? 0,
+    totalTokens: (response.prompt_eval_count ?? 0) + (response.eval_count ?? 0),
 
-    finish_reason: response.done_reason,
+    reasoningTokens: 0,
+    cacheHitTokens: 0,
+    cacheMissTokens: 0,
 
-    reasoning_tokens: 0,
-    cache_hit_tokens: 0,
-    cache_miss_tokens: 0,
-
-    duration_ms: response.total_duration
+    durationMs: response.total_duration
       ? Math.round(response.total_duration / 1_000_000)
       : null,
   };

@@ -5,9 +5,9 @@ import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
+import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
-import { SubtaskStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
   AiEmptyResponseError,

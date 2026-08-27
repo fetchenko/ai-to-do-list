@@ -8,7 +8,7 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     return {
       success: false,
       code: ErrorCode.AI_TIMEOUT,
-      error: 'AI request timed out',
+      message: 'AI request timed out',
       status: ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
     };
   }
@@ -18,6 +18,7 @@ export function normalizeAiError(err: unknown): AiErrorResult {
       success: false,
       status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
       code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
+      message: err.message ?? 'AI generation failed',
     };
   }
 
@@ -25,5 +26,6 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     success: false,
     status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
     code: ErrorCode.AI_GENERATION_FAILED,
+    message: err instanceof Error ? err.message : 'AI generation failed',
   };
 }

@@ -166,9 +166,33 @@ describe('streamSubtasksForTask', () => {
     });
 
     const reader = stream.getReader();
-    await expect(reader.read()).rejects.toThrow('provider failed');
+    const decoder = new TextDecoder();
 
-    expect(mockedGetFailedAiLogs).toHaveBeenCalled();
+    const first = await reader.read();
+
+    expect(first.done).toBe(false);
+    const event = JSON.parse(decoder.decode(first.value));
+
+    expect(event).toEqual({
+      type: 'error',
+      error: {
+        success: false,
+        status: 502,
+        code: 'AI_GENERATION_FAILED',
+        message: 'provider failed',
+      },
+    });
+
+    const end = await reader.read();
+
+    expect(end.done).toBe(true);
+
+    expect(mockedGetFailedAiLogs).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: 'AI_GENERATION_FAILED',
+        message: 'provider failed',
+      })
+    );
     expect(mockedUpdateAiLog).toHaveBeenCalledWith('log-1', {
       status: 'failed',
     });
@@ -204,7 +228,9 @@ describe('streamSubtasksForTask', () => {
       provider,
     });
 
-    await expect(collectResponse(stream)).rejects.toThrow('logging failed');
+    const response = await collectResponse(stream);
+
+    expect(response).toBe('{"type":"done"}\n');
     expect(mockedReleaseRequestLock).toHaveBeenCalledWith('user-1');
   });
 });

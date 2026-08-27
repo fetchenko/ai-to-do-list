@@ -5,7 +5,11 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
+import {
+  AiGenerationError,
+  AppError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
@@ -31,6 +35,9 @@ export function useSubtaskDraftsStream(taskId: string) {
 
           case 'done':
             break;
+
+          case 'error':
+            throw new AiGenerationError(chunk.error);
         }
       }
     },

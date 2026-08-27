@@ -64,12 +64,15 @@ export async function streamSubtasksForTask({
 
           if (event.type === 'done') {
             if (aiLogId) {
-              await updateAiLog(
-                aiLogId,
-                getSuccessAiLogs(event.metadata, event.metadata.response)
-              );
+              try {
+                await updateAiLog(
+                  aiLogId,
+                  getSuccessAiLogs(event.metadata, event.metadata.response)
+                );
+              } catch {
+                // Logging failure must not fail an otherwise successful generation.
+              }
             }
-
             controller.enqueue(
               encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
             );
@@ -78,11 +81,19 @@ export async function streamSubtasksForTask({
 
         controller.close();
       } catch (error) {
-        if (aiLogId) {
-          await updateAiLog(aiLogId, getFailedAiLogs(normalizeAiError(error)));
-        }
+        const normalizedError = normalizeAiError(error);
 
-        controller.error(error);
+        controller.enqueue(
+          encoder.encode(
+            JSON.stringify({ type: 'error', error: normalizedError }) + '\n'
+          )
+        );
+
+        controller.close();
+
+        if (aiLogId) {
+          await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
+        }
       } finally {
         await releaseRequestLock(userId);
       }

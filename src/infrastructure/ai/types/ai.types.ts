@@ -30,5 +30,5 @@ export interface AiErrorResult {
   success: false;
   code: ErrorCode;
   status: number;
-  error?: string;
+  message?: string;
 }

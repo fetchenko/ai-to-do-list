@@ -16,18 +16,14 @@ export async function* normalizeOllamaStream(
 ): AsyncIterable<AiStreamEvent> {
   const generatedSubtasks = [];
 
-  let streamCompleted = true;
+  let streamCompleted = false;
 
   for await (const rawChunk of readJsonStream(body)) {
     const chunk = rawChunk as OllamaStreamChunk;
-
     const message = chunk.message;
 
     if (message?.content) {
-      yield {
-        type: 'content',
-        content: message.content,
-      };
+      yield { type: 'content', content: message.content };
     }
 
     if (chunk.error) {
@@ -51,7 +47,6 @@ export async function* normalizeOllamaStream(
 
     if (chunk.done) {
       const metadata = chunk as OllamaResponse;
-
       streamCompleted = true;
 
       yield {

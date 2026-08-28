@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
-import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { AiGenerationError, AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
 function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -124,47 +124,14 @@ describe('normalizeOllamaStream', () => {
     ]);
   });
 
-  it('emits a completion for an empty result', async () => {
+  it('throws an AI generation error when Ollama reports a stream error', async () => {
     const body = createStream([
-      {
-        model: 'qwen3:8b',
-        message: { role: 'assistant', content: '' },
-        done: false,
-      },
-      {
-        model: 'qwen3:8b',
-        message: { role: 'assistant', content: '' },
-        done: true,
-        done_reason: 'stop',
-      },
+      { error: 'model is unavailable', done: false },
     ]);
 
-    await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      {
-        type: 'done',
-        metadata: expect.objectContaining({
-          model: 'qwen3:8b',
-          response: '[]',
-        }),
-      },
-    ]);
-  });
-
-  it('handles a response without a message when the stream completes', async () => {
-    const body = createStream([
-      { model: 'qwen3:8b', done: true, done_reason: 'stop' },
-    ]);
-
-    await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      {
-        type: 'done',
-        metadata: expect.objectContaining({
-          model: 'qwen3:8b',
-          response: '[]',
-          finishReason: 'stop',
-        }),
-      },
-    ]);
+    await expect(collectStream(normalizeOllamaStream(body))).rejects.toEqual(
+      new AiGenerationError('Ollama stream error: model is unavailable')
+    );
   });
 
   it('throws when the stream ends without a completion chunk', async () => {

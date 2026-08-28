@@ -16,7 +16,9 @@ function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
   });
 }
 
-async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
+async function collectStream(
+  stream: AsyncIterable<unknown>
+): Promise<unknown[]> {
   const result = [];
   for await (const chunk of stream) result.push(chunk);
   return result;
@@ -25,52 +27,153 @@ async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]>
 describe('normalizeOllamaStream', () => {
   it('normalizes a tool call and completion', async () => {
     const body = createStream([
-      { model: 'qwen3:8b', message: { role: 'assistant', content: '', tool_calls: [{ id: 'call_0', function: { index: 0, name: 'create_subtask', arguments: { title: 'Buy groceries', description: 'Buy groceries from the store' } } }] }, done: false },
-      { model: 'qwen3:8b', message: { role: 'assistant', content: '' }, done: true, done_reason: 'stop', prompt_eval_count: 143, eval_count: 22 },
+      {
+        model: 'qwen3:8b',
+        message: {
+          role: 'assistant',
+          content: '',
+          tool_calls: [
+            {
+              id: 'call_0',
+              function: {
+                index: 0,
+                name: 'create_subtask',
+                arguments: {
+                  title: 'Buy groceries',
+                  description: 'Buy groceries from the store',
+                },
+              },
+            },
+          ],
+        },
+        done: false,
+      },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: '' },
+        done: true,
+        done_reason: 'stop',
+        prompt_eval_count: 143,
+        eval_count: 22,
+      },
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      { type: 'subtask', subtask: { title: 'Buy groceries', description: 'Buy groceries from the store' } },
-      { type: 'done', metadata: expect.objectContaining({ model: 'qwen3:8b', response: '[{"title":"Buy groceries","description":"Buy groceries from the store"}]', finishReason: 'stop', usage: expect.objectContaining({ inputTokens: 143, outputTokens: 22, totalTokens: 165 }) }) },
+      {
+        type: 'subtask',
+        subtask: {
+          title: 'Buy groceries',
+          description: 'Buy groceries from the store',
+        },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: 'qwen3:8b',
+          response:
+            '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
+          finishReason: 'stop',
+          usage: expect.objectContaining({
+            inputTokens: 143,
+            outputTokens: 22,
+            totalTokens: 165,
+          }),
+        }),
+      },
     ]);
   });
 
   it('normalizes streamed content and completion metadata', async () => {
     const body = createStream([
-      { model: 'qwen3:8b', message: { role: 'assistant', content: 'Hello' }, done: false },
-      { model: 'qwen3:8b', message: { role: 'assistant', content: ' world' }, done: false },
-      { model: 'qwen3:8b', message: { role: 'assistant', content: '' }, done: true, done_reason: 'stop', prompt_eval_count: 514, eval_count: 451 },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: 'Hello' },
+        done: false,
+      },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: ' world' },
+        done: false,
+      },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: '' },
+        done: true,
+        done_reason: 'stop',
+        prompt_eval_count: 514,
+        eval_count: 451,
+      },
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
       { type: 'content', content: 'Hello' },
       { type: 'content', content: ' world' },
-      { type: 'done', metadata: expect.objectContaining({ model: 'qwen3:8b', response: '[]', finishReason: 'stop', usage: expect.objectContaining({ inputTokens: 514, outputTokens: 451, totalTokens: 965 }) }) },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: 'qwen3:8b',
+          response: '[]',
+          finishReason: 'stop',
+          usage: expect.objectContaining({
+            inputTokens: 514,
+            outputTokens: 451,
+            totalTokens: 965,
+          }),
+        }),
+      },
     ]);
   });
 
   it('emits a completion for an empty result', async () => {
     const body = createStream([
-      { model: 'qwen3:8b', message: { role: 'assistant', content: '' }, done: false },
-      { model: 'qwen3:8b', message: { role: 'assistant', content: '' }, done: true, done_reason: 'stop' },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: '' },
+        done: false,
+      },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: '' },
+        done: true,
+        done_reason: 'stop',
+      },
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      { type: 'done', metadata: expect.objectContaining({ model: 'qwen3:8b', response: '[]' }) },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: 'qwen3:8b',
+          response: '[]',
+        }),
+      },
     ]);
   });
 
   it('handles a response without a message when the stream completes', async () => {
-    const body = createStream([{ model: 'qwen3:8b', done: true, done_reason: 'stop' }]);
+    const body = createStream([
+      { model: 'qwen3:8b', done: true, done_reason: 'stop' },
+    ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      { type: 'done', metadata: expect.objectContaining({ model: 'qwen3:8b', response: '[]', finishReason: 'stop' }) },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: 'qwen3:8b',
+          response: '[]',
+          finishReason: 'stop',
+        }),
+      },
     ]);
   });
 
   it('throws when the stream ends without a completion chunk', async () => {
     const body = createStream([
-      { model: 'qwen3:8b', message: { role: 'assistant', content: 'partial' }, done: false },
+      {
+        model: 'qwen3:8b',
+        message: { role: 'assistant', content: 'partial' },
+        done: false,
+      },
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).rejects.toEqual(

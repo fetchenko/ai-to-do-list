@@ -21,7 +21,9 @@ function createResponse(chunks: unknown[]): Response {
   });
 }
 
-async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
+async function collectStream(
+  stream: AsyncIterable<unknown>
+): Promise<unknown[]> {
   const result = [];
 
   for await (const chunk of stream) {
@@ -45,17 +47,19 @@ describe('OllamaProvider.stream', () => {
           message: {
             role: 'assistant',
             content: '',
-            tool_calls: [{
-              id: 'call_1',
-              function: {
-                index: 0,
-                name: 'create_subtask',
-                arguments: {
-                  title: 'Buy groceries',
-                  description: 'Buy groceries from the store',
+            tool_calls: [
+              {
+                id: 'call_1',
+                function: {
+                  index: 0,
+                  name: 'create_subtask',
+                  arguments: {
+                    title: 'Buy groceries',
+                    description: 'Buy groceries from the store',
+                  },
                 },
               },
-            }],
+            ],
           },
           done: false,
         },
@@ -70,7 +74,9 @@ describe('OllamaProvider.stream', () => {
     );
 
     const provider = new OllamaProvider();
-    const result = await collectStream(provider.stream('Create a grocery subtask'));
+    const result = await collectStream(
+      provider.stream('Create a grocery subtask')
+    );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
@@ -100,7 +106,8 @@ describe('OllamaProvider.stream', () => {
         type: 'done',
         metadata: expect.objectContaining({
           model: 'qwen3:8b',
-          response: '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
+          response:
+            '[{"title":"Buy groceries","description":"Buy groceries from the store"}]',
         }),
       },
     ]);

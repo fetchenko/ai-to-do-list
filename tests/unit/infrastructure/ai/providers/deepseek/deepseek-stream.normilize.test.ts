@@ -12,16 +12,83 @@ function deepSeekEvent(data: unknown): string {
 describe('normalizeDeepSeekStream', () => {
   it('accumulates a tool call and emits a subtask when complete', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_0', type: 'function', function: { name: 'create_subtask', arguments: '{"title":"Buy ' } }] } }] }),
-      deepSeekEvent({ model: 'deepseek-v4-flash', choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: 'a phone","description":"Choose a suitable phone"}' } }] }, finish_reason: 'tool_calls' }], usage: { prompt_tokens: 514, completion_tokens: 451, total_tokens: 965, prompt_tokens_details: { cached_tokens: 512 }, completion_tokens_details: { reasoning_tokens: 73 }, prompt_cache_hit_tokens: 512, prompt_cache_miss_tokens: 2 } }),
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  type: 'function',
+                  function: {
+                    name: 'create_subtask',
+                    arguments: '{"title":"Buy ',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      deepSeekEvent({
+        model: 'deepseek-v4-flash',
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  function: {
+                    arguments:
+                      'a phone","description":"Choose a suitable phone"}',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
+          },
+        ],
+        usage: {
+          prompt_tokens: 514,
+          completion_tokens: 451,
+          total_tokens: 965,
+          prompt_tokens_details: { cached_tokens: 512 },
+          completion_tokens_details: { reasoning_tokens: 73 },
+          prompt_cache_hit_tokens: 512,
+          prompt_cache_miss_tokens: 2,
+        },
+      }),
       'data: [DONE]\n\n',
     ]);
 
     const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
-      { type: 'subtask', subtask: { title: 'Buy a phone', description: 'Choose a suitable phone' } },
-      { type: 'done', metadata: { model: 'deepseek-v4-flash', response: '[{"title":"Buy a phone","description":"Choose a suitable phone"}]', finishReason: 'tool_calls', usage: { inputTokens: 514, outputTokens: 451, totalTokens: 965, reasoningTokens: 73, cacheHitTokens: 512, cacheMissTokens: 2 } } },
+      {
+        type: 'subtask',
+        subtask: {
+          title: 'Buy a phone',
+          description: 'Choose a suitable phone',
+        },
+      },
+      {
+        type: 'done',
+        metadata: {
+          model: 'deepseek-v4-flash',
+          response:
+            '[{"title":"Buy a phone","description":"Choose a suitable phone"}]',
+          finishReason: 'tool_calls',
+          usage: {
+            inputTokens: 514,
+            outputTokens: 451,
+            totalTokens: 965,
+            reasoningTokens: 73,
+            cacheHitTokens: 512,
+            cacheMissTokens: 2,
+          },
+        },
+      },
     ]);
   });
 
@@ -40,42 +107,142 @@ describe('normalizeDeepSeekStream', () => {
 
   it('emits multiple subtasks in tool-call order', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_0', function: { name: 'create_subtask', arguments: '{"title":"First","description":"First description"}' } }] } }] }),
-      deepSeekEvent({ choices: [{ delta: { tool_calls: [{ index: 1, id: 'call_1', function: { name: 'create_subtask', arguments: '{"title":"Second","description":"Second description"}' } }] }, finish_reason: 'tool_calls' }], usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 } }),
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"First","description":"First description"}',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 1,
+                  id: 'call_1',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"Second","description":"Second description"}',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
+          },
+        ],
+        usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
+      }),
       'data: [DONE]\n\n',
     ]);
 
     const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
-      { type: 'subtask', subtask: { title: 'First', description: 'First description' } },
-      { type: 'subtask', subtask: { title: 'Second', description: 'Second description' } },
-      { type: 'done', metadata: expect.objectContaining({ model: undefined, response: '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]' }) },
+      {
+        type: 'subtask',
+        subtask: { title: 'First', description: 'First description' },
+      },
+      {
+        type: 'subtask',
+        subtask: { title: 'Second', description: 'Second description' },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: undefined,
+          response:
+            '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
+        }),
+      },
     ]);
   });
 
   it('flushes the current tool call before emitting done', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_0', function: { name: 'create_subtask', arguments: '{"title":"Buy a phone","description":"Choose a phone"}' } }] } }] }),
-      deepSeekEvent({ model: 'deepseek-v4-flash', choices: [{ delta: {}, finish_reason: 'tool_calls' }] }),
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments:
+                      '{"title":"Buy a phone","description":"Choose a phone"}',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      deepSeekEvent({
+        model: 'deepseek-v4-flash',
+        choices: [{ delta: {}, finish_reason: 'tool_calls' }],
+      }),
       'data: [DONE]\n\n',
     ]);
 
     const result = await collect(normalizeDeepSeekStream(stream));
 
     expect(result).toEqual([
-      { type: 'subtask', subtask: { title: 'Buy a phone', description: 'Choose a phone' } },
-      { type: 'done', metadata: expect.objectContaining({ response: '[{"title":"Buy a phone","description":"Choose a phone"}]' }) },
+      {
+        type: 'subtask',
+        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          response: '[{"title":"Buy a phone","description":"Choose a phone"}]',
+        }),
+      },
     ]);
   });
 
   it('throws when the response is truncated before tool calls complete', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_0', function: { name: 'create_subtask', arguments: '{"title":"Incomplete' } }] } }, finish_reason: 'length' }] }),
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  index: 0,
+                  id: 'call_0',
+                  function: {
+                    name: 'create_subtask',
+                    arguments: '{"title":"Incomplete',
+                  },
+                },
+              ],
+            },
+            finish_reason: 'length',
+          },
+        ],
+      }),
     ]);
 
     await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
-      new AiInvalidResponseFormat('DeepSeek response was truncated before completing tool calls')
+      new AiInvalidResponseFormat(
+        'DeepSeek response was truncated before completing tool calls'
+      )
     );
   });
 

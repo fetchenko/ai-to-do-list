@@ -14,10 +14,13 @@ export async function* normalizeDeepSeekStream(
   const accumulator = new ToolCallAccumulator();
   const generatedSubtasks = [];
 
-  let streamCompleted = true;
+  let streamCompleted = false;
 
   for await (const chunk of readSseStream(body)) {
-    if (chunk === DEEPSEEK_STREAM_FINISHED) break;
+    if (chunk === DEEPSEEK_STREAM_FINISHED) {
+      streamCompleted = true;
+      break;
+    }
 
     const parsedChunk = JSON.parse(chunk) as DeepSeekStreamChunk;
     const choice = parsedChunk.choices?.[0];

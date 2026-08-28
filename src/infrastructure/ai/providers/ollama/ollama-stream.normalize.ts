@@ -6,12 +6,17 @@ import {
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
-import { AiGenerationError } from '@/shared/errors/app-error';
+import {
+  AiGenerationError,
+  AiInvalidResponseFormat,
+} from '@/shared/errors/app-error';
 
 export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
   const generatedSubtasks = [];
+
+  let streamCompleted = true;
 
   for await (const rawChunk of readJsonStream(body)) {
     const chunk = rawChunk as OllamaStreamChunk;
@@ -47,6 +52,8 @@ export async function* normalizeOllamaStream(
     if (chunk.done) {
       const metadata = chunk as OllamaResponse;
 
+      streamCompleted = true;
+
       yield {
         type: 'done',
         metadata: {
@@ -56,8 +63,10 @@ export async function* normalizeOllamaStream(
           usage: normalizeOllamaUsage(metadata),
         },
       };
-
-      return;
     }
+  }
+
+  if (!streamCompleted) {
+    throw new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly');
   }
 }

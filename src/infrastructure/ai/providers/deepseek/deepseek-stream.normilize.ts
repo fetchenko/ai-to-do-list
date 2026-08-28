@@ -12,6 +12,8 @@ export async function* normalizeDeepSeekStream(
   const accumulator = new ToolCallAccumulator();
   const generatedSubtasks = [];
 
+  let streamCompleted = true;
+
   for await (const chunk of readSseStream(body)) {
     const parsedChunk = JSON.parse(chunk) as DeepSeekStreamChunk;
     const choice = parsedChunk.choices?.[0];
@@ -63,6 +65,7 @@ export async function* normalizeDeepSeekStream(
 
     if (finishReason === 'tool_calls') {
       const result = accumulator.finish();
+      streamCompleted = true;
 
       if (result.type === 'completed') {
         const parsedToolCall = parseToolCall(result.toolCall);
@@ -82,8 +85,10 @@ export async function* normalizeDeepSeekStream(
           usage: normalizeDeepseekUsage(parsedChunk.usage),
         },
       };
-
-      return;
     }
+  }
+
+  if (!streamCompleted) {
+    throw new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly');
   }
 }

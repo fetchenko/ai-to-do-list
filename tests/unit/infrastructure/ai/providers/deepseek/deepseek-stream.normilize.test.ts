@@ -246,6 +246,44 @@ describe('normalizeDeepSeekStream', () => {
     );
   });
 
+  it('throws when DeepSeek stops because of the content filter', async () => {
+    const stream = createStream([
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {},
+            finish_reason: 'content_filter',
+          },
+        ],
+      }),
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of its content filter'
+      )
+    );
+  });
+
+  it('throws when DeepSeek stops because of insufficient system resources', async () => {
+    const stream = createStream([
+      deepSeekEvent({
+        choices: [
+          {
+            delta: {},
+            finish_reason: 'insufficient_system_resource',
+          },
+        ],
+      }),
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of insufficient system resources'
+      )
+    );
+  });
+
   it('throws when the stream ends without [DONE] or tool_calls finish reason', async () => {
     const stream = createStream([
       deepSeekEvent({ choices: [{ delta: { content: 'partial response' } }] }),

@@ -91,8 +91,12 @@ export async function streamSubtasksForTask({
 
         controller.close();
 
-        if (aiLogId) {
-          await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
+        try {
+          if (aiLogId) {
+            await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
+          }
+        } catch {
+          // Logging failure must not fail an otherwise successful generation.
         }
       } finally {
         await releaseRequestLock(userId);

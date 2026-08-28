@@ -1,5 +1,5 @@
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normilize';
+import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';

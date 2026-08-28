@@ -67,6 +67,6 @@ export async function* normalizeOllamaStream(
   }
 
   if (!streamCompleted) {
-    throw new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly');
+    throw new AiInvalidResponseFormat('Ollama stream ended unexpectedly');
   }
 }

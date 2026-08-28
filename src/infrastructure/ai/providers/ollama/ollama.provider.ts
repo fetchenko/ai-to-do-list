@@ -5,7 +5,6 @@ import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/o
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { getErrorDetails } from '@/infrastructure/ai/utils/ai-error.utils';
 import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
 import {
   AiEmptyResponseError,
@@ -55,40 +54,36 @@ export class OllamaProvider implements AIProvider {
     prompt: string,
     signal?: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
-    try {
-      const response = await fetch(`${OLLAMA_URL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal,
-        body: JSON.stringify({
-          model: OLLAMA_MODEL,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          tools: [createSubtaskTool],
-          stream: true,
-          think: false,
-        }),
-      });
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal,
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        tools: [createSubtaskTool],
+        stream: true,
+        think: false,
+      }),
+    });
 
-      if (!response.ok) {
-        const body = await response.text();
+    if (!response.ok) {
+      const body = await response.text();
 
-        throw new AiUnavailableError(body);
-      }
-
-      if (!response.body) {
-        throw new AiEmptyResponseError('Ollama response has no body');
-      }
-
-      yield* normalizeOllamaStream(response.body);
-    } catch (error: unknown) {
-      throw new AiUnavailableError(getErrorDetails(error));
+      throw new AiUnavailableError(body);
     }
+
+    if (!response.body) {
+      throw new AiEmptyResponseError('Ollama response has no body');
+    }
+
+    yield* normalizeOllamaStream(response.body);
   }
 }

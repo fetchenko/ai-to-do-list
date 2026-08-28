@@ -13,6 +13,15 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     };
   }
 
+  if (err instanceof TypeError) {
+    return {
+      success: false,
+      status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
+      code: ErrorCode.AI_GENERATION_FAILED,
+      message: err.message ?? 'AI generation failed',
+    };
+  }
+
   if (err instanceof AppError) {
     return {
       success: false,
@@ -29,14 +38,4 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     code: ErrorCode.AI_GENERATION_FAILED,
     message: err instanceof Error ? err.message : 'AI generation failed',
   };
-}
-
-export function getErrorDetails(error: unknown) {
-  if (error instanceof TypeError) {
-    return {
-      message: error.message,
-    };
-  }
-
-  return undefined;
 }

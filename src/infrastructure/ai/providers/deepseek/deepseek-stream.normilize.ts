@@ -6,6 +6,8 @@ import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
+const DEEPSEEK_STREAM_FINISHED = '[DONE]';
+
 export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
@@ -15,6 +17,8 @@ export async function* normalizeDeepSeekStream(
   let streamCompleted = true;
 
   for await (const chunk of readSseStream(body)) {
+    if (chunk === DEEPSEEK_STREAM_FINISHED) break;
+
     const parsedChunk = JSON.parse(chunk) as DeepSeekStreamChunk;
     const choice = parsedChunk.choices?.[0];
 

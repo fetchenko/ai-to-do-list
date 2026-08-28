@@ -9,7 +9,9 @@ function createResponse(body: string): Response {
   });
 }
 
-async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
+async function collectStream(
+  stream: AsyncIterable<unknown>
+): Promise<unknown[]> {
   const result = [];
 
   for await (const chunk of stream) {
@@ -25,11 +27,13 @@ describe('DeepSeekProvider.stream', () => {
   });
 
   it('sends the expected streaming request to DeepSeek', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      createResponse(
-        'data: {"model":"deepseek-v4-flash","choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n\ndata: [DONE]\n\n'
-      )
-    );
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        createResponse(
+          'data: {"model":"deepseek-v4-flash","choices":[{"delta":{},"finish_reason":"tool_calls"}]}\n\ndata: [DONE]\n\n'
+        )
+      );
 
     const provider = new DeepSeekProvider();
     await collectStream(provider.stream('Create subtasks'));

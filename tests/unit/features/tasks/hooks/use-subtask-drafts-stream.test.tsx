@@ -5,262 +5,137 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSubtaskDraftsStream } from '@/features/tasks/hooks/use-subtask-drafts-stream';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
-import { AiUnavailableError } from '@/shared/errors/app-error';
-import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
+import type { AiTask } from '@/features/tasks/types/tasks.types';
+import type { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
+import { AiUnavailableError, ValidationRequestError } from '@/shared/errors/app-error';
 
-vi.mock('@/features/tasks/services/subtasks.service', () => ({
-  streamSubtasks: vi.fn(),
-}));
-
-vi.mock('@/shared/react-query/ai-retry', () => ({
-  shouldRetry: () => false,
-  retryDelay: () => 0,
-}));
-
-vi.mock('sonner', () => ({
-  toast: {
-    info: vi.fn(),
-  },
-}));
+vi.mock('@/features/tasks/services/subtasks.service', () => ({ streamSubtasks: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { info: vi.fn() } }));
 
 const mockedStreamSubtasks = vi.mocked(streamSubtasks);
 
 function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      mutations: {
-        retry: false,
-      },
-    },
-  });
-
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 }
 
 function createStream(chunks: SubtaskStreamEvent[]): AsyncGenerator<SubtaskStreamEvent> {
   return (async function* () {
-    for (const chunk of chunks) {
-      yield chunk;
-    }
+    for (const chunk of chunks) yield chunk;
   })();
 }
 
 describe('useSubtaskDraftsStream', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => vi.clearAllMocks());
 
-  it('appends streamed subtasks and marks generation complete after the stream ends', async () => {
-    mockedStreamSubtasks.mockReturnValue(
-      createStream([
-        {
-          type: 'subtask',
-          subtask: {
-            title: 'Research phones',
-            description: 'Compare available options',
-          },
-        },
-        {
-          type: 'subtask',
-          subtask: {
-            title: 'Compare prices',
-            description: 'Check several retailers',
-          },
-        },
-        {
-          type: 'done',
-        },
-      ])
-    );
+  it('streams every subtask to onSubtask and stores drafts', async () => {
+    mockedStreamSubtasks.mockReturnValue(createStream([
+      { type: 'subtask', subtask: { title: 'Research phones', description: 'Compare options' } },
+      { type: 'subtask', subtask: { title: 'Compare prices' } },
+      { type: 'done' },
+    ]));
+    const onSubtask = vi.fn<(draft: AiTask) => void>();
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
 
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1'), {
-      wrapper: createWrapper(),
-    });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.drafts).toHaveLength(2));
 
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.drafts).toEqual([
-        expect.objectContaining({
-          title: 'Research phones',
-          description: 'Compare available options',
-        }),
-        expect.objectContaining({
-          title: 'Compare prices',
-          description: 'Check several retailers',
-        }),
-      ]);
-    });
-
-    await waitFor(() => {
-      expect(result.current.isGenerating).toBe(false);
-      expect(result.current.isGenerated).toBe(true);
-      expect(result.current.error).toBeNull();
-    });
-
+    expect(onSubtask).toHaveBeenCalledTimes(2);
+    expect(onSubtask).toHaveBeenNthCalledWith(1, expect.objectContaining({ title: 'Research phones', id: expect.any(String) }));
+    expect(onSubtask).toHaveBeenNthCalledWith(2, expect.objectContaining({ title: 'Compare prices', id: expect.any(String) }));
+    expect(result.current.isGenerating).toBe(false);
+    expect(result.current.error).toBeNull();
     expect(mockedStreamSubtasks).toHaveBeenCalledWith('task-1');
   });
 
-  it('remains generating while the stream is pending', async () => {
+  it('stays pending until the stream resolves', async () => {
     let resolve!: () => void;
+    mockedStreamSubtasks.mockReturnValue((async function* () {
+      await new Promise<void>((r) => { resolve = r; });
+      yield { type: 'subtask', subtask: { title: 'Draft' } };
+    })());
+    const onSubtask = vi.fn();
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
 
-    mockedStreamSubtasks.mockReturnValue(
-      (async function* () {
-        await new Promise<void>((r) => {
-          resolve = r;
-        });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.isGenerating).toBe(true));
+    expect(result.current.drafts).toEqual([]);
 
-        yield {
-          type: 'subtask',
-          subtask: { title: 'Draft' },
-        };
-      })()
-    );
-
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1'), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.isGenerating).toBe(true);
-      expect(result.current.isGenerated).toBe(false);
-    });
-
-    await act(async () => {
-      resolve();
-    });
-
-    await waitFor(() => {
-      expect(result.current.isGenerating).toBe(false);
-      expect(result.current.isGenerated).toBe(true);
-      expect(result.current.drafts).toHaveLength(1);
-    });
+    await act(async () => resolve());
+    await waitFor(() => expect(result.current.isGenerating).toBe(false));
+    expect(result.current.drafts).toHaveLength(1);
+    expect(onSubtask).toHaveBeenCalledTimes(1);
   });
 
-  it('clears drafts and resets mutation state on discard', async () => {
-    mockedStreamSubtasks.mockReturnValue(
-      createStream([
-        {
-          type: 'subtask',
-          subtask: { title: 'Draft' },
-        },
-      ])
-    );
-
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1'), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.isGenerated).toBe(true);
-    });
-
-    act(() => {
-      result.current.discard();
-    });
-
-    expect(result.current.drafts).toBeNull();
-    expect(result.current.error).toBeNull();
-    expect(result.current.isGenerated).toBe(false);
-  });
-
-  it('clears previous drafts before starting a new generation', async () => {
+  it('clears previous drafts when generation starts again', async () => {
     mockedStreamSubtasks
-      .mockReturnValueOnce(
-        createStream([
-          {
-            type: 'subtask',
-            subtask: { title: 'First draft' },
-          },
-        ])
-      )
-      .mockReturnValueOnce(
-        createStream([
-          {
-            type: 'subtask',
-            subtask: { title: 'Second draft' },
-          },
-        ])
-      );
+      .mockReturnValueOnce(createStream([{ type: 'subtask', subtask: { title: 'First' } }]))
+      .mockReturnValueOnce(createStream([{ type: 'subtask', subtask: { title: 'Second' } }]));
+    const onSubtask = vi.fn();
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
 
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1'), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.drafts).toEqual([
-        expect.objectContaining({ title: 'First draft' }),
-      ]);
-    });
-
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.drafts).toEqual([
-        expect.objectContaining({ title: 'Second draft' }),
-      ]);
-    });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.drafts).toEqual([expect.objectContaining({ title: 'First' })]));
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.drafts).toEqual([expect.objectContaining({ title: 'Second' })]));
   });
 
-  it('stores the stream error and clears drafts when generation fails', async () => {
+  it('clears drafts and resets state on discard', async () => {
+    mockedStreamSubtasks.mockReturnValue(createStream([{ type: 'subtask', subtask: { title: 'Draft' } }]));
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.drafts).toHaveLength(1));
+
+    act(() => result.current.discard());
+    expect(result.current.drafts).toEqual([]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.isGenerating).toBe(false);
+  });
+
+  it('handles thrown stream errors', async () => {
     const error = new AiUnavailableError('AI failed');
-    mockedStreamSubtasks.mockImplementation(() => {
-      return (async function* () {
-        throw error;
-      })();
-    });
+    mockedStreamSubtasks.mockImplementation(() => (async function* () { throw error; })());
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
+    act(() => result.current.generate());
 
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1'), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.generate();
-    });
-
-    await waitFor(() => {
-      expect(result.current.error).toEqual(error);
-      expect(result.current.drafts).toBeNull();
-      expect(result.current.isGenerating).toBe(false);
-      expect(result.current.isGenerated).toBe(false);
-    });
+    await waitFor(() => expect(result.current.error).toEqual(error));
+    expect(result.current.drafts).toEqual([]);
+    expect(result.current.isGenerating).toBe(false);
   });
 
-  it('does not call the service when task id is missing', async () => {
-    const { result } = renderHook(() => useSubtaskDraftsStream(''), {
-      wrapper: createWrapper(),
-    });
+  it('converts an error event to AppError', async () => {
+    mockedStreamSubtasks.mockReturnValue(createStream([{
+      type: 'error', error: { success: false, status: 503, code: 'AI_UNAVAILABLE', message: 'AI unavailable' },
+    }]));
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
+    act(() => result.current.generate());
 
-    act(() => {
-      result.current.generate();
-    });
+    await waitFor(() => expect(result.current.error).toEqual(new AiUnavailableError('AI unavailable')));
+    expect(result.current.drafts).toEqual([]);
+  });
 
-    await waitFor(() => {
-      expect(result.current.error).not.toBeNull();
-    });
+  it('retries after an error and receives new drafts', async () => {
+    const error = new AiUnavailableError('AI failed');
+    mockedStreamSubtasks
+      .mockImplementationOnce(() => (async function* () { throw error; })())
+      .mockReturnValueOnce(createStream([{ type: 'subtask', subtask: { title: 'Recovered' } }, { type: 'done' }]));
+    const onSubtask = vi.fn();
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
 
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.error).toEqual(error));
+    act(() => result.current.retry());
+    await waitFor(() => expect(result.current.drafts).toEqual([expect.objectContaining({ title: 'Recovered' })]));
+    expect(mockedStreamSubtasks).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not call the service for a missing task id', async () => {
+    const { result } = renderHook(() => useSubtaskDraftsStream('', vi.fn()), { wrapper: createWrapper() });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.error).toEqual(new ValidationRequestError('Missing task id')));
     expect(mockedStreamSubtasks).not.toHaveBeenCalled();
+    expect(result.current.drafts).toEqual([]);
   });
 });

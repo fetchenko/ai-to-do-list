@@ -52,7 +52,7 @@ export class OllamaProvider implements AIProvider {
 
   async *stream(
     prompt: string,
-    signal?: AbortSignal
+    signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',

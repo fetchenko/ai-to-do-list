@@ -59,18 +59,16 @@ const subtask: Task = {
 };
 
 describe('TaskItem', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => vi.clearAllMocks());
 
-  it('always renders DraftSubtasks for the task', () => {
+  it('renders DraftSubtasks for every task without owning generation state', () => {
     render(<TaskItem task={task} subtasks={[subtask]} />);
 
     expect(screen.getByTestId('draft-subtasks')).toHaveTextContent('Drafts for task-1');
     expect(screen.getByTestId('subtask-list')).toHaveTextContent('Plan a trip: 1');
   });
 
-  it('passes the base task actions to the task row', async () => {
+  it('passes the task actions to TaskRow', async () => {
     const user = userEvent.setup();
     render(<TaskItem task={task} subtasks={[]} />);
 
@@ -81,6 +79,13 @@ describe('TaskItem', () => {
     expect(mockActions[1].onSelect).toHaveBeenCalledTimes(1);
   });
 
+  it('uses base task actions rather than the former generation-aware task actions', async () => {
+    const { useBaseTaskActions } = await import('@/features/tasks/hooks/use-base-task-actions');
+    render(<TaskItem task={task} subtasks={[]} />);
+
+    expect(vi.mocked(useBaseTaskActions)).toHaveBeenCalledWith(task);
+  });
+
   it('passes the create-task action to AddTaskForm', async () => {
     const user = userEvent.setup();
     render(<TaskItem task={task} subtasks={[]} />);
@@ -89,11 +94,16 @@ describe('TaskItem', () => {
     expect(mockCreateTask).toHaveBeenCalledWith({ title: 'New subtask' });
   });
 
-  it('renders the task identity and keeps generated drafts scoped to the task', () => {
+  it('passes the current task to DraftSubtasks', () => {
+    render(<TaskItem task={task} subtasks={[]} />);
+    expect(screen.getByTestId('draft-subtasks')).toHaveTextContent('task-1');
+  });
+
+  it('keeps generated-draft UI isolated from the task actions', () => {
     render(<TaskItem task={task} subtasks={[]} />);
 
-    const item = screen.getByTestId('task-item');
-    expect(item).toHaveAttribute('data-task-id', 'task-1');
-    expect(screen.getByRole('heading', { name: 'Plan a trip' })).toBeInTheDocument();
+    expect(screen.getByTestId('draft-subtasks')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit task' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete task' })).toBeInTheDocument();
   });
 });

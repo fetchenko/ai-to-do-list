@@ -87,17 +87,17 @@ describe('DraftSubtasks', () => {
     renderComponent();
 
     expect(
-      screen.getByRole('button', { name: 'Generate Subtasks' })
+      screen.getByRole('button', { name: 'Generate Subtask' })
     ).toBeInTheDocument();
     expect(screen.queryByTestId('accept-draft-subtasks')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
   });
 
-  it('calls generate when Generate Subtasks is clicked', async () => {
+  it('calls generate when Generate Subtask is clicked', async () => {
     const user = userEvent.setup();
     renderComponent();
 
-    await user.click(screen.getByRole('button', { name: 'Generate Subtasks' }));
+    await user.click(screen.getByRole('button', { name: 'Generate Subtask' }));
 
     expect(mockGenerate).toHaveBeenCalledTimes(1);
   });
@@ -108,7 +108,7 @@ describe('DraftSubtasks', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Generating…');
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
-    expect(screen.queryByRole('button', { name: 'Generate Subtasks' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Generate Subtask' })).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

@@ -1,5 +1,8 @@
 import { normalizeDeepseekUsage } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
-import { DeepSeekStreamChunk } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
+import {
+  deepSeekStreamChunkSchema,
+  DeepSeekStreamChunk,
+} from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
@@ -7,6 +10,43 @@ import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
+
+function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(rawChunk);
+  } catch {
+    throw new AiInvalidResponseFormat('DeepSeek returned invalid JSON');
+  }
+
+  const result = deepSeekStreamChunkSchema.safeParse(parsed);
+
+  if (!result.success) {
+    throw new AiInvalidResponseFormat(
+      'DeepSeek returned an invalid stream chunk'
+    );
+  }
+
+  return result.data;
+}
+
+function handleCompletedToolCall(
+  result: ReturnType<ToolCallAccumulator['add']>,
+  generatedSubtasks: DeepSeekStreamChunk[]
+): AiStreamEvent | null {
+  if (result.type !== 'completed') {
+    return null;
+  }
+
+  const parsedToolCall = parseToolCall(result.toolCall);
+
+  if (parsedToolCall.type === 'subtask') {
+    generatedSubtasks.push(parsedToolCall.subtask as unknown as DeepSeekStreamChunk);
+  }
+
+  return parsedToolCall;
+}
 
 export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
@@ -22,73 +62,56 @@ export async function* normalizeDeepSeekStream(
       break;
     }
 
-    const parsedChunk = JSON.parse(chunk) as DeepSeekStreamChunk;
-    const choice = parsedChunk.choices?.[0];
+    const parsedChunk = parseDeepSeekStreamChunk(chunk);
+    const choice = parsedChunk.choices[0];
 
     if (!choice) {
       continue;
     }
 
-    const delta = choice.delta;
-    const finishReason = choice.finish_reason;
-
-    if (delta?.content) {
-      yield {
-        type: 'content',
-        content: delta.content,
-      };
-    }
-
-    for (const toolCall of delta?.tool_calls ?? []) {
+    for (const toolCall of choice.delta.tool_calls ?? []) {
       const result = accumulator.add(toolCall);
+      const parsedToolCall = handleCompletedToolCall(result, generatedSubtasks);
 
-      if (result.type === 'completed') {
-        const parsedToolCall = parseToolCall(result.toolCall);
-        if (parsedToolCall.type === 'subtask') {
-          generatedSubtasks.push(parsedToolCall.subtask);
-        }
-
+      if (parsedToolCall) {
         yield parsedToolCall;
       }
     }
 
-    if (finishReason === 'length') {
+    if (choice.finish_reason === 'length') {
       throw new AiInvalidResponseFormat(
         'DeepSeek response was truncated before completing tool calls'
       );
     }
 
-    if (finishReason === 'content_filter') {
+    if (choice.finish_reason === 'content_filter') {
       throw new AiInvalidResponseFormat(
         'DeepSeek stopped the response because of its content filter'
       );
     }
 
-    if (finishReason === 'insufficient_system_resource') {
+    if (choice.finish_reason === 'insufficient_system_resource') {
       throw new AiInvalidResponseFormat(
         'DeepSeek stopped the response because of insufficient system resources'
       );
     }
 
-    if (finishReason === 'tool_calls') {
+    if (choice.finish_reason === 'tool_calls') {
       const result = accumulator.finish();
-      streamCompleted = true;
+      const parsedToolCall = handleCompletedToolCall(result, generatedSubtasks);
 
-      if (result.type === 'completed') {
-        const parsedToolCall = parseToolCall(result.toolCall);
-        if (parsedToolCall.type === 'subtask') {
-          generatedSubtasks.push(parsedToolCall.subtask);
-        }
-
+      if (parsedToolCall) {
         yield parsedToolCall;
       }
+
+      streamCompleted = true;
 
       yield {
         type: 'done',
         metadata: {
           model: parsedChunk.model,
           response: JSON.stringify(generatedSubtasks),
-          finishReason: choice?.finish_reason ?? null,
+          finishReason: choice.finish_reason,
           usage: normalizeDeepseekUsage(parsedChunk.usage),
         },
       };

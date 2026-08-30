@@ -3,16 +3,9 @@ import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decompose
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import {
-  createAiLog,
-  updateAiLog,
-} from '@/infrastructure/ai/services/ai-log.admin.service';
+import { createAiLog, updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import {
-  getInitialAiLog,
-  getSuccessAiLogs,
-} from '@/infrastructure/ai/utils/ai-log.utils';
-import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
+import { getFailedAiLogs, getInitialAiLog, getSuccessAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 
 export async function generateSubtasksForTask({
   task,
@@ -26,9 +19,7 @@ export async function generateSubtasksForTask({
   provider: AIProvider;
 }) {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
-
   const prompt = taskDecomposerPrompt(task.title);
-
   const { data, metadata, raw } = await provider.generate(prompt, signal);
 
   if (aiLogId) {
@@ -42,15 +33,14 @@ export async function streamSubtasksForTask({
   task,
   userId,
   provider,
+  signal,
 }: {
   task: TaskPreview;
   userId: string;
   provider: AIProvider;
+  signal: AbortSignal;
 }) {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
-
-  const signal = AbortSignal.timeout(600_000);
-
   const encoder = new TextEncoder();
   const prompt = taskDecomposerStreamPrompt(task.title);
 
@@ -58,6 +48,8 @@ export async function streamSubtasksForTask({
     async start(controller) {
       try {
         for await (const event of provider.stream(prompt, signal)) {
+          if (signal.aborted) return;
+
           if (event.type === 'subtask') {
             controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
           }
@@ -73,14 +65,17 @@ export async function streamSubtasksForTask({
                 // Logging failure must not fail an otherwise successful generation.
               }
             }
+
             controller.enqueue(
               encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
             );
           }
         }
 
-        controller.close();
+        if (!signal.aborted) controller.close();
       } catch (error) {
+        if (signal.aborted) return;
+
         const normalizedError = normalizeAiError(error);
 
         controller.enqueue(
@@ -88,7 +83,6 @@ export async function streamSubtasksForTask({
             JSON.stringify({ type: 'error', error: normalizedError }) + '\n'
           )
         );
-
         controller.close();
 
         try {

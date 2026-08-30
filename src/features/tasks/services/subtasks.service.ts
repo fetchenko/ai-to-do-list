@@ -9,31 +9,24 @@ import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
 import { createClient } from '@/infrastructure/supabase/client';
-import {
-  AiEmptyResponseError,
-  AiInvalidResponseFormat,
-  AppError,
-  ValidationRequestError,
-} from '@/shared/errors/app-error';
+import { AiEmptyResponseError, AiInvalidResponseFormat, AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function* streamSubtasks(
-  taskId: string
+  taskId: string,
+  signal?: AbortSignal
 ): AsyncGenerator<SubtaskStreamEvent> {
   const response = await fetch(API_ROUTES.streamSubtasks(taskId), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    signal,
   });
 
   if (!response.ok) {
     const text = await response.text();
-    const {
-      error: { code, status, message, details },
-    } = JSON.parse(text);
+    const { error: { code, status, message, details } } = JSON.parse(text);
     throw new AppError(code, status, message, details);
   }
 
@@ -45,9 +38,7 @@ export async function* streamSubtasks(
 }
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
-  const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
-    method: 'POST',
-  });
+  const res = await fetch(API_ROUTES.generateSubtasks(taskId), { method: 'POST' });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -60,58 +51,32 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   }
 
   const { data } = await res.json();
-
   const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
 
-  if (!success) {
-    throw new AiInvalidResponseFormat('Invalid AI response format');
-  }
+  if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
-      'No meaningful subtasks could be generated.'
-    );
+    throw new AiEmptyResponseError('No meaningful subtasks could be generated.');
   }
 
-  const subtasks = parsed.subtasks.map((subtask) => ({
-    ...subtask,
-    id: crypto.randomUUID(),
-  }));
-
-  return subtasks;
+  return parsed.subtasks.map((subtask) => ({ ...subtask, id: crypto.randomUUID() }));
 }
 
-export async function saveSubtasks(
-  parentTaskId: string,
-  subtasks: TaskInsert[]
-) {
+export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
   const supabase = createClient();
-
   const lastPosition = await getLastPosition(parentTaskId);
-
   let prev = lastPosition ?? null;
 
   const rows = subtasks.map(({ id, ...subtask }) => {
     const result = taskSchema.safeParse(subtask);
-
-    if (!result.success) {
-      throw new ValidationRequestError(z.treeifyError(result.error));
-    }
+    if (!result.success) throw new ValidationRequestError(z.treeifyError(result.error));
 
     const next = generateKeyBetween(prev, null);
     prev = next;
 
-    return mapTaskInsertToDb({
-      ...result.data,
-      position: next,
-      parentTaskId,
-    });
+    return mapTaskInsertToDb({ ...result.data, position: next, parentTaskId });
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-
-  if (error) {
-    throw fromSupabaseError(error);
-  }
-
+  if (error) throw fromSupabaseError(error);
   return data;
 }

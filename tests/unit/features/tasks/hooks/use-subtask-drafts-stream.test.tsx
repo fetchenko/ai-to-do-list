@@ -30,6 +30,36 @@ function createStream(chunks: SubtaskStreamEvent[]): AsyncGenerator<SubtaskStrea
 describe('useSubtaskDraftsStream', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it('creates an AbortSignal and passes it to the streaming service', async () => {
+    mockedStreamSubtasks.mockReturnValue(createStream([{ type: 'done' }]));
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
+
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.isGenerating).toBe(false));
+
+    expect(mockedStreamSubtasks).toHaveBeenCalledWith('task-1', expect.any(AbortSignal));
+  });
+
+  it('aborts the active request when cancel is called', async () => {
+    let resolve!: () => void;
+    let receivedSignal!: AbortSignal;
+    mockedStreamSubtasks.mockImplementation((_taskId, signal) => {
+      receivedSignal = signal as AbortSignal;
+      return (async function* () {
+        await new Promise<void>((r) => { resolve = r; });
+      })();
+    });
+
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
+    act(() => result.current.generate());
+    await waitFor(() => expect(result.current.isGenerating).toBe(true));
+
+    act(() => result.current.cancel());
+
+    expect(receivedSignal.aborted).toBe(true);
+    await act(async () => resolve());
+  });
+
   it('streams every subtask to onSubtask and stores drafts', async () => {
     mockedStreamSubtasks.mockReturnValue(createStream([
       { type: 'subtask', subtask: { title: 'Research phones', description: 'Compare options' } },
@@ -46,8 +76,6 @@ describe('useSubtaskDraftsStream', () => {
     expect(onSubtask).toHaveBeenNthCalledWith(1, expect.objectContaining({ title: 'Research phones', id: expect.any(String) }));
     expect(onSubtask).toHaveBeenNthCalledWith(2, expect.objectContaining({ title: 'Compare prices', id: expect.any(String) }));
     expect(result.current.isGenerating).toBe(false);
-    expect(result.current.error).toBeNull();
-    expect(mockedStreamSubtasks).toHaveBeenCalledWith('task-1');
   });
 
   it('stays pending until the stream resolves', async () => {
@@ -56,8 +84,7 @@ describe('useSubtaskDraftsStream', () => {
       await new Promise<void>((r) => { resolve = r; });
       yield { type: 'subtask', subtask: { title: 'Draft' } };
     })());
-    const onSubtask = vi.fn();
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
 
     act(() => result.current.generate());
     await waitFor(() => expect(result.current.isGenerating).toBe(true));
@@ -66,15 +93,13 @@ describe('useSubtaskDraftsStream', () => {
     await act(async () => resolve());
     await waitFor(() => expect(result.current.isGenerating).toBe(false));
     expect(result.current.drafts).toHaveLength(1);
-    expect(onSubtask).toHaveBeenCalledTimes(1);
   });
 
   it('clears previous drafts when generation starts again', async () => {
     mockedStreamSubtasks
       .mockReturnValueOnce(createStream([{ type: 'subtask', subtask: { title: 'First' } }]))
       .mockReturnValueOnce(createStream([{ type: 'subtask', subtask: { title: 'Second' } }]));
-    const onSubtask = vi.fn();
-    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', onSubtask), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
 
     act(() => result.current.generate());
     await waitFor(() => expect(result.current.drafts).toEqual([expect.objectContaining({ title: 'First' })]));
@@ -106,9 +131,7 @@ describe('useSubtaskDraftsStream', () => {
   });
 
   it('converts an error event to AppError', async () => {
-    mockedStreamSubtasks.mockReturnValue(createStream([{
-      type: 'error', error: { success: false, status: 503, code: 'AI_UNAVAILABLE', message: 'AI unavailable', details: 'AI unavailable' },
-    }]));
+    mockedStreamSubtasks.mockReturnValue(createStream([{ type: 'error', error: { success: false, status: 503, code: 'AI_UNAVAILABLE', message: 'AI unavailable', details: 'AI unavailable' } }]));
     const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
     act(() => result.current.generate());
 

@@ -56,6 +56,15 @@ export const ollamaStreamChunkSchema = z.object({
   error: z.string().optional(),
 });
 
+export const ollamaStreamDoneChunkSchema = ollamaStreamChunkSchema.extend({
+  done: z.literal(true),
+  done_reason: z.string(),
+});
+
 export type OllamaStreamChunk = z.infer<typeof ollamaStreamChunkSchema>;
+
+export type OllamaStreamDoneChunk = z.infer<
+  typeof ollamaStreamDoneChunkSchema
+>;
 
 export type OllamaResponse = z.infer<typeof ollamaChatResponseSchema>;

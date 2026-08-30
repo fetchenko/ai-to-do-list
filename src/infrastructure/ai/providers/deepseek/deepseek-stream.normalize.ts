@@ -8,6 +8,7 @@ import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumul
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -31,9 +32,9 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
   return result.data;
 }
 
-function handleCompletedToolCall(
+function parseCompletedToolCall(
   result: ReturnType<ToolCallAccumulator['add']>,
-  generatedSubtasks: DeepSeekStreamChunk[]
+  generatedSubtasks: SubtaskResponse[]
 ): AiStreamEvent | null {
   if (result.type !== 'completed') {
     return null;
@@ -42,7 +43,7 @@ function handleCompletedToolCall(
   const parsedToolCall = parseToolCall(result.toolCall);
 
   if (parsedToolCall.type === 'subtask') {
-    generatedSubtasks.push(parsedToolCall.subtask as unknown as DeepSeekStreamChunk);
+    generatedSubtasks.push(parsedToolCall.subtask);
   }
 
   return parsedToolCall;
@@ -52,7 +53,7 @@ export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks = [];
+  const generatedSubtasks: SubtaskResponse[] = [];
 
   let streamCompleted = false;
 
@@ -71,7 +72,10 @@ export async function* normalizeDeepSeekStream(
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
       const result = accumulator.add(toolCall);
-      const parsedToolCall = handleCompletedToolCall(result, generatedSubtasks);
+      const parsedToolCall = parseCompletedToolCall(
+        result,
+        generatedSubtasks
+      );
 
       if (parsedToolCall) {
         yield parsedToolCall;
@@ -98,7 +102,10 @@ export async function* normalizeDeepSeekStream(
 
     if (choice.finish_reason === 'tool_calls') {
       const result = accumulator.finish();
-      const parsedToolCall = handleCompletedToolCall(result, generatedSubtasks);
+      const parsedToolCall = parseCompletedToolCall(
+        result,
+        generatedSubtasks
+      );
 
       if (parsedToolCall) {
         yield parsedToolCall;

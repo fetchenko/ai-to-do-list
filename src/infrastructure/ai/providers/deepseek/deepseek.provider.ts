@@ -53,7 +53,7 @@ export default class DeepSeekProvider implements AIProvider {
 
   async *stream(
     prompt: string,
-    signal?: AbortSignal
+    signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',

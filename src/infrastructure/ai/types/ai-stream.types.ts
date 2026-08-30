@@ -9,12 +9,4 @@ export type AiStreamEvent =
   | {
       type: 'done';
       metadata: AiGenerationMetadata;
-    }
-  | {
-      type: 'error';
-      message: string;
-    }
-  | {
-      type: 'content';
-      content: string;
     };

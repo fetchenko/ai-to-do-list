@@ -55,8 +55,7 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
 
   const handleSubmitDrafts = async (values: DraftForm) => {
     await saveSubtasks(values.drafts);
-    discard();
-    reset();
+    handleDiscard();
   };
 
   const handleGenerate = useCallback(() => {
@@ -95,7 +94,7 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
             <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
             Generating…
           </p>
-          {fields.length === 0 && <TasksSkeleton aria-hidden="true" />}
+          {fields.length === 0 && <TasksSkeleton />}
         </div>
       )}
 

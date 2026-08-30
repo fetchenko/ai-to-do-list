@@ -12,7 +12,6 @@ import { createClient } from '@/infrastructure/supabase/client';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,
-  AiRequestError,
   AppError,
   ValidationRequestError,
 } from '@/shared/errors/app-error';
@@ -31,7 +30,11 @@ export async function* streamSubtasks(
   });
 
   if (!response.ok) {
-    throw new AiRequestError('Request failed');
+    const text = await response.text();
+    const {
+      error: { code, status, message, details },
+    } = JSON.parse(text);
+    throw new AppError(code, status, message, details);
   }
 
   if (!response.body) {

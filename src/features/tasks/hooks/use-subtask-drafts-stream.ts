@@ -7,10 +7,12 @@ import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
 import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
 
-export function useSubtaskDraftsStream(taskId: string) {
-  const [drafts, setDrafts] = useState<AiTask[] | null>(null);
+export function useSubtaskDraftsStream(
+  taskId: string,
+  onSubtask: (draftSubtask: AiTask) => void
+) {
+  const [drafts, setDrafts] = useState<AiTask[]>([]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -26,6 +28,7 @@ export function useSubtaskDraftsStream(taskId: string) {
               id: crypto.randomUUID(),
             };
 
+            onSubtask(draft);
             setDrafts((prev) => [...(prev ?? []), draft]);
             break;
 
@@ -43,8 +46,7 @@ export function useSubtaskDraftsStream(taskId: string) {
         }
       }
     },
-    retry: shouldRetry,
-    retryDelay,
+    retry: false,
     onError: (error: Error) => {
       const message =
         error instanceof AppError
@@ -56,14 +58,18 @@ export function useSubtaskDraftsStream(taskId: string) {
   });
 
   const discard = () => {
-    setDrafts(null);
+    setDrafts([]);
     mutation.reset();
   };
 
   const generate = () => {
-    setDrafts(null);
+    setDrafts([]);
 
     mutation.reset();
+    mutation.mutate();
+  };
+
+  const retry = () => {
     mutation.mutate();
   };
 
@@ -72,7 +78,8 @@ export function useSubtaskDraftsStream(taskId: string) {
     error: mutation.error,
     isGenerating: mutation.isPending,
     generate,
+    retry,
     discard,
-    isGenerated: mutation.isSuccess,
+    isComplete: mutation.isSuccess,
   };
 }

@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Sparkles } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -11,34 +9,19 @@ import { DraftSubtaskRow } from '@/features/tasks/components/forms/draft-subtask
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
 import { AiTask, Task } from '@/features/tasks/types/tasks.types';
-import { normalizeAiTasks } from '@/features/tasks/utils/tasks.utils';
+import { normalizeAiTask } from '@/features/tasks/utils/tasks.utils';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { AiGenerationError } from '@/features/tasks/components/ai-generation-error';
 
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
+import { useSubtaskDraftsStream } from '@/features/tasks/hooks/use-subtask-drafts-stream';
 
 type DraftSubtasksProps = {
   task: Task;
-  drafts: AiTask[];
-
-  error: Error | null;
-
-  onRetry: () => void;
-  onDiscard: () => void;
-
-  loading: boolean;
-  isGenerated: boolean;
 };
 
-export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading, isGenerated }: DraftSubtasksProps) {
-  const formDefaults = useMemo<DraftForm>(
-    () => ({
-      drafts: normalizeAiTasks(drafts),
-    }),
-    [drafts]
-  );
-
+export function DraftSubtasks({ task }: DraftSubtasksProps) {
   const { saveSubtasks, isSaving } = useAddSubtasks(task.id);
 
   const {
@@ -49,51 +32,49 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
     formState: { errors },
   } = useForm<DraftForm>({
     resolver: zodResolver(draftSchema),
-    defaultValues: formDefaults,
+    defaultValues: {
+      drafts: []
+    },
   });
 
-  const { fields, remove } = useFieldArray({ control, name: 'drafts' });
+  const { fields, remove, append } = useFieldArray({ control, name: 'drafts' });
 
-  useEffect(() => {
-    reset(formDefaults);
-  }, [formDefaults, reset]);
-
-  if (error) {
-    return (
-      <AiGenerationError
-        message={getFriendlyErrorMessage(error)}
-        onRetry={onRetry}
-        onDismiss={onDiscard}
-        retryable={isRetryableError(error)}
-      />
-    );
+  const onSubtask = (draftSubtask: AiTask) => {
+    append(normalizeAiTask(draftSubtask))
   }
 
-  if (fields.length === 0 && loading !== true) {
-    return (
-      <div aria-live="polite" className="space-y-2">
-        <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
-          No drafts left to review.
-          <Button
-            type="button"
-            variant="link"
-            className="h-auto p-0 pl-1"
-            onClick={onDiscard}
-          >
-            Close
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const {
+    error,
+    isGenerating,
+    generate,
+    retry,
+    discard,
+  } = useSubtaskDraftsStream(task.id, onSubtask);
 
   const onSubmit = async (values: DraftForm) => {
     await saveSubtasks(values.drafts);
-    onDiscard();
+    discard();
+    reset();
   };
+
+  const onGenerate = () => {
+    reset();
+    generate();
+  }
 
   return (
     <div aria-live="polite" className="space-y-2">
+      {(!(isGenerating || fields.length > 0)) && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onGenerate}
+          disabled={isSaving || isGenerating}
+        >
+          <Sparkles className="size-4" aria-hidden="true" />
+          Generate Subtask
+        </Button>)}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-3"
@@ -116,31 +97,38 @@ export function DraftSubtasks({ task, drafts, error, onRetry, onDiscard, loading
           ))}
         </ul>
 
-        {loading && <div aria-live="polite" className="space-y-2">
-          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
-            <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-            Generating…
-          </p>
-          <TasksSkeleton />
-        </div>}
-
-        {isGenerated && (
+        {isGenerating && (
+          <div aria-live="polite" className="space-y-2">
+            <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+              <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+              Generating…
+            </p>
+            {fields.length === 0 && <TasksSkeleton />}
+          </div>)}
+        {error && (
+          <AiGenerationError
+            message={getFriendlyErrorMessage(error)}
+            onRetry={retry}
+            onDismiss={discard}
+            retryable={isRetryableError(error)}
+          />
+        )}
+        {fields.length > 0 && (
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
-              onClick={onDiscard}
-              disabled={isSaving}
+              onClick={discard}
+              disabled={isSaving || isGenerating}
             >
               Discard
             </Button>
-            <Button type="submit" disabled={isSaving} data-testid="accept-draft-subtasks">
+            <Button type="submit" disabled={isSaving || isGenerating} data-testid="accept-draft-subtasks">
               {isSaving
                 ? 'Adding…'
                 : `Add ${fields.length} subtask${fields.length > 1 ? 's' : ''}`}
             </Button>
-          </div>
-        )}
+          </div>)}
       </form>
     </div>
   );

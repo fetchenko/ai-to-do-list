@@ -12,7 +12,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.INVALID_RESPONSE]:
     'Something went wrong on our end. Please try again.',
   [ErrorCode.AI_LOCK_ACTIVE]:
-    'Subtasks are already being generated for this task.',
+    'AI is generating a response. Please wait and try again later.',
   [ErrorCode.AI_LOCK_REQUEST_FAILED]:
     "Couldn't check generation status. Please try again.",
   [ErrorCode.AI_TIMEOUT]:
@@ -20,7 +20,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.AI_RATE_LIMIT]:
     'Lots of generations happening right now — try again in a moment.',
   [ErrorCode.AI_GENERATION_FAILED]:
-    "We couldn't generate subtasks. Try rewording the task.",
+    "We couldn't generate subtasks. AI generation failed",
   [ErrorCode.AI_BAD_RESPONSE]:
     "The AI returned something we couldn't use. Please try again.",
   [ErrorCode.AI_UNAVAILABLE]: 'Subtask generation is temporarily unavailable.',

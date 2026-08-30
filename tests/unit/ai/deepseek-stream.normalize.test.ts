@@ -9,11 +9,7 @@ function createStream(events: string[]): ReadableStream<Uint8Array> {
   return new ReadableStream({
     start(controller) {
       controller.enqueue(
-        encoder.encode(
-          events
-            .map((event) => `data: ${event}`)
-            .join('\n\n')
-        )
+        encoder.encode(events.map((event) => `data: ${event}`).join('\n\n'))
       );
       controller.close();
     },
@@ -145,30 +141,12 @@ describe('normalizeDeepSeekStream', () => {
       ],
     });
 
-    const secondChunk = deepSeekChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {
-            tool_calls: [
-              {
-                index: 1,
-                id: 'call-1',
-                type: 'function',
-                function: {
-                  name: 'create_subtask',
-                  arguments: '{"title":"Second","description":"Do second"}',
-                },
-              },
-            ],
-          },
-          finish_reason: null,
-        },
-      ],
+    const invalidChunk = deepSeekChunk({
+      object: 'unexpected.object',
     });
 
     const iterator = normalizeDeepSeekStream(
-      createStream([JSON.stringify(firstChunk), JSON.stringify(secondChunk), 'not-json'])
+      createStream([JSON.stringify(firstChunk), JSON.stringify(invalidChunk)])
     );
 
     const firstEvent = await iterator.next();

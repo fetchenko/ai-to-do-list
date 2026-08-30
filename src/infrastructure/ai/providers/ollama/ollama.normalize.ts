@@ -6,6 +6,13 @@ import {
 } from '@/infrastructure/ai/types/ai.types';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
+type OllamaUsageSource = Pick<
+  OllamaResponse,
+  | 'prompt_eval_count'
+  | 'eval_count'
+  | 'total_duration'
+>;
+
 export function normalizeOllamaResponse(
   response: OllamaResponse
 ): NormilizedAiResponse {
@@ -27,7 +34,7 @@ export function normalizeOllamaMetadata(
 }
 
 export function normalizeOllamaUsage(
-  response: OllamaResponse
+  response: OllamaUsageSource
 ): AiGenerationUsage {
   return {
     inputTokens: response.prompt_eval_count ?? 0,

@@ -107,7 +107,7 @@ describe('useSubtaskDraftsStream', () => {
 
   it('converts an error event to AppError', async () => {
     mockedStreamSubtasks.mockReturnValue(createStream([{
-      type: 'error', error: { success: false, status: 503, code: 'AI_UNAVAILABLE', message: 'AI unavailable' },
+      type: 'error', error: { success: false, status: 503, code: 'AI_UNAVAILABLE', message: 'AI unavailable', details: 'AI unavailable' },
     }]));
     const { result } = renderHook(() => useSubtaskDraftsStream('task-1', vi.fn()), { wrapper: createWrapper() });
     act(() => result.current.generate());

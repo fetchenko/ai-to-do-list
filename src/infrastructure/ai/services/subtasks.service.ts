@@ -48,7 +48,10 @@ export async function streamSubtasksForTask({
     async start(controller) {
       try {
         for await (const event of provider.stream(prompt, signal)) {
-          if (signal.aborted) return;
+          if (signal.aborted) {
+            controller.close();
+            return;
+          }
 
           if (event.type === 'subtask') {
             controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
@@ -74,7 +77,10 @@ export async function streamSubtasksForTask({
 
         if (!signal.aborted) controller.close();
       } catch (error) {
-        if (signal.aborted) return;
+        if (signal.aborted) {
+          controller.close();
+          return;
+        }
 
         const normalizedError = normalizeAiError(error);
 

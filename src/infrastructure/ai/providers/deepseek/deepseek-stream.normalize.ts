@@ -9,7 +9,6 @@ import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.t
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -34,27 +33,20 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
 }
 
 function parseCompletedToolCall(
-  result: ToolCallAccumulatorResult,
-  generatedSubtasks: SubtaskResponse[]
+  result: ToolCallAccumulatorResult
 ): AiStreamEvent | null {
   if (result.type !== 'completed') {
     return null;
   }
 
-  const parsedToolCall = parseToolCall(result.toolCall);
-
-  if (parsedToolCall.type === 'subtask') {
-    generatedSubtasks.push(parsedToolCall.subtask);
-  }
-
-  return parsedToolCall;
+  return parseToolCall(result.toolCall);
 }
 
 export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks: SubtaskResponse[] = [];
+  const generatedSubtasks: AiStreamEvent[] = [];
 
   let streamCompleted = false;
 
@@ -72,15 +64,16 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const result = accumulator.add(toolCall);
       const parsedToolCall = parseCompletedToolCall(
-        result,
-        generatedSubtasks
+        accumulator.add(toolCall)
       );
 
-      if (parsedToolCall) {
-        yield parsedToolCall;
+      if (!parsedToolCall) {
+        continue;
       }
+
+      generatedSubtasks.push(parsedToolCall);
+      yield parsedToolCall;
     }
 
     if (choice.finish_reason === 'length') {
@@ -102,13 +95,10 @@ export async function* normalizeDeepSeekStream(
     }
 
     if (choice.finish_reason === 'tool_calls') {
-      const result = accumulator.finish();
-      const parsedToolCall = parseCompletedToolCall(
-        result,
-        generatedSubtasks
-      );
+      const parsedToolCall = parseCompletedToolCall(accumulator.finish());
 
       if (parsedToolCall) {
+        generatedSubtasks.push(parsedToolCall);
         yield parsedToolCall;
       }
 

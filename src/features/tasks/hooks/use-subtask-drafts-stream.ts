@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -16,26 +16,34 @@ export function useSubtaskDraftsStream(
   taskId: string,
   onSubtask: (draftSubtask: AiTask) => void
 ) {
-  const [drafts, setDrafts] = useState<AiTask[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const mutation = useMutation({
+  const {
+    error,
+    isPending,
+    mutate,
+    reset,
+  } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
-      if (!taskId) throw new ValidationRequestError('Missing task id');
+      if (!taskId) {
+        throw new ValidationRequestError('Missing task id');
+      }
 
       for await (const chunk of streamSubtasks(taskId, signal)) {
         switch (chunk.type) {
-          case 'subtask': {
-            const draft = { ...chunk.subtask, id: crypto.randomUUID() };
-            onSubtask(draft);
-            setDrafts((prev) => [...prev, draft]);
+          case 'subtask':
+            onSubtask({ ...chunk.subtask, id: crypto.randomUUID() });
             break;
-          }
           case 'done':
             break;
           case 'error': {
             const { error } = chunk;
-            throw new AppError(error.code, error.status, error.message, error.details);
+            throw new AppError(
+              error.code,
+              error.status,
+              error.message,
+              error.details
+            );
           }
         }
       }
@@ -44,9 +52,11 @@ export function useSubtaskDraftsStream(
     onError: (error: Error) => {
       if (isAbortError(error)) return;
 
-      const message = error instanceof AppError
-        ? getFriendlyErrorMessage(error)
-        : 'Something went wrong generating subtasks. Try again.';
+      const message =
+        error instanceof AppError
+          ? getFriendlyErrorMessage(error)
+          : 'Something went wrong generating subtasks. Try again.';
+
       toast.info(message);
     },
   });
@@ -58,37 +68,34 @@ export function useSubtaskDraftsStream(
 
   const discard = useCallback(() => {
     cancel();
-    setDrafts([]);
-    mutation.reset();
-  }, [cancel, mutation]);
+    reset();
+  }, [cancel, reset]);
 
   const generate = useCallback(() => {
     cancel();
-    setDrafts([]);
-    mutation.reset();
+    reset();
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    mutation.mutate(controller.signal);
-  }, [cancel, mutation]);
+    mutate(controller.signal);
+  }, [cancel, mutate, reset]);
 
   const retry = useCallback(() => {
     cancel();
+
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    mutation.mutate(controller.signal);
-  }, [cancel, mutation]);
+    mutate(controller.signal);
+  }, [cancel, mutate]);
 
   useEffect(() => cancel, [cancel]);
 
   return {
-    drafts,
-    error: mutation.error,
-    isGenerating: mutation.isPending,
+    error,
+    isGenerating: isPending,
     generate,
     retry,
     cancel,
     discard,
-    isComplete: mutation.isSuccess,
   };
 }

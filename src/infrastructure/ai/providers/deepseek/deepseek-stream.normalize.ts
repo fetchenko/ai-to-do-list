@@ -9,6 +9,7 @@ import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.t
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -46,7 +47,7 @@ export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks: AiStreamEvent[] = [];
+  const generatedSubtasks: SubtaskResponse[] = [];
 
   let streamCompleted = false;
 
@@ -72,7 +73,10 @@ export async function* normalizeDeepSeekStream(
         continue;
       }
 
-      generatedSubtasks.push(parsedToolCall);
+      if (parsedToolCall.type === 'subtask') {
+        generatedSubtasks.push(parsedToolCall.subtask);
+      }
+
       yield parsedToolCall;
     }
 
@@ -98,7 +102,10 @@ export async function* normalizeDeepSeekStream(
       const parsedToolCall = parseCompletedToolCall(accumulator.finish());
 
       if (parsedToolCall) {
-        generatedSubtasks.push(parsedToolCall);
+        if (parsedToolCall.type === 'subtask') {
+          generatedSubtasks.push(parsedToolCall.subtask);
+        }
+
         yield parsedToolCall;
       }
 

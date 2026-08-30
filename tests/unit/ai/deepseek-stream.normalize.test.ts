@@ -8,7 +8,13 @@ function createStream(events: string[]): ReadableStream<Uint8Array> {
 
   return new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(events.join('\n\n')));
+      controller.enqueue(
+        encoder.encode(
+          events
+            .map((event) => `data: ${event}`)
+            .join('\n\n')
+        )
+      );
       controller.close();
     },
   });
@@ -76,7 +82,7 @@ describe('normalizeDeepSeekStream', () => {
     const events: unknown[] = [];
 
     for await (const event of normalizeDeepSeekStream(
-      createStream([JSON.stringify(firstChunk), JSON.stringify(doneChunk), 'data: [DONE]'])
+      createStream([JSON.stringify(firstChunk), JSON.stringify(doneChunk), '[DONE]'])
     )) {
       events.push(event);
     }
@@ -99,11 +105,9 @@ describe('normalizeDeepSeekStream', () => {
   });
 
   it('rejects malformed JSON', async () => {
-    const stream = normalizeDeepSeekStream(
-      createStream(['not-json'])
-    );
-
-    await expect(collect(stream)).rejects.toThrow(AiInvalidResponseFormat);
+    await expect(
+      collect(normalizeDeepSeekStream(createStream(['not-json'])))
+    ).rejects.toThrow(AiInvalidResponseFormat);
   });
 
   it('rejects a chunk that does not match the schema', async () => {
@@ -118,7 +122,7 @@ describe('normalizeDeepSeekStream', () => {
     ).rejects.toThrow(AiInvalidResponseFormat);
   });
 
-  it('preserves completed subtasks before a malformed later chunk fails', async () => {
+  it('fails after yielding a completed earlier tool call', async () => {
     const firstChunk = deepSeekChunk({
       choices: [
         {
@@ -153,7 +157,7 @@ describe('normalizeDeepSeekStream', () => {
                 type: 'function',
                 function: {
                   name: 'create_subtask',
-                  arguments: '{',
+                  arguments: '{"title":"Second","description":"Do second"}',
                 },
               },
             ],
@@ -167,7 +171,17 @@ describe('normalizeDeepSeekStream', () => {
       createStream([JSON.stringify(firstChunk), JSON.stringify(secondChunk), 'not-json'])
     );
 
-    await expect(collect(iterator)).rejects.toThrow(AiInvalidResponseFormat);
+    const firstEvent = await iterator.next();
+
+    expect(firstEvent.value).toEqual({
+      type: 'subtask',
+      subtask: {
+        title: 'First',
+        description: 'Do first',
+      },
+    });
+
+    await expect(iterator.next()).rejects.toThrow(AiInvalidResponseFormat);
   });
 });
 

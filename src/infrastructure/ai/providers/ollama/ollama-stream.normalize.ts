@@ -1,8 +1,8 @@
 import { normalizeOllamaUsage } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import {
-  OllamaResponse,
-  OllamaStreamChunk,
   ollamaStreamChunkSchema,
+  ollamaStreamDoneChunkSchema,
+  OllamaStreamChunk,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
@@ -11,6 +11,7 @@ import {
   AiGenerationError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/app-error';
+import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
   const result = ollamaStreamChunkSchema.safeParse(rawChunk);
@@ -24,10 +25,24 @@ function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
   return result.data;
 }
 
+function parseOllamaDoneChunk(
+  chunk: OllamaStreamChunk
+): OllamaStreamChunk {
+  const result = ollamaStreamDoneChunkSchema.safeParse(chunk);
+
+  if (!result.success) {
+    throw new AiInvalidResponseFormat(
+      'Ollama returned an invalid completion chunk'
+    );
+  }
+
+  return result.data;
+}
+
 export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
-  const generatedSubtasks = [];
+  const generatedSubtasks: SubtaskResponse[] = [];
   let streamCompleted = false;
 
   for await (const rawChunk of readJsonStream(body)) {
@@ -53,16 +68,16 @@ export async function* normalizeOllamaStream(
     }
 
     if (chunk.done) {
-      const metadata = chunk as OllamaResponse;
+      const doneChunk = parseOllamaDoneChunk(chunk);
       streamCompleted = true;
 
       yield {
         type: 'done',
         metadata: {
-          model: metadata.model,
+          model: doneChunk.model,
           response: JSON.stringify(generatedSubtasks),
-          finishReason: metadata.done_reason,
-          usage: normalizeOllamaUsage(metadata),
+          finishReason: doneChunk.done_reason,
+          usage: normalizeOllamaUsage(doneChunk),
         },
       };
     }

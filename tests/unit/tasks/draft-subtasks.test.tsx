@@ -32,19 +32,18 @@ const mockSaveSubtasks = vi.fn().mockResolvedValue([]);
 
 let onSubtask: ((draft: AiTask) => void) | undefined;
 
-function configureHook(overrides: Partial<{
-  error: Error | null;
-  isGenerating: boolean;
-  isComplete: boolean;
-}> = {}) {
+function configureHook(
+  overrides: Partial<{
+    error: Error | null;
+    isGenerating: boolean;
+  }> = {}
+) {
   mockedUseSubtaskDraftsStream.mockImplementation((_taskId, callback) => {
     onSubtask = callback;
 
     return {
-      drafts: [],
       error: null,
       isGenerating: false,
-      isComplete: false,
       generate: mockGenerate,
       retry: mockRetry,
       discard: mockDiscard,
@@ -59,7 +58,7 @@ function renderComponent() {
   return render(
     <QueryClientProvider client={queryClient}>
       <DraftSubtasks task={task} />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
 }
 
@@ -79,7 +78,7 @@ describe('DraftSubtasks', () => {
 
     expect(mockedUseSubtaskDraftsStream).toHaveBeenCalledWith(
       task.id,
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(onSubtask).toEqual(expect.any(Function));
   });
@@ -88,27 +87,28 @@ describe('DraftSubtasks', () => {
     renderComponent();
 
     expect(
-      screen.getByRole('button', { name: 'Generate Subtask' }),
+      screen.getByRole('button', { name: 'Generate Subtasks' })
     ).toBeInTheDocument();
     expect(screen.queryByTestId('accept-draft-subtasks')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
   });
 
-  it('calls generate when Generate Subtask is clicked', async () => {
+  it('calls generate when Generate Subtasks is clicked', async () => {
     const user = userEvent.setup();
     renderComponent();
 
-    await user.click(screen.getByRole('button', { name: 'Generate Subtask' }));
+    await user.click(screen.getByRole('button', { name: 'Generate Subtasks' }));
 
     expect(mockGenerate).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading state while generating', () => {
+  it('shows a focused status region while generating', () => {
     configureHook({ isGenerating: true });
     renderComponent();
 
-    expect(screen.getByText('Generating…')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Generate Subtask' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Generating…');
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.queryByRole('button', { name: 'Generate Subtasks' })).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

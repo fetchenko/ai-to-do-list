@@ -84,7 +84,7 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
           disabled={isSaving}
         >
           <Sparkles className="size-4" aria-hidden="true" />
-          Generate Subtasks
+          Generate Subtask
         </Button>
       )}
 

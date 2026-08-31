@@ -12,6 +12,7 @@ import { createClient } from '@/infrastructure/supabase/client';
 import { AiEmptyResponseError, AiInvalidResponseFormat, AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
+import { parseApiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function* streamSubtasks(
@@ -25,9 +26,8 @@ export async function* streamSubtasks(
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    const { error: { code, status, message, details } } = JSON.parse(text);
-    throw new AppError(code, status, message, details);
+    const body = await response.json().catch(() => null);
+    throw parseApiError(body?.error);
   }
 
   if (!response.body) {

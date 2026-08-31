@@ -5,60 +5,72 @@ import { describe, expect, it } from 'vitest';
 import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
-function deepSeekEvent(data: unknown): string {
-  return `data: ${JSON.stringify(data)}\n\n`;
+function deepSeekChunk(
+  choice: Record<string, unknown>,
+  overrides: Record<string, unknown> = {}
+): string {
+  return `data: ${JSON.stringify({
+    id: 'test-id',
+    object: 'chat.completion.chunk',
+    created: 1750000000,
+    model: 'deepseek-v4-flash',
+    system_fingerprint: 'test-fingerprint',
+    choices: [
+      {
+        index: 0,
+        delta: {},
+        finish_reason: null,
+        ...choice,
+      },
+    ],
+    ...overrides,
+  })}\n\n`;
 }
 
 describe('normalizeDeepSeekStream', () => {
   it('accumulates a tool call and emits a subtask when complete', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  id: 'call_0',
-                  type: 'function',
-                  function: {
-                    name: 'create_subtask',
-                    arguments: '{"title":"Buy ',
-                  },
-                },
-              ],
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              type: 'function',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"Buy ',
+              },
             },
-          },
-        ],
-      }),
-      deepSeekEvent({
-        model: 'deepseek-v4-flash',
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  function: {
-                    arguments:
-                      'a phone","description":"Choose a suitable phone"}',
-                  },
-                },
-              ],
-            },
-            finish_reason: 'tool_calls',
-          },
-        ],
-        usage: {
-          prompt_tokens: 514,
-          completion_tokens: 451,
-          total_tokens: 965,
-          prompt_tokens_details: { cached_tokens: 512 },
-          completion_tokens_details: { reasoning_tokens: 73 },
-          prompt_cache_hit_tokens: 512,
-          prompt_cache_miss_tokens: 2,
+          ],
         },
       }),
+      deepSeekChunk(
+        {
+          delta: {
+            tool_calls: [
+              {
+                index: 0,
+                function: {
+                  arguments:
+                    'a phone","description":"Choose a suitable phone"}',
+                },
+              },
+            ],
+          },
+          finish_reason: 'tool_calls',
+        },
+        {
+          usage: {
+            prompt_tokens: 514,
+            completion_tokens: 451,
+            total_tokens: 965,
+            prompt_cache_hit_tokens: 512,
+            prompt_cache_miss_tokens: 2,
+            completion_tokens_details: { reasoning_tokens: 73 },
+          },
+        }
+      ),
       'data: [DONE]\n\n',
     ]);
 
@@ -94,8 +106,8 @@ describe('normalizeDeepSeekStream', () => {
 
   it('emits content chunks', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { content: 'Hello' } }] }),
-      deepSeekEvent({ choices: [{ delta: { content: ' world' } }] }),
+      deepSeekChunk({ delta: { content: 'Hello' } }),
+      deepSeekChunk({ delta: { content: ' world' } }),
       'data: [DONE]\n\n',
     ]);
 
@@ -107,46 +119,40 @@ describe('normalizeDeepSeekStream', () => {
 
   it('emits multiple subtasks in tool-call order', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  id: 'call_0',
-                  function: {
-                    name: 'create_subtask',
-                    arguments:
-                      '{"title":"First","description":"First description"}',
-                  },
-                },
-              ],
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments:
+                  '{"title":"First","description":"First description"}',
+              },
             },
-          },
-        ],
+          ],
+        },
       }),
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 1,
-                  id: 'call_1',
-                  function: {
-                    name: 'create_subtask',
-                    arguments:
-                      '{"title":"Second","description":"Second description"}',
-                  },
+      deepSeekChunk(
+        {
+          delta: {
+            tool_calls: [
+              {
+                index: 1,
+                id: 'call_1',
+                function: {
+                  name: 'create_subtask',
+                  arguments:
+                    '{"title":"Second","description":"Second description"}',
                 },
-              ],
-            },
-            finish_reason: 'tool_calls',
+              },
+            ],
           },
-        ],
-        usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 },
-      }),
+          finish_reason: 'tool_calls',
+        },
+        { usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 } }
+      ),
       'data: [DONE]\n\n',
     ]);
 
@@ -164,7 +170,7 @@ describe('normalizeDeepSeekStream', () => {
       {
         type: 'done',
         metadata: expect.objectContaining({
-          model: undefined,
+          model: 'deepseek-v4-flash',
           response:
             '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
         }),
@@ -174,29 +180,22 @@ describe('normalizeDeepSeekStream', () => {
 
   it('flushes the current tool call before emitting done', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  id: 'call_0',
-                  function: {
-                    name: 'create_subtask',
-                    arguments:
-                      '{"title":"Buy a phone","description":"Choose a phone"}',
-                  },
-                },
-              ],
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments:
+                  '{"title":"Buy a phone","description":"Choose a phone"}',
+              },
             },
-          },
-        ],
+          ],
+        },
       }),
-      deepSeekEvent({
-        model: 'deepseek-v4-flash',
-        choices: [{ delta: {}, finish_reason: 'tool_calls' }],
-      }),
+      deepSeekChunk({ delta: {}, finish_reason: 'tool_calls' }),
       'data: [DONE]\n\n',
     ]);
 
@@ -210,6 +209,7 @@ describe('normalizeDeepSeekStream', () => {
       {
         type: 'done',
         metadata: expect.objectContaining({
+          model: 'deepseek-v4-flash',
           response: '[{"title":"Buy a phone","description":"Choose a phone"}]',
         }),
       },
@@ -218,24 +218,20 @@ describe('normalizeDeepSeekStream', () => {
 
   it('throws when the response is truncated before tool calls complete', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  id: 'call_0',
-                  function: {
-                    name: 'create_subtask',
-                    arguments: '{"title":"Incomplete',
-                  },
-                },
-              ],
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"Incomplete',
+              },
             },
-            finish_reason: 'length',
-          },
-        ],
+          ],
+        },
+        finish_reason: 'length',
       }),
     ]);
 
@@ -248,14 +244,7 @@ describe('normalizeDeepSeekStream', () => {
 
   it('throws when DeepSeek stops because of the content filter', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {},
-            finish_reason: 'content_filter',
-          },
-        ],
-      }),
+      deepSeekChunk({ delta: {}, finish_reason: 'content_filter' }),
     ]);
 
     await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
@@ -267,13 +256,9 @@ describe('normalizeDeepSeekStream', () => {
 
   it('throws when DeepSeek stops because of insufficient system resources', async () => {
     const stream = createStream([
-      deepSeekEvent({
-        choices: [
-          {
-            delta: {},
-            finish_reason: 'insufficient_system_resource',
-          },
-        ],
+      deepSeekChunk({
+        delta: {},
+        finish_reason: 'insufficient_system_resource',
       }),
     ]);
 
@@ -286,11 +271,11 @@ describe('normalizeDeepSeekStream', () => {
 
   it('throws when the stream ends without [DONE] or tool_calls finish reason', async () => {
     const stream = createStream([
-      deepSeekEvent({ choices: [{ delta: { content: 'partial response' } }] }),
+      deepSeekChunk({ delta: { content: 'partial response' } }),
     ]);
 
     await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
-      new AiInvalidResponseFormat('DeepSeek returned an invalid stream chunk')
+      new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly')
     );
   });
 });

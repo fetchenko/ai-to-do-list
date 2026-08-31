@@ -5,12 +5,12 @@ const deepSeekUsageSchema = z.object({
   completion_tokens: z.number(),
   total_tokens: z.number(),
 
-  prompt_cache_hit_tokens: z.number(),
-  prompt_cache_miss_tokens: z.number(),
+  prompt_cache_hit_tokens: z.number().optional(),
+  prompt_cache_miss_tokens: z.number().optional(),
 
   completion_tokens_details: z
     .object({
-      reasoning_tokens: z.number(),
+      reasoning_tokens: z.number().optional(),
     })
     .optional(),
 });

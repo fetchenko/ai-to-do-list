@@ -9,7 +9,12 @@ import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
 import { createClient } from '@/infrastructure/supabase/client';
-import { AiEmptyResponseError, AiInvalidResponseFormat, AppError, ValidationRequestError } from '@/shared/errors/app-error';
+import {
+  AiEmptyResponseError,
+  AiInvalidResponseFormat,
+  AppError,
+  ValidationRequestError,
+} from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/parse-api-error';
@@ -34,7 +39,7 @@ export async function* streamSubtasks(
     throw new AiEmptyResponseError('Response body is missing');
   }
 
-  yield* readJsonStream(response.body);
+  yield* readJsonStream<SubtaskStreamEvent>(response.body);
 }
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
@@ -58,7 +63,10 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
     throw new AiEmptyResponseError('No meaningful subtasks could be generated.');
   }
 
-  return parsed.subtasks.map((subtask) => ({ ...subtask, id: crypto.randomUUID() }));
+  return parsed.subtasks.map((subtask) => ({
+    ...subtask,
+    id: crypto.randomUUID(),
+  }));
 }
 
 export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
@@ -68,7 +76,9 @@ export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[])
 
   const rows = subtasks.map(({ id, ...subtask }) => {
     const result = taskSchema.safeParse(subtask);
-    if (!result.success) throw new ValidationRequestError(z.treeifyError(result.error));
+    if (!result.success) {
+      throw new ValidationRequestError(z.treeifyError(result.error));
+    }
 
     const next = generateKeyBetween(prev, null);
     prev = next;

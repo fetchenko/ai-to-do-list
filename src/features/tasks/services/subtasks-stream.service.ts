@@ -1,8 +1,9 @@
-import { streamSubtasksForTask as streamAiSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import type { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import type { TaskPreview } from '@/features/tasks/types/database.types';
+import type { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
+import { streamSubtasksForTask as streamAiSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
+import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 
 export async function* streamSubtasksForTask({
   task,
@@ -23,18 +24,14 @@ export async function* streamSubtasksForTask({
       signal,
     })) {
       if (event.type === 'tool_call') {
-        const parsed = parseSubtaskToolCall(event.toolCall);
-
         yield {
           type: 'subtask',
-          subtask: parsed,
+          subtask: parseToolCall(event.toolCall),
         };
         continue;
       }
 
-      yield {
-        type: 'done',
-      };
+      yield { type: 'done' };
     }
   } catch (error) {
     if (signal.aborted) return;
@@ -44,8 +41,4 @@ export async function* streamSubtasksForTask({
       error: normalizeAiError(error),
     };
   }
-}
-
-function parseSubtaskToolCall(toolCall: Parameters<typeof import('@/infrastructure/ai/tools/parse-tool-call').parseToolCall>[0]) {
-  return import('@/infrastructure/ai/tools/parse-tool-call').then;
 }

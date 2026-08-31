@@ -1,4 +1,4 @@
-import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
+import { AiErrorResult, AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 export type AiStreamEvent =
@@ -9,4 +9,8 @@ export type AiStreamEvent =
   | {
       type: 'done';
       metadata: AiGenerationMetadata;
+    }
+  | {
+      type: 'error';
+      error: AiErrorResult;
     };

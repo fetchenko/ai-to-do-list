@@ -3,11 +3,13 @@ import {
   deepSeekStreamChunkSchema,
   type DeepSeekStreamChunk,
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
+import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import type { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import type { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -48,7 +50,7 @@ export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  let generatedResponse = '';
+  const generatedSubtasks: SubtaskResponse[] = [];
   let streamCompleted = false;
 
   for await (const chunk of readSseStream(body)) {
@@ -65,11 +67,19 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const event = toStreamEvent(accumulator.add(toolCall));
+      const result = accumulator.add(toolCall);
 
-      if (event) {
-        yield event;
+      if (result.type !== 'completed') {
+        continue;
       }
+
+      const subtask = parseToolCall(result.toolCall);
+      generatedSubtasks.push(subtask);
+
+      yield {
+        type: 'tool_call',
+        toolCall: result.toolCall,
+      };
     }
 
     if (choice.finish_reason === 'length') {
@@ -91,10 +101,16 @@ export async function* normalizeDeepSeekStream(
     }
 
     if (choice.finish_reason === 'tool_calls') {
-      const event = toStreamEvent(accumulator.finish());
+      const result = accumulator.finish();
 
-      if (event) {
-        yield event;
+      if (result.type === 'completed') {
+        const subtask = parseToolCall(result.toolCall);
+        generatedSubtasks.push(subtask);
+
+        yield {
+          type: 'tool_call',
+          toolCall: result.toolCall,
+        };
       }
 
       streamCompleted = true;
@@ -103,7 +119,7 @@ export async function* normalizeDeepSeekStream(
         type: 'done',
         metadata: {
           model: parsedChunk.model,
-          response: generatedResponse || null,
+          response: JSON.stringify(generatedSubtasks),
           finishReason: choice.finish_reason,
           usage: normalizeDeepseekUsage(parsedChunk.usage),
         },

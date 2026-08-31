@@ -10,7 +10,8 @@ import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.ser
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
-import { toNdjsonStream } from '@/infrastructure/ai/utils/to-ndjson-stream';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
+import { toNdjsonStream } from '@/shared/streams/to-ndjson-stream';
 
 const AI_STREAM_TIMEOUT_MS = 600_000;
 

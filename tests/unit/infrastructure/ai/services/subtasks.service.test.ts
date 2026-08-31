@@ -16,9 +16,7 @@ vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
   createAiLog: vi.fn(),
   updateAiLog: vi.fn(),
 }));
-vi.mock('@/infrastructure/ai/services/ai-lock.admin.service', () => ({
-  releaseRequestLock: vi.fn(),
-}));
+
 vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
   getInitialAiLog: vi.fn(() => ({ status: 'pending' })),
   getSuccessAiLogs: vi.fn(() => ({ status: 'success' })),
@@ -30,28 +28,26 @@ const mockedUpdateAiLog = vi.mocked(updateAiLog);
 const mockedGetSuccessAiLogs = vi.mocked(getSuccessAiLogs);
 const mockedGetFailedAiLogs = vi.mocked(getFailedAiLogs);
 
-async function collectResponse(stream: ReadableStream<Uint8Array>) {
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  const chunks: string[] = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(decoder.decode(value, { stream: true }));
-  }
-  return chunks.join('');
-}
-
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
 const signal = new AbortController().signal;
 
-function createProvider(chunks: AiStreamEvent[]): AIProvider {
+function createProvider(events: AiStreamEvent[]): AIProvider {
   return {
     generate: vi.fn(),
     stream: async function* (_prompt, _signal) {
-      for (const chunk of chunks) yield chunk;
+      yield* events;
     },
   };
+}
+
+async function collectEvents(events: AsyncIterable<AiStreamEvent>) {
+  const result: AiStreamEvent[] = [];
+
+  for await (const event of events) {
+    result.push(event);
+  }
+
+  return result;
 }
 
 describe('streamSubtasksForTask', () => {
@@ -72,28 +68,25 @@ describe('streamSubtasksForTask', () => {
             inputTokens: 1,
             outputTokens: 1,
             totalTokens: 2,
-            reasoningTokens: 0,
-            cacheHitTokens: 0,
-            cacheMissTokens: 0,
-            durationMs: null,
           },
         },
       },
     ]);
     const providerStream = vi.spyOn(provider, 'stream');
 
-    const { stream } = await streamSubtasksForTask({
-      task,
-      userId: 'user-1',
-      provider,
-      signal,
-    });
-    await collectResponse(stream);
+    await collectEvents(
+      streamSubtasksForTask({
+        task,
+        userId: 'user-1',
+        provider,
+        signal,
+      })
+    );
 
     expect(providerStream).toHaveBeenCalledWith(expect.any(String), signal);
   });
 
-  it('streams subtasks and records successful completion metadata', async () => {
+  it('yields provider events and records successful completion metadata', async () => {
     const metadata = {
       model: 'deepseek-v4-flash',
       response: '[{"title":"Book hotel"}]',
@@ -102,27 +95,23 @@ describe('streamSubtasksForTask', () => {
         inputTokens: 10,
         outputTokens: 20,
         totalTokens: 30,
-        reasoningTokens: 0,
-        cacheHitTokens: 0,
-        cacheMissTokens: 0,
-        durationMs: null,
       },
     };
-    const provider = createProvider([
+    const events: AiStreamEvent[] = [
       { type: 'subtask', subtask: { title: 'Book hotel' } },
       { type: 'done', metadata },
-    ]);
-    const { stream, aiLogId } = await streamSubtasksForTask({
-      task,
-      userId: 'user-1',
-      provider,
-      signal,
-    });
+    ];
 
-    expect(aiLogId).toBe('log-1');
-    expect(await collectResponse(stream)).toBe(
-      '{"type":"subtask","subtask":{"title":"Book hotel"}}\n{"type":"done"}\n'
+    const result = await collectEvents(
+      streamSubtasksForTask({
+        task,
+        userId: 'user-1',
+        provider: createProvider(events),
+        signal,
+      })
     );
+
+    expect(result).toEqual(events);
     expect(mockedGetSuccessAiLogs).toHaveBeenCalledWith(
       metadata,
       metadata.response
@@ -132,7 +121,7 @@ describe('streamSubtasksForTask', () => {
     });
   });
 
-  it('does not emit an error or completion after cancellation', async () => {
+  it('does not emit an error after cancellation', async () => {
     const controller = new AbortController();
     const provider: AIProvider = {
       generate: vi.fn(),
@@ -142,49 +131,50 @@ describe('streamSubtasksForTask', () => {
       },
     };
 
-    const { stream } = await streamSubtasksForTask({
-      task,
-      userId: 'user-1',
-      provider,
-      signal: controller.signal,
-    });
-    expect(await collectResponse(stream)).toBe('');
+    const result = await collectEvents(
+      streamSubtasksForTask({
+        task,
+        userId: 'user-1',
+        provider,
+        signal: controller.signal,
+      })
+    );
+
+    expect(result).toEqual([]);
     expect(mockedUpdateAiLog).not.toHaveBeenCalled();
   });
 
-  it('records a failed generation and releases the lock when the provider fails', async () => {
-    const error = new Error('provider failed');
+  it('yields a normalized error and records the failed generation', async () => {
     const provider: AIProvider = {
       generate: vi.fn(),
       stream: async function* () {
-        throw error;
+        throw new Error('provider failed');
       },
     };
-    const { stream } = await streamSubtasksForTask({
-      task,
-      userId: 'user-1',
-      provider,
-      signal,
-    });
-    const reader = stream.getReader();
-    const decoder = new TextDecoder();
-    const first = await reader.read();
 
-    expect(first.done).toBe(false);
-    expect(JSON.parse(decoder.decode(first.value))).toEqual({
-      type: 'error',
-      error: {
-        success: false,
-        status: 502,
-        code: 'AI_GENERATION_FAILED',
-        message: 'provider failed',
+    const result = await collectEvents(
+      streamSubtasksForTask({
+        task,
+        userId: 'user-1',
+        provider,
+        signal,
+      })
+    );
+
+    expect(result).toEqual([
+      {
+        type: 'error',
+        error: {
+          success: false,
+          status: 502,
+          code: 'AI_GENERATION_FAILED',
+          message: 'AI generation failed',
+        },
       },
-    });
-    expect((await reader.read()).done).toBe(true);
+    ]);
     expect(mockedGetFailedAiLogs).toHaveBeenCalledWith(
       expect.objectContaining({
         code: 'AI_GENERATION_FAILED',
-        message: 'provider failed',
       })
     );
     expect(mockedUpdateAiLog).toHaveBeenCalledWith('log-1', {
@@ -192,34 +182,33 @@ describe('streamSubtasksForTask', () => {
     });
   });
 
-  it('releases the lock when logging fails after a successful generation', async () => {
+  it('does not fail the stream when successful logging fails', async () => {
     mockedUpdateAiLog.mockRejectedValueOnce(new Error('logging failed'));
-    const provider = createProvider([
-      {
-        type: 'done',
-        metadata: {
-          model: 'deepseek-v4-flash',
-          response: '[]',
-          finishReason: 'tool_calls',
-          usage: {
-            inputTokens: 1,
-            outputTokens: 1,
-            totalTokens: 2,
-            reasoningTokens: 0,
-            cacheHitTokens: 0,
-            cacheMissTokens: 0,
-            durationMs: null,
-          },
-        },
-      },
-    ]);
-    const { stream } = await streamSubtasksForTask({
-      task,
-      userId: 'user-1',
-      provider,
-      signal,
-    });
 
-    expect(await collectResponse(stream)).toBe('{"type":"done"}\n');
+    const result = await collectEvents(
+      streamSubtasksForTask({
+        task,
+        userId: 'user-1',
+        provider: createProvider([
+          {
+            type: 'done',
+            metadata: {
+              model: 'deepseek-v4-flash',
+              response: '[]',
+              finishReason: 'tool_calls',
+              usage: {
+                inputTokens: 1,
+                outputTokens: 1,
+                totalTokens: 2,
+              },
+            },
+          },
+        ]),
+        signal,
+      })
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.type).toBe('done');
   });
 });

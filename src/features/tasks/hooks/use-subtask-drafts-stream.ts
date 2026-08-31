@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { parseApiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { parseApiError } from '@/shared/errors/parse-api-error';
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';

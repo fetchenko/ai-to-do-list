@@ -1,16 +1,16 @@
 import { normalizeOllamaUsage } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import {
-  OllamaStreamChunk,
+  type OllamaStreamChunk,
   ollamaStreamChunkSchema,
   ollamaStreamDoneChunkSchema,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
-import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
+import type { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
@@ -51,18 +51,20 @@ export async function* normalizeOllamaStream(
     }
 
     for (const toolCall of chunk.message?.tool_calls ?? []) {
-      const parsedToolCall = parseToolCall({
+      const pendingToolCall = {
         index: toolCall.function.index ?? 0,
         id: toolCall.id ?? '',
         name: toolCall.function.name,
         arguments: JSON.stringify(toolCall.function.arguments),
-      });
+      };
 
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
-      }
+      const subtask = parseToolCall(pendingToolCall);
+      generatedSubtasks.push(subtask);
 
-      yield parsedToolCall;
+      yield {
+        type: 'tool_call',
+        toolCall: pendingToolCall,
+      };
     }
 
     if (chunk.done) {

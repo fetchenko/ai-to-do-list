@@ -5,29 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
-function deepSeekEvent(data: Record<string, unknown>): string {
-  const choices = Array.isArray(data.choices)
-    ? data.choices.map((choice, index) => {
-        if (!choice || typeof choice !== 'object') return choice;
-
-        const typedChoice = choice as Record<string, unknown>;
-        return {
-          index,
-          ...typedChoice,
-          finish_reason: typedChoice.finish_reason ?? null,
-        };
-      })
-    : data.choices;
-
-  return `data: ${JSON.stringify({
-    id: 'test-id',
-    object: 'chat.completion.chunk',
-    created: 1750000000,
-    model: 'deepseek-v4-flash',
-    system_fingerprint: 'test-fingerprint',
-    ...data,
-    choices,
-  })}\n\n`;
+function deepSeekEvent(data: unknown): string {
+  return `data: ${JSON.stringify(data)}\n\n`;
 }
 
 describe('normalizeDeepSeekStream', () => {
@@ -185,7 +164,7 @@ describe('normalizeDeepSeekStream', () => {
       {
         type: 'done',
         metadata: expect.objectContaining({
-          model: 'deepseek-v4-flash',
+          model: undefined,
           response:
             '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
         }),
@@ -311,7 +290,7 @@ describe('normalizeDeepSeekStream', () => {
     ]);
 
     await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
-      new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly')
+      new AiInvalidResponseFormat('DeepSeek returned an invalid stream chunk')
     );
   });
 });

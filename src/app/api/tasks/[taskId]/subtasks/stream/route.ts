@@ -4,7 +4,6 @@ import { getCurrentUser } from '@/features/auth/repository/auth.server.repositor
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import { checkRequestLock, releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
@@ -16,15 +15,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  let lockAcquired = false;
-  let userId: string | undefined;
-
   try {
     const { user } = await getCurrentUser();
-    userId = user.id;
-
-    await checkRequestLock(user.id);
-    lockAcquired = true;
 
     const provider = getAIProvider();
 
@@ -47,9 +39,6 @@ export async function POST(
       signal,
     });
 
-    // The stream owns the lock from this point onward.
-    lockAcquired = false;
-
     return new Response(result.stream, {
       headers: {
         'Content-Type': 'application/x-ndjson; charset=utf-8',
@@ -57,10 +46,6 @@ export async function POST(
       },
     });
   } catch (err: unknown) {
-    if (lockAcquired && userId) {
-      await releaseRequestLock(userId);
-    }
-
     const { status, ...error } = normalizeAiError(err);
 
     return NextResponse.json({ error }, { status });

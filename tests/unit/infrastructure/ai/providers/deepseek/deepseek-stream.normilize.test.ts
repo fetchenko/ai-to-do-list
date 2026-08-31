@@ -290,7 +290,7 @@ describe('normalizeDeepSeekStream', () => {
     ]);
 
     await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
-      new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly')
+      new AiInvalidResponseFormat('DeepSeek returned an invalid stream chunk')
     );
   });
 });

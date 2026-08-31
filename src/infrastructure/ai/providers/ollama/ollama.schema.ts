@@ -20,7 +20,7 @@ export const ollamaChatResponseSchema = z.object({
 
 export const ollamaStreamChunkSchema = z.object({
   model: z.string(),
-  created_at: z.string(),
+  created_at: z.string().optional(),
 
   message: z
     .object({
@@ -58,13 +58,11 @@ export const ollamaStreamChunkSchema = z.object({
 
 export const ollamaStreamDoneChunkSchema = ollamaStreamChunkSchema.extend({
   done: z.literal(true),
-  done_reason: z.string(),
+  done_reason: z.string().optional(),
 });
 
 export type OllamaStreamChunk = z.infer<typeof ollamaStreamChunkSchema>;
 
-export type OllamaStreamDoneChunk = z.infer<
-  typeof ollamaStreamDoneChunkSchema
->;
+export type OllamaStreamDoneChunk = z.infer<typeof ollamaStreamDoneChunkSchema>;
 
 export type OllamaResponse = z.infer<typeof ollamaChatResponseSchema>;

@@ -2,10 +2,16 @@ import { TaskPreview } from '@/features/tasks/types/database.types';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { createAiLog, updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
+import {
+  createAiLog,
+  updateAiLog,
+} from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import { getFailedAiLogs, getInitialAiLog, getSuccessAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
+import {
+  getFailedAiLogs,
+  getInitialAiLog,
+  getSuccessAiLogs,
+} from '@/infrastructure/ai/utils/ai-log.utils';
 
 export async function generateSubtasksForTask({
   task,
@@ -98,8 +104,6 @@ export async function streamSubtasksForTask({
         } catch {
           // Logging failure must not fail an otherwise successful generation.
         }
-      } finally {
-        await releaseRequestLock(userId);
       }
     },
   });

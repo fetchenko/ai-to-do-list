@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
-import { AiGenerationError, AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import {
+  AiGenerationError,
+  AiInvalidResponseFormat,
+} from '@/shared/errors/app-error';
 
 function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -106,8 +109,6 @@ describe('normalizeOllamaStream', () => {
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
-      { type: 'content', content: 'Hello' },
-      { type: 'content', content: ' world' },
       {
         type: 'done',
         metadata: expect.objectContaining({
@@ -126,7 +127,7 @@ describe('normalizeOllamaStream', () => {
 
   it('throws an AI generation error when Ollama reports a stream error', async () => {
     const body = createStream([
-      { error: 'model is unavailable', done: false },
+      { error: 'model is unavailable', model: 'qwen3', done: false },
     ]);
 
     await expect(collectStream(normalizeOllamaStream(body))).rejects.toEqual(

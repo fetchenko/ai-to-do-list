@@ -7,7 +7,6 @@ import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
-import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
   AiEmptyResponseError,
@@ -18,6 +17,7 @@ import {
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/parse-api-error';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function* streamSubtasks(

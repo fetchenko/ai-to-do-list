@@ -56,10 +56,13 @@ describe('normalizeOllamaStream', () => {
 
     await expect(collectStream(normalizeOllamaStream(body))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: {
-          title: 'Buy groceries',
-          description: 'Buy groceries from the store',
+        type: 'tool_call',
+        toolCall: {
+          index: 0,
+          id: 'call_0',
+          name: 'create_subtask',
+          arguments:
+            '{"title":"Buy groceries","description":"Buy groceries from the store"}',
         },
       },
       {

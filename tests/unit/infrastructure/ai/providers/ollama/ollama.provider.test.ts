@@ -1,3 +1,4 @@
+import { collect as collectStream } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OllamaProvider } from '@/infrastructure/ai/providers/ollama/ollama.provider';
@@ -27,12 +28,6 @@ function ollamaDoneChunk() {
   };
 }
 
-async function collectStream(stream: AsyncIterable<unknown>): Promise<unknown[]> {
-  const result: unknown[] = [];
-  for await (const chunk of stream) result.push(chunk);
-  return result;
-}
-
 describe('OllamaProvider.stream', () => {
   beforeEach(() => vi.restoreAllMocks());
 
@@ -44,7 +39,9 @@ describe('OllamaProvider.stream', () => {
 
     await collectStream(new OllamaProvider().stream('Create subtasks', signal));
 
-    expect(fetchMock.mock.calls[0][1]).toEqual(expect.objectContaining({ signal }));
+    expect(fetchMock.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ signal })
+    );
   });
 
   it('throws when Ollama returns an error', async () => {
@@ -52,14 +49,20 @@ describe('OllamaProvider.stream', () => {
       new Response('Ollama unavailable', { status: 500 })
     );
     await expect(
-      collectStream(new OllamaProvider().stream('test', new AbortController().signal))
+      collectStream(
+        new OllamaProvider().stream('test', new AbortController().signal)
+      )
     ).rejects.toThrow('AI unavailable');
   });
 
   it('throws when Ollama returns no response body', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 200 }));
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 200 })
+    );
     await expect(
-      collectStream(new OllamaProvider().stream('test', new AbortController().signal))
+      collectStream(
+        new OllamaProvider().stream('test', new AbortController().signal)
+      )
     ).rejects.toThrow('AI response is empty');
   });
 });

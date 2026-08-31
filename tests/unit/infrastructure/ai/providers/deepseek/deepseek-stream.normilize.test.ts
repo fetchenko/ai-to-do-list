@@ -104,17 +104,14 @@ describe('normalizeDeepSeekStream', () => {
     ]);
   });
 
-  it('emits content chunks', async () => {
+  it("doesn't emits content chunks", async () => {
     const stream = createStream([
       deepSeekChunk({ delta: { content: 'Hello' } }),
       deepSeekChunk({ delta: { content: ' world' } }),
       'data: [DONE]\n\n',
     ]);
 
-    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
-      { type: 'content', content: 'Hello' },
-      { type: 'content', content: ' world' },
-    ]);
+    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([]);
   });
 
   it('emits multiple subtasks in tool-call order', async () => {

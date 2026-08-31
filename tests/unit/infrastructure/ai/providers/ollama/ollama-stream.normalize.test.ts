@@ -1,3 +1,4 @@
+import { collect as collectStream } from '@tests/utils/collect';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
@@ -17,14 +18,6 @@ function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
       controller.close();
     },
   });
-}
-
-async function collectStream(
-  stream: AsyncIterable<unknown>
-): Promise<unknown[]> {
-  const result = [];
-  for await (const chunk of stream) result.push(chunk);
-  return result;
 }
 
 describe('normalizeOllamaStream', () => {

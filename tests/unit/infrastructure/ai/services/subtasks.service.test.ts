@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { releaseRequestLock } from '@/infrastructure/ai/services/ai-lock.admin.service';
 import {
   createAiLog,
   updateAiLog,
@@ -28,7 +27,6 @@ vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
 
 const mockedCreateAiLog = vi.mocked(createAiLog);
 const mockedUpdateAiLog = vi.mocked(updateAiLog);
-const mockedReleaseRequestLock = vi.mocked(releaseRequestLock);
 const mockedGetSuccessAiLogs = vi.mocked(getSuccessAiLogs);
 const mockedGetFailedAiLogs = vi.mocked(getFailedAiLogs);
 

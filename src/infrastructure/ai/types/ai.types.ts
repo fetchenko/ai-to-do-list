@@ -1,4 +1,3 @@
-import { ErrorCode } from '@/shared/errors/code';
 import type { AiErrorResult } from '@/shared/errors/ai-error.types';
 import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 

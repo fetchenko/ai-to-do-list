@@ -1,9 +1,13 @@
-import { PendingToolCall } from '@/infrastructure/ai/tools/tool-call.types';
-import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import type { PendingToolCall } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
-import { subtaskResponseSchema } from '@/shared/schema/subtasks.schema';
+import {
+  subtaskResponseSchema,
+  type SubtaskResponse,
+} from '@/shared/schema/subtasks.schema';
 
-export function parseToolCall(toolCall: PendingToolCall): AiStreamEvent {
+export function parseToolCall(
+  toolCall: PendingToolCall
+): SubtaskResponse {
   if (toolCall.name !== 'create_subtask') {
     throw new AiInvalidResponseFormat(`Unexpected AI tool: ${toolCall.name}`);
   }
@@ -22,8 +26,5 @@ export function parseToolCall(toolCall: PendingToolCall): AiStreamEvent {
     throw new AiInvalidResponseFormat('AI returned an invalid subtask');
   }
 
-  return {
-    type: 'subtask',
-    subtask: result.data,
-  };
+  return result.data;
 }

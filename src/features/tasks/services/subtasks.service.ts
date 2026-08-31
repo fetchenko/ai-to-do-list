@@ -12,7 +12,7 @@ import { createClient } from '@/infrastructure/supabase/client';
 import { AiEmptyResponseError, AiInvalidResponseFormat, AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
-import { parseApiError } from '@/infrastructure/ai/utils/ai-error.utils';
+import { parseApiError } from '@/shared/errors/parse-api-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export async function* streamSubtasks(

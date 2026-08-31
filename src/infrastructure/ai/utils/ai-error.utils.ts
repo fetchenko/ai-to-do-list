@@ -1,24 +1,7 @@
 import { AiErrorResult } from '@/infrastructure/ai/types/ai.types';
-import { apiErrorSchema } from '@/shared/errors/api-error.schema';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-
-export function parseApiError(error: unknown): AppError {
-  const result = apiErrorSchema.safeParse(error);
-
-  if (!result.success) {
-    return new AppError(
-      ErrorCode.UNKNOWN,
-      ErrorHttpStatus[ErrorCode.UNKNOWN],
-      'Something went wrong.'
-    );
-  }
-
-  const { code, status, message, details } = result.data;
-
-  return new AppError(code, status, message, details);
-}
 
 export function normalizeAiError(err: unknown): AiErrorResult {
   if (err instanceof Error && err.name === 'AbortError') {

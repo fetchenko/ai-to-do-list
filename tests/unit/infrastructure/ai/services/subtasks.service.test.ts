@@ -98,7 +98,15 @@ describe('streamSubtasksForTask', () => {
       },
     };
     const events: AiStreamEvent[] = [
-      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      {
+        type: 'tool_call',
+        toolCall: {
+          index: 0,
+          id: 'call_0',
+          name: 'create_subtask',
+          arguments: '{"title":"Book hotel"}',
+        },
+      },
       { type: 'done', metadata },
     ];
 

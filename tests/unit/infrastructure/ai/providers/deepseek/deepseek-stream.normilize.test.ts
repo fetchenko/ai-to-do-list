@@ -28,7 +28,7 @@ function deepSeekChunk(
 }
 
 describe('normalizeDeepSeekStream', () => {
-  it('accumulates a tool call and emits a subtask when complete', async () => {
+  it('accumulates a tool call and emits it when complete', async () => {
     const stream = createStream([
       deepSeekChunk({
         delta: {
@@ -78,10 +78,13 @@ describe('normalizeDeepSeekStream', () => {
 
     expect(result).toEqual([
       {
-        type: 'subtask',
-        subtask: {
-          title: 'Buy a phone',
-          description: 'Choose a suitable phone',
+        type: 'tool_call',
+        toolCall: {
+          index: 0,
+          id: 'call_0',
+          name: 'create_subtask',
+          arguments:
+            '{"title":"Buy a phone","description":"Choose a suitable phone"}',
         },
       },
       {
@@ -104,7 +107,7 @@ describe('normalizeDeepSeekStream', () => {
     ]);
   });
 
-  it("doesn't emits content chunks", async () => {
+  it("doesn't emit content chunks", async () => {
     const stream = createStream([
       deepSeekChunk({ delta: { content: 'Hello' } }),
       deepSeekChunk({ delta: { content: ' world' } }),
@@ -114,7 +117,7 @@ describe('normalizeDeepSeekStream', () => {
     await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([]);
   });
 
-  it('emits multiple subtasks in tool-call order', async () => {
+  it('emits multiple tool calls in order', async () => {
     const stream = createStream([
       deepSeekChunk({
         delta: {
@@ -157,12 +160,24 @@ describe('normalizeDeepSeekStream', () => {
 
     expect(result).toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'First', description: 'First description' },
+        type: 'tool_call',
+        toolCall: {
+          index: 0,
+          id: 'call_0',
+          name: 'create_subtask',
+          arguments:
+            '{"title":"First","description":"First description"}',
+        },
       },
       {
-        type: 'subtask',
-        subtask: { title: 'Second', description: 'Second description' },
+        type: 'tool_call',
+        toolCall: {
+          index: 1,
+          id: 'call_1',
+          name: 'create_subtask',
+          arguments:
+            '{"title":"Second","description":"Second description"}',
+        },
       },
       {
         type: 'done',
@@ -200,8 +215,14 @@ describe('normalizeDeepSeekStream', () => {
 
     expect(result).toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
+        type: 'tool_call',
+        toolCall: {
+          index: 0,
+          id: 'call_0',
+          name: 'create_subtask',
+          arguments:
+            '{"title":"Buy a phone","description":"Choose a phone"}',
+        },
       },
       {
         type: 'done',

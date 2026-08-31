@@ -5,7 +5,6 @@ import {
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import type { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
@@ -31,19 +30,6 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
   }
 
   return result.data;
-}
-
-function toStreamEvent(
-  result: ToolCallAccumulatorResult
-): AiStreamEvent | null {
-  if (result.type !== 'completed') {
-    return null;
-  }
-
-  return {
-    type: 'tool_call',
-    toolCall: result.toolCall,
-  };
 }
 
 export async function* normalizeDeepSeekStream(

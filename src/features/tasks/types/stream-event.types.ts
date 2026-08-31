@@ -1,5 +1,5 @@
-import { AiErrorResult } from '@/infrastructure/ai/types/ai.types';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
+import type { ApiError } from '@/shared/errors/api-error.schema';
+import type { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 /**
  * HTTP streaming protocol consumed by the frontend.
@@ -8,8 +8,6 @@ import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
  * `done` indicates successful completion.
  * `error` indicates generation failure and is followed by
  * stream completion.
- *
- * Provider-specific errors and metadata are never exposed.
  */
 export type SubtaskStreamEvent =
   | {
@@ -21,5 +19,5 @@ export type SubtaskStreamEvent =
     }
   | {
       type: 'error';
-      error: AiErrorResult;
+      error: ApiError & { success: false };
     };

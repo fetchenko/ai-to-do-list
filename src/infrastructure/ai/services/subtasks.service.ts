@@ -12,6 +12,7 @@ import {
   getInitialAiLog,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 
 export async function generateSubtasksForTask({
   task,
@@ -35,7 +36,7 @@ export async function generateSubtasksForTask({
   return { data, aiLogId };
 }
 
-export async function streamSubtasksForTask({
+export async function* streamSubtasksForTask({
   task,
   userId,
   provider,
@@ -45,68 +46,43 @@ export async function streamSubtasksForTask({
   userId: string;
   provider: AIProvider;
   signal: AbortSignal;
-}) {
+}): AsyncGenerator<AiStreamEvent> {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
-  const encoder = new TextEncoder();
   const prompt = taskDecomposerStreamPrompt(task.title);
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const event of provider.stream(prompt, signal)) {
-          if (signal.aborted) {
-            controller.close();
-            return;
-          }
+  try {
+    for await (const event of provider.stream(prompt, signal)) {
+      if (signal.aborted) return;
 
-          if (event.type === 'subtask') {
-            controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
-          }
-
-          if (event.type === 'done') {
-            if (aiLogId) {
-              try {
-                await updateAiLog(
-                  aiLogId,
-                  getSuccessAiLogs(event.metadata, event.metadata.response)
-                );
-              } catch {
-                // Logging failure must not fail an otherwise successful generation.
-              }
-            }
-
-            controller.enqueue(
-              encoder.encode(JSON.stringify({ type: 'done' }) + '\n')
-            );
-          }
-        }
-
-        if (!signal.aborted) controller.close();
-      } catch (error) {
-        if (signal.aborted) {
-          controller.close();
-          return;
-        }
-
-        const normalizedError = normalizeAiError(error);
-
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({ type: 'error', error: normalizedError }) + '\n'
-          )
-        );
-        controller.close();
-
+      if (event.type === 'done' && aiLogId) {
         try {
-          if (aiLogId) {
-            await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
-          }
+          await updateAiLog(
+            aiLogId,
+            getSuccessAiLogs(event.metadata, event.metadata.response)
+          );
         } catch {
           // Logging failure must not fail an otherwise successful generation.
         }
       }
-    },
-  });
 
-  return { stream, aiLogId };
+      yield event;
+    }
+  } catch (error) {
+    if (signal.aborted) return;
+
+    const normalizedError = normalizeAiError(error);
+
+    if (aiLogId) {
+      try {
+        await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
+      } catch {
+        // Logging failure must not replace the original generation error.
+      }
+    }
+
+    yield {
+      type: 'error',
+      error: normalizedError,
+    };
+  }
 }

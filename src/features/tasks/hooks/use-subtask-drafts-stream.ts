@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
+import { parseApiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
@@ -31,14 +32,8 @@ export function useSubtaskDraftsStream(
             break;
           case 'done':
             break;
-          case 'error': {
-            throw new AppError(
-              chunk.error.code,
-              chunk.error.status,
-              chunk.error.message,
-              chunk.error.details
-            );
-          }
+          case 'error':
+            throw parseApiError(chunk.error);
         }
       }
     },

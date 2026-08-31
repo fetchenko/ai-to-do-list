@@ -12,7 +12,7 @@ import {
   getInitialAiLog,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
-import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 
 export async function generateSubtasksForTask({
   task,
@@ -80,9 +80,6 @@ export async function* streamSubtasksForTask({
       }
     }
 
-    yield {
-      type: 'error',
-      error: normalizedError,
-    };
+    throw error;
   }
 }

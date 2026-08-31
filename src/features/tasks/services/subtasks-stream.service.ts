@@ -3,7 +3,6 @@ import type { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.typ
 import { streamSubtasksForTask as streamAiSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 
 export async function* streamSubtasksForTask({
   task,
@@ -16,29 +15,25 @@ export async function* streamSubtasksForTask({
   provider: AIProvider;
   signal: AbortSignal;
 }): AsyncGenerator<SubtaskStreamEvent> {
-  try {
-    for await (const event of streamAiSubtasksForTask({
-      task,
-      userId,
-      provider,
-      signal,
-    })) {
-      if (event.type === 'tool_call') {
-        yield {
-          type: 'subtask',
-          subtask: parseToolCall(event.toolCall),
-        };
-        continue;
-      }
-
-      yield { type: 'done' };
+  for await (const event of streamAiSubtasksForTask({
+    task,
+    userId,
+    provider,
+    signal,
+  })) {
+    if (event.type === 'tool_call') {
+      yield {
+        type: 'subtask',
+        subtask: parseToolCall(event.toolCall),
+      };
+      continue;
     }
-  } catch (error) {
-    if (signal.aborted) return;
 
-    yield {
-      type: 'error',
-      error: normalizeAiError(error),
-    };
+    if (event.type === 'error') {
+      yield event;
+      continue;
+    }
+
+    yield { type: 'done' };
   }
 }

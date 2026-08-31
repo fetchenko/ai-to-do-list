@@ -1,17 +1,17 @@
 import { normalizeOllamaUsage } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import {
+  OllamaStreamChunk,
   ollamaStreamChunkSchema,
   ollamaStreamDoneChunkSchema,
-  OllamaStreamChunk,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/app-error';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
   const result = ollamaStreamChunkSchema.safeParse(rawChunk);
@@ -25,9 +25,7 @@ function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
   return result.data;
 }
 
-function parseOllamaDoneChunk(
-  chunk: OllamaStreamChunk
-): OllamaStreamChunk {
+function parseOllamaDoneChunk(chunk: OllamaStreamChunk): OllamaStreamChunk {
   const result = ollamaStreamDoneChunkSchema.safeParse(chunk);
 
   if (!result.success) {

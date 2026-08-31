@@ -2,7 +2,7 @@ import { collect } from '@tests/utils/collect';
 import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
-import { readJsonStream } from '@/features/tasks/utils/read-json-stream';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 describe('readJsonStream', () => {
   it('parses JSON remaining in the final buffer', async () => {

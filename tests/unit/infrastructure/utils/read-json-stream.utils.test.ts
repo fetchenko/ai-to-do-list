@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { readJsonStream } from '@/infrastructure/ai/utils/read-json-stream.utils';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 function createStream(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();

@@ -80,6 +80,9 @@ export async function* streamSubtasksForTask({
       }
     }
 
-    throw error;
+    yield {
+      type: 'error',
+      error: normalizedError,
+    };
   }
 }

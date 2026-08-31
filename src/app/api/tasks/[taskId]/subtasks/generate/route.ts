@@ -4,10 +4,6 @@ import { getCurrentUser } from '@/features/auth/repository/auth.server.repositor
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import {
-  checkRequestLock,
-  releaseRequestLock,
-} from '@/infrastructure/ai/services/ai-lock.admin.service';
 import { updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
@@ -20,16 +16,11 @@ export async function POST(
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
   let aiLogId: string | null = null;
-  let userId;
-
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
 
   try {
     const { user } = await getCurrentUser();
-    userId = user.id;
-
-    await checkRequestLock(user.id);
 
     const provider = getAIProvider();
 
@@ -38,7 +29,6 @@ export async function POST(
     }
 
     const { taskId } = await parseAiParams(params);
-
     const task = await getTaskForUser(taskId, user.id);
 
     const result = await generateSubtasksForTask({
@@ -68,7 +58,5 @@ export async function POST(
     return NextResponse.json({ error }, { status });
   } finally {
     clearTimeout(timeout);
-
-    await releaseRequestLock(userId);
   }
 }

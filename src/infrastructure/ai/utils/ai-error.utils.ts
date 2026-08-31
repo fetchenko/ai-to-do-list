@@ -3,6 +3,8 @@ import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
+const DEFAULT_AI_ERROR_MESSAGE = 'AI generation failed';
+
 export function normalizeAiError(err: unknown): AiErrorResult {
   if (err instanceof Error && err.name === 'AbortError') {
     return {
@@ -13,21 +15,12 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     };
   }
 
-  if (err instanceof TypeError) {
-    return {
-      success: false,
-      status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
-      code: ErrorCode.AI_GENERATION_FAILED,
-      message: err.message ?? 'AI generation failed',
-    };
-  }
-
   if (err instanceof AppError) {
     return {
       success: false,
       status: err.status ?? ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
       code: err.code ?? ErrorCode.AI_GENERATION_FAILED,
-      message: err.message ?? 'AI generation failed',
+      message: err.message ?? DEFAULT_AI_ERROR_MESSAGE,
       details: err.details,
     };
   }
@@ -36,6 +29,6 @@ export function normalizeAiError(err: unknown): AiErrorResult {
     success: false,
     status: ErrorHttpStatus[ErrorCode.AI_GENERATION_FAILED],
     code: ErrorCode.AI_GENERATION_FAILED,
-    message: err instanceof Error ? err.message : 'AI generation failed',
+    message: DEFAULT_AI_ERROR_MESSAGE,
   };
 }

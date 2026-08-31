@@ -45,7 +45,9 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
 
   const handleSubtask = useCallback(
     (draftSubtask: AiTask) => {
-      append(normalizeAiTask(draftSubtask));
+      append(normalizeAiTask(draftSubtask), {
+        shouldFocus: false
+      });
     },
     [append]
   );
@@ -76,16 +78,18 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
       className="space-y-2"
     >
       {showGenerateButton && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleGenerate}
-          disabled={isSaving}
-        >
-          <Sparkles className="size-4" aria-hidden="true" />
-          Generate Subtask
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleGenerate}
+            disabled={isSaving}
+          >
+            <Sparkles className="size-4" aria-hidden="true" />
+            Generate Subtask
+          </Button>
+        </div>
       )}
 
       {isGenerating && (

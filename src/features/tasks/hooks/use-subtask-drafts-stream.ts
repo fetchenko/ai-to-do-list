@@ -18,12 +18,7 @@ export function useSubtaskDraftsStream(
 ) {
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const {
-    error,
-    isPending,
-    mutate,
-    reset,
-  } = useMutation({
+  const { error, isPending, mutate, reset } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
       if (!taskId) {
         throw new ValidationRequestError('Missing task id');
@@ -37,12 +32,11 @@ export function useSubtaskDraftsStream(
           case 'done':
             break;
           case 'error': {
-            const { error } = chunk;
             throw new AppError(
-              error.code,
-              error.status,
-              error.message,
-              error.details
+              chunk.error.code,
+              chunk.error.status,
+              chunk.error.message,
+              chunk.error.details
             );
           }
         }

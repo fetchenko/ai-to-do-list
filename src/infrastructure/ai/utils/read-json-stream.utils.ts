@@ -1,6 +1,6 @@
-export async function* readJsonStream(
+export async function* readJsonStream<T>(
   body: ReadableStream<Uint8Array>
-): AsyncIterable<unknown> {
+): AsyncGenerator<T> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
 
@@ -8,31 +8,26 @@ export async function* readJsonStream(
 
   try {
     while (true) {
-      const { value, done } = await reader.read();
+      const { done, value } = await reader.read();
 
       if (done) {
+        buffer += decoder.decode();
         break;
       }
 
       buffer += decoder.decode(value, { stream: true });
 
       const lines = buffer.split('\n');
-
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
-        if (!line.trim()) {
-          continue;
-        }
-
-        yield JSON.parse(line);
+        if (!line.trim()) continue;
+        yield JSON.parse(line) as T;
       }
     }
 
-    buffer += decoder.decode();
-
     if (buffer.trim()) {
-      yield JSON.parse(buffer);
+      yield JSON.parse(buffer) as T;
     }
   } finally {
     reader.releaseLock();

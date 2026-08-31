@@ -23,8 +23,6 @@ const textLikeFieldClass =
   'focus-visible:rounded-md focus-visible:border-solid focus-visible:border-input ' +
   'focus-visible:bg-background focus-visible:shadow-sm focus-visible:ring-1 focus-visible:ring-ring';
 
-const animateClass = 'animate-in fade-in slide-in-from-bottom-1 duration-200'
-
 export function DraftSubtaskRow({
   titleRegister,
   descriptionRegister,
@@ -34,24 +32,14 @@ export function DraftSubtaskRow({
   return (
     <li
       data-testid={testIds.draftSubtask.row}
-      className={`flex flex-col gap-1 rounded-md p-1 sm:flex-row sm:items-start ${animateClass}`}
+      className="animate-in fade-in slide-in-from-bottom-1 relative flex flex-col gap-1 rounded-md p-1 duration-200 sm:flex-row sm:items-start"
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={onRemove}
-        aria-label="Remove draft subtask"
-        className="text-muted-foreground self-end sm:self-start"
-      >
-        <X className="size-4" aria-hidden="true" />
-      </Button>
       <div className="min-w-0 flex-1">
         <Input
           data-testid="draft-subtask"
           aria-label="Subtask title"
           aria-invalid={!!titleError}
-          className={cn('font-medium', textLikeFieldClass)}
+          className={cn('pr-10 font-medium', textLikeFieldClass)}
           {...titleRegister}
         />
         {titleError && (
@@ -71,7 +59,16 @@ export function DraftSubtaskRow({
         />
       </div>
 
-
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={onRemove}
+        aria-label="Remove draft subtask"
+        className="text-muted-foreground absolute right-1 top-1 sm:static sm:shrink-0"
+      >
+        <X className="size-4" aria-hidden="true" />
+      </Button>
     </li>
   );
 }

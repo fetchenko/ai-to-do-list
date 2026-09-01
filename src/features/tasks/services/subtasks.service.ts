@@ -5,7 +5,6 @@ import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
-import { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
@@ -17,8 +16,9 @@ import {
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/parse-api-error';
-import { readJsonStream } from '@/shared/streams/read-json-stream';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
+import { readJsonStream } from '@/shared/streams/read-json-stream';
+import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export async function* streamSubtasks(
   taskId: string,
@@ -43,7 +43,9 @@ export async function* streamSubtasks(
 }
 
 export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
-  const res = await fetch(API_ROUTES.generateSubtasks(taskId), { method: 'POST' });
+  const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
+    method: 'POST',
+  });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -60,7 +62,9 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
 
   if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError('No meaningful subtasks could be generated.');
+    throw new AiEmptyResponseError(
+      'No meaningful subtasks could be generated.'
+    );
   }
 
   return parsed.subtasks.map((subtask) => ({
@@ -69,7 +73,10 @@ export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
   }));
 }
 
-export async function saveSubtasks(parentTaskId: string, subtasks: TaskInsert[]) {
+export async function saveSubtasks(
+  parentTaskId: string,
+  subtasks: TaskInsert[]
+) {
   const supabase = createClient();
   const lastPosition = await getLastPosition(parentTaskId);
   let prev = lastPosition ?? null;

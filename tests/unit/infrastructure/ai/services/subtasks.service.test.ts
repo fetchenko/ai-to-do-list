@@ -1,3 +1,4 @@
+import { collect } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
@@ -11,6 +12,7 @@ import {
   getFailedAiLogs,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
+import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
   createAiLog: vi.fn(),
@@ -40,16 +42,6 @@ function createProvider(events: AiStreamEvent[]): AIProvider {
   };
 }
 
-async function collectEvents(events: AsyncIterable<AiStreamEvent>) {
-  const result: AiStreamEvent[] = [];
-
-  for await (const event of events) {
-    result.push(event);
-  }
-
-  return result;
-}
-
 describe('streamSubtasksForTask', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,7 +66,7 @@ describe('streamSubtasksForTask', () => {
     ]);
     const providerStream = vi.spyOn(provider, 'stream');
 
-    await collectEvents(
+    await collect(
       streamSubtasksForTask({
         task,
         userId: 'user-1',
@@ -102,7 +94,12 @@ describe('streamSubtasksForTask', () => {
       { type: 'done', metadata },
     ];
 
-    const result = await collectEvents(
+    const clientEvents: SubtaskStreamEvent[] = [
+      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'done' },
+    ];
+
+    const result = await collect(
       streamSubtasksForTask({
         task,
         userId: 'user-1',
@@ -111,7 +108,7 @@ describe('streamSubtasksForTask', () => {
       })
     );
 
-    expect(result).toEqual(events);
+    expect(result).toEqual(clientEvents);
     expect(mockedGetSuccessAiLogs).toHaveBeenCalledWith(
       metadata,
       metadata.response
@@ -131,7 +128,7 @@ describe('streamSubtasksForTask', () => {
       },
     };
 
-    const result = await collectEvents(
+    const result = await collect(
       streamSubtasksForTask({
         task,
         userId: 'user-1',
@@ -152,7 +149,7 @@ describe('streamSubtasksForTask', () => {
       },
     };
 
-    const result = await collectEvents(
+    const result = await collect(
       streamSubtasksForTask({
         task,
         userId: 'user-1',
@@ -185,7 +182,7 @@ describe('streamSubtasksForTask', () => {
   it('does not fail the stream when successful logging fails', async () => {
     mockedUpdateAiLog.mockRejectedValueOnce(new Error('logging failed'));
 
-    const result = await collectEvents(
+    const result = await collect(
       streamSubtasksForTask({
         task,
         userId: 'user-1',

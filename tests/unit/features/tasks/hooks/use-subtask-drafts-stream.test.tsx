@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react';
-import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSubtaskDraftsStream } from '@/features/tasks/hooks/use-subtask-drafts-stream';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import type { AiTask } from '@/features/tasks/types/tasks.types';
-import type { SubtaskStreamEvent } from '@/features/tasks/types/stream-event.types';
 import { AiUnavailableError, ValidationRequestError } from '@/shared/errors/app-error';
+import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({ streamSubtasks: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { info: vi.fn() } }));

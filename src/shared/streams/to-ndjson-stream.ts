@@ -1,6 +1,5 @@
-export function toNdjsonStream<T, R = T>(
-  events: AsyncIterable<T>,
-  mapEvent: (event: T) => R = (event) => event as unknown as R
+export function toNdjsonStream<T>(
+  events: AsyncIterable<T>
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
@@ -8,9 +7,7 @@ export function toNdjsonStream<T, R = T>(
     async start(controller) {
       try {
         for await (const event of events) {
-          controller.enqueue(
-            encoder.encode(`${JSON.stringify(mapEvent(event))}\n`)
-          );
+          controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
         }
 
         controller.close();

@@ -12,7 +12,8 @@ import {
   getInitialAiLog,
   getSuccessAiLogs,
 } from '@/infrastructure/ai/utils/ai-log.utils';
-import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
+import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export async function generateSubtasksForTask({
   task,
@@ -46,7 +47,7 @@ export async function* streamSubtasksForTask({
   userId: string;
   provider: AIProvider;
   signal: AbortSignal;
-}): AsyncGenerator<AiStreamEvent> {
+}): AsyncGenerator<SubtaskStreamEvent> {
   const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
   const prompt = taskDecomposerStreamPrompt(task.title);
 
@@ -65,7 +66,7 @@ export async function* streamSubtasksForTask({
         }
       }
 
-      yield event;
+      yield toClientEvent(event);
     }
   } catch (error) {
     if (signal.aborted) return;

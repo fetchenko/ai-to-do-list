@@ -28,13 +28,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
   stream() {
     return new ReadableStream<Uint8Array>({
-      start: async (controller) => {
-        try {
-          await this.run(controller);
-        } catch (error) {
-          await this.handleFailure(controller, error);
-        }
-      },
+      start: (controller) => this.run(controller),
 
       cancel: async () => {
         await this.options.generation.cancel('client_disconnect');

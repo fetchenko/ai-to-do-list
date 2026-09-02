@@ -1,34 +1,35 @@
 import { collect } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {
-  createAiLog,
-  updateAiLog,
+  cancelAiGenerationLog,
+  completeAiGenerationLog,
+  createAiGenerationLog,
+  failAiGenerationLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import {
-  getFailedAiLogs,
-  getSuccessAiLogs,
-} from '@/infrastructure/ai/utils/ai-log.utils';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
+vi.mock('@/infrastructure/ai/generations/start-subtask-generation', () => ({
+  startSubtaskGeneration: vi.fn(),
+}));
+
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({
-  createAiLog: vi.fn(),
-  updateAiLog: vi.fn(),
+  createAiGenerationLog: vi.fn(),
+  completeAiGenerationLog: vi.fn(),
+  failAiGenerationLog: vi.fn(),
+  cancelAiGenerationLog: vi.fn(),
 }));
 
-vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
-  getInitialAiLog: vi.fn(() => ({ status: 'pending' })),
-  getSuccessAiLogs: vi.fn(() => ({ status: 'success' })),
-  getFailedAiLogs: vi.fn(() => ({ status: 'failed' })),
-}));
+const mockedStartSubtaskGeneration = vi.mocked(startSubtaskGeneration);
 
-const mockedCreateAiLog = vi.mocked(createAiLog);
-const mockedUpdateAiLog = vi.mocked(updateAiLog);
-const mockedGetSuccessAiLogs = vi.mocked(getSuccessAiLogs);
-const mockedGetFailedAiLogs = vi.mocked(getFailedAiLogs);
+const mockedCreateAiGenerationLog = vi.mocked(createAiGenerationLog);
+const mockedCompleteAiGenerationLog = vi.mocked(completeAiGenerationLog);
+const mockedFailAiGenerationLog = vi.mocked(failAiGenerationLog);
+const mockedCancelAiGenerationLog = vi.mocked(cancelAiGenerationLog);
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
 const signal = new AbortController().signal;
@@ -45,7 +46,7 @@ function createProvider(events: AiStreamEvent[]): AIProvider {
 describe('streamSubtasksForTask', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedCreateAiLog.mockResolvedValue('log-1');
+    mockedCreateAiGenerationLog.mockResolvedValue('log-1');
   });
 
   it('passes the supplied signal to the provider', async () => {
@@ -109,12 +110,9 @@ describe('streamSubtasksForTask', () => {
     );
 
     expect(result).toEqual(clientEvents);
-    expect(mockedGetSuccessAiLogs).toHaveBeenCalledWith(
+    expect(mockedCompleteAiGenerationLog).toHaveBeenCalledWith({
+      id: 'log-1',
       metadata,
-      metadata.response
-    );
-    expect(mockedUpdateAiLog).toHaveBeenCalledWith('log-1', {
-      status: 'success',
     });
   });
 
@@ -138,7 +136,6 @@ describe('streamSubtasksForTask', () => {
     );
 
     expect(result).toEqual([]);
-    expect(mockedUpdateAiLog).not.toHaveBeenCalled();
   });
 
   it('yields a normalized error and records the failed generation', async () => {
@@ -169,18 +166,21 @@ describe('streamSubtasksForTask', () => {
         },
       },
     ]);
-    expect(mockedGetFailedAiLogs).toHaveBeenCalledWith(
+    expect(failAiGenerationLog).toHaveBeenCalledWith(
       expect.objectContaining({
         code: 'AI_GENERATION_FAILED',
       })
     );
-    expect(mockedUpdateAiLog).toHaveBeenCalledWith('log-1', {
-      status: 'failed',
+    expect(mockedFailAiGenerationLog).toHaveBeenCalledWith({
+      id: 'log-1',
+      errorCode: 'AI_GENERATION_FAILED',
     });
   });
 
   it('does not fail the stream when successful logging fails', async () => {
-    mockedUpdateAiLog.mockRejectedValueOnce(new Error('logging failed'));
+    mockedFailAiGenerationLog.mockRejectedValueOnce(
+      new Error('logging failed')
+    );
 
     const result = await collect(
       streamSubtasksForTask({

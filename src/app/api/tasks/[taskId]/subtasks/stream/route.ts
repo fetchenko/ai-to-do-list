@@ -8,7 +8,6 @@ import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.a
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
-import { toNdjsonStream } from '@/shared/streams/to-ndjson-stream';
 
 const AI_STREAM_TIMEOUT_MS = 600_000;
 
@@ -32,14 +31,14 @@ export async function POST(
       AbortSignal.timeout(AI_STREAM_TIMEOUT_MS),
     ]);
 
-    const events = streamSubtasksForTask({
+    const stream = await streamSubtasksForTask({
       task,
       userId: user.id,
       provider,
       signal,
     });
 
-    return new Response(toNdjsonStream(events), {
+    return new Response(stream, {
       headers: {
         'Content-Type': 'application/x-ndjson; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',

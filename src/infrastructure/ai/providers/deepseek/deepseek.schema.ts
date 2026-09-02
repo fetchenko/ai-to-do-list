@@ -80,7 +80,7 @@ export const deepSeekStreamChunkSchema = z.object({
     })
   ),
 
-  usage: deepSeekUsageSchema.optional(),
+  usage: deepSeekUsageSchema.nullish(),
 });
 
 export type DeepSeekUsage = z.infer<typeof deepSeekUsageSchema>;

@@ -1,19 +1,11 @@
 import { TaskPreview } from '@/features/tasks/types/database.types';
+import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
-import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {
-  createAiLog,
-  updateAiLog,
+  completeAiGenerationLog,
+  createAiGenerationLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import {
-  getFailedAiLogs,
-  getInitialAiLog,
-  getSuccessAiLogs,
-} from '@/infrastructure/ai/utils/ai-log.utils';
-import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
-import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export async function generateSubtasksForTask({
   task,
@@ -26,64 +18,28 @@ export async function generateSubtasksForTask({
   signal: AbortSignal;
   provider: AIProvider;
 }) {
-  const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
+  const aiLogId = await createAiGenerationLog({
+    userId,
+    taskId: task.id,
+    feature: 'generate-subtasks',
+  });
   const prompt = taskDecomposerPrompt(task.title);
   const { data, metadata, raw } = await provider.generate(prompt, signal);
 
   if (aiLogId) {
-    await updateAiLog(aiLogId, getSuccessAiLogs(metadata, raw));
+    await completeAiGenerationLog({ id: aiLogId, metadata, response: raw });
   }
 
   return { data, aiLogId };
 }
 
-export async function* streamSubtasksForTask({
-  task,
-  userId,
-  provider,
-  signal,
-}: {
-  task: TaskPreview;
+export async function streamSubtasksForTask(input: {
   userId: string;
+  task: TaskPreview;
   provider: AIProvider;
   signal: AbortSignal;
-}): AsyncGenerator<SubtaskStreamEvent> {
-  const aiLogId = await createAiLog(getInitialAiLog(userId, task.id));
-  const prompt = taskDecomposerStreamPrompt(task.title);
+}) {
+  const generation = await startSubtaskGeneration(input);
 
-  try {
-    for await (const event of provider.stream(prompt, signal)) {
-      if (signal.aborted) return;
-
-      if (event.type === 'done' && aiLogId) {
-        try {
-          await updateAiLog(
-            aiLogId,
-            getSuccessAiLogs(event.metadata, event.metadata.response)
-          );
-        } catch {
-          // Logging failure must not fail an otherwise successful generation.
-        }
-      }
-
-      yield toClientEvent(event);
-    }
-  } catch (error) {
-    if (signal.aborted) return;
-
-    const normalizedError = normalizeAiError(error);
-
-    if (aiLogId) {
-      try {
-        await updateAiLog(aiLogId, getFailedAiLogs(normalizedError));
-      } catch {
-        // Logging failure must not replace the original generation error.
-      }
-    }
-
-    yield {
-      type: 'error',
-      error: normalizedError,
-    };
-  }
+  return generation.stream();
 }

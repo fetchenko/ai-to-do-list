@@ -10,7 +10,7 @@ import {
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function normalizeDeepseekUsage(
-  usage?: DeepSeekUsage
+  usage?: DeepSeekUsage | null
 ): AiGenerationUsage {
   return {
     inputTokens: usage?.prompt_tokens ?? null,

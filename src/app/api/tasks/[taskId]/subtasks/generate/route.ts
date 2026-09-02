@@ -4,12 +4,13 @@ import { getCurrentUser } from '@/features/auth/repository/auth.server.repositor
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import { updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
+import { failAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
+
+const AI_TIMEOUT_MS = 60_000;
 
 export async function POST(
   _request: Request,
@@ -17,7 +18,7 @@ export async function POST(
 ) {
   let aiLogId: string | null = null;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+  const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
   try {
     const { user } = await getCurrentUser();
@@ -53,7 +54,7 @@ export async function POST(
     const { status, ...error } = normalizeAiError(err);
 
     if (aiLogId) {
-      await updateAiLog(aiLogId, getFailedAiLogs(error));
+      await failAiGenerationLog({ id: aiLogId, errorCode: error.code });
     }
     return NextResponse.json({ error }, { status });
   } finally {

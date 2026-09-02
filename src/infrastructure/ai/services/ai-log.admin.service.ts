@@ -1,48 +1,133 @@
+import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
-import { AiGeneration } from '@/shared/types/database.types';
 
-export async function updateAiLog(
-  logId: string,
-  updates: AiGeneration['Update']
-) {
-  if (!logId) return null;
+export type CreateAiLogInput = {
+  userId: string;
+  taskId: string;
+  feature: string;
+};
 
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('ai_generations')
-      .update(updates)
-      .eq('id', logId)
-      .select('id')
-      .single();
-    if (error) {
-      console.error('Failed to update ai_generations log:', error);
-    }
+type CompleteAiLogInput = {
+  id: string;
+  metadata: AiGenerationMetadata;
+  response: string | null;
+};
 
-    return data?.id ?? null;
-  } catch (err) {
-    console.error('Unexpected logging failure:', err);
-    return null;
-  }
-}
+type FailAiLogInput = {
+  id: string;
+  errorCode: string;
+};
 
-export async function createAiLog(
-  input: AiGeneration['Insert']
+type CancelAiLogInput = {
+  id: string;
+  errorCode: string;
+};
+
+export async function createAiGenerationLog(
+  input: CreateAiLogInput
 ): Promise<string | null> {
   try {
     const { data, error } = await supabaseAdmin
       .from('ai_generations')
-      .insert(input)
+      .insert({
+        user_id: input.userId,
+        task_id: input.taskId,
+        feature: input.feature,
+        status: 'pending',
+        started_at: new Date().toISOString(),
+      })
       .select('id')
       .single();
 
     if (error) {
-      console.error('Failed to create ai_generations log:', error);
+      console.error('Failed to create AI generation log', {
+        userId: input.userId,
+        taskId: input.taskId,
+        error,
+      });
+
       return null;
     }
 
-    return data?.id ?? null;
+    return data.id;
   } catch (err) {
-    console.error('Unexpected create log failure:', err);
+    console.error('Failed to create AI generation log:', err);
     return null;
+  }
+}
+
+export async function completeAiGenerationLog(
+  input: CompleteAiLogInput
+): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('ai_generations')
+      .update({
+        status: 'success',
+        finished_at: new Date().toISOString(),
+        metadata: input.metadata,
+        response: input.response,
+      })
+      .eq('id', input.id)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Failed to complete AI generation log', {
+        generationId: input.id,
+        error,
+      });
+    }
+  } catch (err) {
+    console.error('Failed to complete AI generation log:', err);
+  }
+}
+
+export async function failAiGenerationLog(
+  input: FailAiLogInput
+): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('ai_generations')
+      .update({
+        status: 'failed',
+        finished_at: new Date().toISOString(),
+        error_code: input.errorCode,
+      })
+      .eq('id', input.id)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Failed to mark AI generation as failed', {
+        generationId: input.id,
+        error,
+      });
+    }
+  } catch (err) {
+    console.error('Failed to mark AI generation as failed:', err);
+  }
+}
+
+export async function cancelAiGenerationLog(
+  input: CancelAiLogInput
+): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('ai_generations')
+      .update({
+        status: 'cancelled',
+        finished_at: new Date().toISOString(),
+        error_code: input.errorCode,
+      })
+      .eq('id', input.id)
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Failed to mark AI generation as cancelled', {
+        generationId: input.id,
+        error,
+      });
+    }
+  } catch (err) {
+    console.error('Failed to mark AI generation as cancelled:', err);
   }
 }

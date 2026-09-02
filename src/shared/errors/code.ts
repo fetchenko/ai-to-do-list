@@ -27,4 +27,10 @@ export const ErrorCode = {
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
 } as const;
 
+export const AI_GENERATION_CANCEL_CODES = {
+  client_disconnect: 'AI_GENERATION_CLIENT_DISCONNECT',
+  timeout: 'AI_GENERATION_TIMEOUT',
+  server_shutdown: 'AI_GENERATION_SERVER_SHUTDOWN',
+};
+
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

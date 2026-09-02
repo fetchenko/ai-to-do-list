@@ -84,7 +84,9 @@ describe('AiGenerationResource', () => {
       generation.cancel('client_disconnect'),
     ]);
 
-    expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
+    expect(
+      complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length
+    ).toBe(1);
     expect(release).toHaveBeenCalledOnce();
   });
 
@@ -108,11 +110,11 @@ describe('AiGenerationResource', () => {
         metadata: {} as never,
         response: null,
       });
+
+      expect(release).toHaveBeenCalledOnce();
+      expect(consoleError).toHaveBeenCalledOnce();
     } finally {
       consoleError.mockRestore();
     }
-
-    expect(release).toHaveBeenCalledOnce();
-    expect(consoleError).toHaveBeenCalledOnce();
   });
 });

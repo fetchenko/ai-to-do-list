@@ -31,15 +31,18 @@ describe('tryCreateAiGenerationLog', () => {
   });
 
   it('returns null when log creation fails', async () => {
-    mockedCreateAiGenerationLog.mockRejectedValueOnce(new Error('database failed'));
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockedCreateAiGenerationLog.mockRejectedValueOnce(
+      new Error('database failed')
+    );
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     try {
       await expect(tryCreateAiGenerationLog(input)).resolves.toBeNull();
+      expect(consoleError).toHaveBeenCalledOnce();
     } finally {
       consoleError.mockRestore();
     }
-
-    expect(consoleError).toHaveBeenCalledOnce();
   });
 });

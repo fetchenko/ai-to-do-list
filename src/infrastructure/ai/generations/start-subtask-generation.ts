@@ -1,10 +1,10 @@
-import { TaskPreview } from '@/features/tasks/types/database.types';
 import { startAiGeneration } from '@/infrastructure/ai/generations/start-ai-generation';
 import {
   SubtaskGeneration,
   SubtaskGenerationResource,
 } from '@/infrastructure/ai/generations/subtask-generation-resource';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { TaskPreview } from '@/shared/types/database.types';
 
 export async function startSubtaskGeneration(input: {
   userId: string;

@@ -1,9 +1,9 @@
-import { TaskPreview } from '@/features/tasks/types/database.types';
 import { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
+import { TaskPreview } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export type SubtaskGeneration = {
@@ -67,12 +67,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             return;
 
           case 'error':
-            await this.options.generation.fail({
-              code: event.error.code,
-            });
-
-            controller.enqueue(encodeEvent(toClientEvent(event)));
-            controller.close();
+            await this.handleFailure(controller, event.error);
             return;
         }
       }
@@ -84,17 +79,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
       controller.close();
     } catch (error) {
-      if (this.options.signal.aborted) {
-        await this.options.generation.cancel('client_disconnect');
-        controller.close();
-        return;
-      }
-
-      await this.options.generation.fail({
-        code: normalizeAiError(error).code,
-      });
-
-      controller.error(error);
+      await this.handleFailure(controller, error);
     }
   }
 

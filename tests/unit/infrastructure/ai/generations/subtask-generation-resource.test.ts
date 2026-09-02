@@ -1,10 +1,10 @@
+import { collect } from '@tests/utils/collect';
 import { describe, expect, it, vi } from 'vitest';
 
-import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation-resource';
 import type { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
+import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation-resource';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { collect } from '@tests/utils/collect';
 import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
@@ -30,7 +30,12 @@ function createProvider(events: AiStreamEvent[]): AIProvider {
 async function collectStream(resource: SubtaskGenerationResource) {
   const chunks = await collect(resource.stream());
   return chunks.flatMap((chunk) =>
-    new TextDecoder().decode(chunk).trim().split('\n').filter(Boolean).map((line) => JSON.parse(line) as SubtaskStreamEvent)
+    new TextDecoder()
+      .decode(chunk)
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as SubtaskStreamEvent)
   );
 }
 
@@ -57,7 +62,10 @@ describe('SubtaskGenerationResource', () => {
       { type: 'subtask', subtask: { title: 'Book hotel' } },
       { type: 'done' },
     ]);
-    expect(generation.complete).toHaveBeenCalledWith({ metadata, response: null });
+    expect(generation.complete).toHaveBeenCalledWith({
+      metadata,
+      response: null,
+    });
     expect(generation.fail).not.toHaveBeenCalled();
     expect(generation.cancel).not.toHaveBeenCalled();
   });
@@ -70,10 +78,16 @@ describe('SubtaskGenerationResource', () => {
       code: 'AI_GENERATION_FAILED',
       message: 'AI generation failed',
     };
+
+    const provider = createProvider([]);
+    provider.stream = vi.fn(async function* () {
+      throw new Error('provider failed');
+    });
+
     const resource = new SubtaskGenerationResource({
       generation,
       task,
-      provider: createProvider([{ type: 'error', error }]),
+      provider,
       signal: new AbortController().signal,
     });
 
@@ -111,7 +125,9 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generation,
       task,
-      provider: createProvider([{ type: 'subtask', subtask: { title: 'Book hotel' } }]),
+      provider: createProvider([
+        { type: 'subtask', subtask: { title: 'Book hotel' } },
+      ]),
       signal: new AbortController().signal,
     });
 
@@ -154,9 +170,22 @@ describe('SubtaskGenerationResource', () => {
       signal: new AbortController().signal,
     });
 
-    const stream = resource.stream();
-    const reader = stream.getReader();
-    await expect(reader.read()).rejects.toThrow('provider failed');
-    expect(generation.fail).toHaveBeenCalledWith({ code: 'AI_GENERATION_FAILED' });
+    await expect(collectStream(resource)).resolves.toEqual([
+      {
+        type: 'error',
+        error: {
+          success: false,
+          status: 502,
+          code: 'AI_GENERATION_FAILED',
+          message: 'AI generation failed',
+        },
+      },
+    ]);
+
+    expect(generation.fail).toHaveBeenCalledWith({
+      code: 'AI_GENERATION_FAILED',
+    });
+
+    expect(generation.complete).not.toHaveBeenCalled();
   });
 });

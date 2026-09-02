@@ -1,4 +1,3 @@
-import { TaskPreview } from '@/features/tasks/types/database.types';
 import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
@@ -6,6 +5,7 @@ import {
   completeAiGenerationLog,
   createAiGenerationLog,
 } from '@/infrastructure/ai/services/ai-log.admin.service';
+import { TaskPreview } from '@/shared/types/database.types';
 
 export async function generateSubtasksForTask({
   task,

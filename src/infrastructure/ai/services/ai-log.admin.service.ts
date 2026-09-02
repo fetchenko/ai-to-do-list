@@ -1,4 +1,5 @@
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
+import { mapAiGenerationUsageToUpdate } from '@/infrastructure/ai/utils/map-ai-generation-usage';
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 
 export type CreateAiLogInput = {
@@ -67,6 +68,7 @@ export async function completeAiGenerationLog(
         finished_at: new Date().toISOString(),
         metadata: input.metadata,
         response: input.response,
+        ...mapAiGenerationUsageToUpdate(input.metadata.usage),
       })
       .eq('id', input.id)
       .eq('status', 'pending');

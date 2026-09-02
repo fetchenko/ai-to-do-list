@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { TaskPreview } from '@/features/tasks/types/database.types';
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 import { DatabaseError } from '@/shared/errors/app-error';
+import { TaskPreview } from '@/shared/types/database.types';
 
 export async function getTaskForUser(
   taskId: string,

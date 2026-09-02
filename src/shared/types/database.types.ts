@@ -9,6 +9,17 @@ export type Json =
 export type TaskStatus = Database['public']['Enums']['task_status'];
 export type AiGeneration = Database['public']['Tables']['ai_generations'];
 
+export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
+export type DbTask = DbTaskRow;
+
+export type DbTaskInsert = Database['public']['Tables']['tasks']['Insert'];
+export type DbTaskUpdate = Database['public']['Tables']['tasks']['Update'];
+
+export type TaskPreview = Pick<DbTask, 'id' | 'user_id' | 'title'>;
+
+export type DbAiGenerationUpdate =
+  Database['public']['Tables']['ai_generations']['Update'];
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)

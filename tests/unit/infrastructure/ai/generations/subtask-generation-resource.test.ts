@@ -1,0 +1,162 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation-resource';
+import type { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
+import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { collect } from '@tests/utils/collect';
+import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
+
+const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
+
+function createGeneration() {
+  return {
+    id: null,
+    complete: vi.fn().mockResolvedValue(undefined),
+    fail: vi.fn().mockResolvedValue(undefined),
+    cancel: vi.fn().mockResolvedValue(undefined),
+  } as AiGeneration;
+}
+
+function createProvider(events: AiStreamEvent[]): AIProvider {
+  return {
+    generate: vi.fn(),
+    stream: async function* () {
+      yield* events;
+    },
+  };
+}
+
+async function collectStream(resource: SubtaskGenerationResource) {
+  const chunks = await collect(resource.stream());
+  return chunks.flatMap((chunk) =>
+    new TextDecoder().decode(chunk).trim().split('\n').filter(Boolean).map((line) => JSON.parse(line) as SubtaskStreamEvent)
+  );
+}
+
+describe('SubtaskGenerationResource', () => {
+  it('streams subtasks and completes on done', async () => {
+    const generation = createGeneration();
+    const metadata = {
+      model: 'test',
+      response: '[]',
+      finishReason: 'tool_calls',
+      usage: { inputTokens: 1, outputTokens: 2, totalTokens: 3 },
+    };
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider: createProvider([
+        { type: 'subtask', subtask: { title: 'Book hotel' } },
+        { type: 'done', metadata },
+      ]),
+      signal: new AbortController().signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'done' },
+    ]);
+    expect(generation.complete).toHaveBeenCalledWith({ metadata, response: null });
+    expect(generation.fail).not.toHaveBeenCalled();
+    expect(generation.cancel).not.toHaveBeenCalled();
+  });
+
+  it('fails and emits the provider error event', async () => {
+    const generation = createGeneration();
+    const error = {
+      success: false,
+      status: 502,
+      code: 'AI_GENERATION_FAILED',
+      message: 'AI generation failed',
+    };
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider: createProvider([{ type: 'error', error }]),
+      signal: new AbortController().signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      { type: 'error', error },
+    ]);
+    expect(generation.fail).toHaveBeenCalledWith({ code: error.code });
+    expect(generation.complete).not.toHaveBeenCalled();
+  });
+
+  it('cancels without emitting an error when aborted', async () => {
+    const controller = new AbortController();
+    const provider: AIProvider = {
+      generate: vi.fn(),
+      stream: async function* () {
+        controller.abort();
+        throw new DOMException('The operation was aborted.', 'AbortError');
+      },
+    };
+    const generation = createGeneration();
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider,
+      signal: controller.signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([]);
+    expect(generation.cancel).toHaveBeenCalledWith('client_disconnect');
+    expect(generation.fail).not.toHaveBeenCalled();
+  });
+
+  it('fails when the provider ends without a terminal event', async () => {
+    const generation = createGeneration();
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider: createProvider([{ type: 'subtask', subtask: { title: 'Book hotel' } }]),
+      signal: new AbortController().signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      { type: 'subtask', subtask: { title: 'Book hotel' } },
+    ]);
+    expect(generation.fail).toHaveBeenCalledWith({
+      code: 'STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
+    });
+  });
+
+  it('stops consuming provider events after done', async () => {
+    const generation = createGeneration();
+    const provider = createProvider([
+      { type: 'done', metadata: {} as never },
+      { type: 'subtask', subtask: { title: 'Should not be emitted' } },
+    ]);
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider,
+      signal: new AbortController().signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([{ type: 'done' }]);
+  });
+
+  it('fails and emits a normalized error when the provider throws', async () => {
+    const generation = createGeneration();
+    const provider: AIProvider = {
+      generate: vi.fn(),
+      stream: async function* () {
+        throw new Error('provider failed');
+      },
+    };
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider,
+      signal: new AbortController().signal,
+    });
+
+    const stream = resource.stream();
+    const reader = stream.getReader();
+    await expect(reader.read()).rejects.toThrow('provider failed');
+    expect(generation.fail).toHaveBeenCalledWith({ code: 'AI_GENERATION_FAILED' });
+  });
+});

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { startAiGeneration } from '@/infrastructure/ai/generations/start-ai-generation';
 import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
@@ -22,6 +22,10 @@ const input = {
 };
 
 describe('startAiGeneration', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   it('acquires the lock and creates an optional log', async () => {
     const release = vi.fn().mockResolvedValue(undefined);
     const lock = { release };

@@ -42,6 +42,11 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
   }
 
   private async run(controller: ReadableStreamDefaultController<Uint8Array>) {
+    if (this.options.signal.aborted) {
+      await this.handleAbort(controller);
+      return;
+    }
+
     const events = this.options.provider.stream(
       taskDecomposerStreamPrompt(this.options.task.title),
       this.options.signal

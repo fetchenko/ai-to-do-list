@@ -96,9 +96,10 @@ describe('SubtaskGenerationResource', () => {
     ]);
     expect(generation.fail).toHaveBeenCalledWith({ code: error.code });
     expect(generation.complete).not.toHaveBeenCalled();
+    expect(generation.cancel).not.toHaveBeenCalled();
   });
 
-  it('cancels without emitting an error when aborted', async () => {
+  it('cancels as a client disconnect when the stream is aborted', async () => {
     const controller = new AbortController();
     const provider: AIProvider = {
       generate: vi.fn(),
@@ -118,6 +119,98 @@ describe('SubtaskGenerationResource', () => {
     await expect(collectStream(resource)).resolves.toEqual([]);
     expect(generation.cancel).toHaveBeenCalledWith('client_disconnect');
     expect(generation.fail).not.toHaveBeenCalled();
+    expect(generation.complete).not.toHaveBeenCalled();
+  });
+
+  it('cancels as a timeout and emits a cancelled event when aborted with TimeoutError', async () => {
+    const controller = new AbortController();
+    const generation = createGeneration();
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider: createProvider([]),
+      signal: controller.signal,
+    });
+
+    controller.abort(new DOMException('The operation timed out.', 'TimeoutError'));
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      {
+        type: 'cancelled',
+        error: {
+          success: false,
+          status: 504,
+          code: 'AI_GENERATION_TIMEOUT',
+          message: 'AI generation timed out',
+        },
+      },
+    ]);
+    expect(generation.cancel).toHaveBeenCalledWith('timeout');
+    expect(generation.fail).not.toHaveBeenCalled();
+    expect(generation.complete).not.toHaveBeenCalled();
+  });
+
+  it('cancels as a server shutdown and emits a cancelled event', async () => {
+    const controller = new AbortController();
+    const generation = createGeneration();
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider: createProvider([]),
+      signal: controller.signal,
+    });
+
+    controller.abort('server_shutdown');
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      {
+        type: 'cancelled',
+        error: {
+          success: false,
+          status: 503,
+          code: 'AI_GENERATION_SERVER_SHUTDOWN',
+          message: 'AI generation cancelled because the server is shutting down',
+        },
+      },
+    ]);
+    expect(generation.cancel).toHaveBeenCalledWith('server_shutdown');
+    expect(generation.fail).not.toHaveBeenCalled();
+    expect(generation.complete).not.toHaveBeenCalled();
+  });
+
+  it('treats a provider error caused by timeout as cancellation', async () => {
+    const controller = new AbortController();
+    const generation = createGeneration();
+    const provider: AIProvider = {
+      generate: vi.fn(),
+      stream: async function* () {
+        controller.abort(
+          new DOMException('The operation timed out.', 'TimeoutError')
+        );
+        throw new DOMException('The operation timed out.', 'TimeoutError');
+      },
+    };
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider,
+      signal: controller.signal,
+    });
+
+    await expect(collectStream(resource)).resolves.toEqual([
+      {
+        type: 'cancelled',
+        error: {
+          success: false,
+          status: 504,
+          code: 'AI_GENERATION_TIMEOUT',
+          message: 'AI generation timed out',
+        },
+      },
+    ]);
+    expect(generation.cancel).toHaveBeenCalledWith('timeout');
+    expect(generation.fail).not.toHaveBeenCalled();
+    expect(generation.complete).not.toHaveBeenCalled();
   });
 
   it('fails when the provider ends without a terminal event', async () => {
@@ -137,6 +230,7 @@ describe('SubtaskGenerationResource', () => {
     expect(generation.fail).toHaveBeenCalledWith({
       code: 'STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
     });
+    expect(generation.cancel).not.toHaveBeenCalled();
   });
 
   it('stops consuming provider events after done', async () => {
@@ -155,7 +249,7 @@ describe('SubtaskGenerationResource', () => {
     await expect(collectStream(resource)).resolves.toEqual([{ type: 'done' }]);
   });
 
-  it('fails and emits a normalized error when the provider throws', async () => {
+  it('does not turn a normal provider error into cancellation', async () => {
     const generation = createGeneration();
     const provider: AIProvider = {
       generate: vi.fn(),
@@ -185,7 +279,7 @@ describe('SubtaskGenerationResource', () => {
     expect(generation.fail).toHaveBeenCalledWith({
       code: 'AI_GENERATION_FAILED',
     });
-
+    expect(generation.cancel).not.toHaveBeenCalled();
     expect(generation.complete).not.toHaveBeenCalled();
   });
 });

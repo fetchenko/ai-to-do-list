@@ -34,6 +34,7 @@ export function normalizeDeepseekMetadata(
     model: response.model ?? null,
     response: choice?.message?.content ?? null,
     finishReason: choice?.finish_reason ?? null,
+    providerGenerationId: response.id || null,
 
     usage: normalizeDeepseekUsage(response.usage),
   };

@@ -1,4 +1,4 @@
-import { AiErrorResult } from '@/infrastructure/ai/types/ai.types';
+import { ApiError } from '@/shared/errors/api-error.schema';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 /**
@@ -8,6 +8,7 @@ import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
  * `done` indicates successful completion.
  * `error` indicates generation failure and is followed by
  * stream completion.
+ * `cancelled` indicates abort error
  *
  * Provider-specific errors and metadata are never exposed.
  */
@@ -21,9 +22,9 @@ export type SubtaskStreamEvent =
     }
   | {
       type: 'error';
-      error: AiErrorResult;
+      error: ApiError;
     }
   | {
       type: 'cancelled';
-      error: AiErrorResult;
+      error: ApiError;
     };

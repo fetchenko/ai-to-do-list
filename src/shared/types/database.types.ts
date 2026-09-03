@@ -7,7 +7,6 @@ export type Json =
   | Json[];
 
 export type TaskStatus = Database['public']['Enums']['task_status'];
-export type AiGeneration = Database['public']['Tables']['ai_generations'];
 
 export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
 export type DbTask = DbTaskRow;

@@ -23,17 +23,13 @@ describe('parseApiError', () => {
 
   it('parses an API error without details', () => {
     const error = parseApiError({
-      code: ErrorCode.AI_TIMEOUT,
+      code: ErrorCode.AI_GENERATION_TIMEOUT,
       status: 504,
       message: 'AI request timed out',
     });
 
     expect(error).toEqual(
-      new AppError(
-        ErrorCode.AI_TIMEOUT,
-        504,
-        'AI request timed out'
-      )
+      new AppError(ErrorCode.AI_GENERATION_TIMEOUT, 504, 'AI request timed out')
     );
   });
 
@@ -58,7 +54,11 @@ describe('parseApiError', () => {
     undefined,
     'AI unavailable',
     { code: ErrorCode.AI_UNAVAILABLE },
-    { code: ErrorCode.AI_UNAVAILABLE, status: '503', message: 'AI unavailable' },
+    {
+      code: ErrorCode.AI_UNAVAILABLE,
+      status: '503',
+      message: 'AI unavailable',
+    },
   ])('returns an UNKNOWN AppError for invalid input: %s', (input) => {
     expect(parseApiError(input)).toEqual(
       new AppError(

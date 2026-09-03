@@ -78,6 +78,8 @@ export async function* normalizeOllamaStream(
           usage: normalizeOllamaUsage(doneChunk),
         },
       };
+
+      return;
     }
   }
 

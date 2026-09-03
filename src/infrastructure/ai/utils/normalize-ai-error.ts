@@ -1,11 +1,11 @@
-import { AiErrorResult } from '@/infrastructure/ai/types/ai.types';
+import { ApiError } from '@/shared/errors/api-error.schema';
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
 const DEFAULT_AI_ERROR_MESSAGE = 'AI generation failed';
 
-export function normalizeAiError(err: unknown): AiErrorResult {
+export function normalizeAiError(err: unknown): ApiError {
   if (err instanceof Error && err.name === 'AbortError') {
     return {
       success: false,

@@ -1,4 +1,3 @@
-import { ErrorCode } from '@/shared/errors/code';
 import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 
 export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
@@ -26,10 +25,3 @@ export type NormilizedAiResponse = {
   data: SubtasksResponse;
   metadata: AiGenerationMetadata;
 };
-export interface AiErrorResult {
-  success: false;
-  code: ErrorCode;
-  status: number;
-  message: string;
-  details?: unknown;
-}

@@ -8,9 +8,7 @@ import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 type OllamaUsageSource = Pick<
   OllamaResponse,
-  | 'prompt_eval_count'
-  | 'eval_count'
-  | 'total_duration'
+  'prompt_eval_count' | 'eval_count' | 'total_duration'
 >;
 
 export function normalizeOllamaResponse(
@@ -29,6 +27,7 @@ export function normalizeOllamaMetadata(
     model: response.model ?? null,
     response: response.response ?? null,
     finishReason: response.done_reason,
+    providerGenerationId: null,
     usage: normalizeOllamaUsage(response),
   };
 }

@@ -49,74 +49,53 @@ export async function createAiGenerationLog(
 export async function completeAiGenerationLog(
   input: CompleteAiLogInput
 ): Promise<void> {
-  try {
-    const { error } = await supabaseAdmin
-      .from('ai_generations')
-      .update({
-        status: 'success',
-        finished_at: new Date().toISOString(),
-        ...mapAiGenerationMetadataToUpdate(input.metadata),
-      })
-      .eq('id', input.id)
-      .eq('status', 'pending');
+  const { error } = await supabaseAdmin
+    .from('ai_generations')
+    .update({
+      status: 'success',
+      finished_at: new Date().toISOString(),
+      ...mapAiGenerationMetadataToUpdate(input.metadata),
+    })
+    .eq('id', input.id)
+    .eq('status', 'pending');
 
-    if (error) {
-      console.error('Failed to complete AI generation log', {
-        generationId: input.id,
-        error,
-      });
-    }
-  } catch (err) {
-    console.error('Failed to complete AI generation log:', err);
+  if (error) {
+    throw error;
   }
 }
 
 export async function failAiGenerationLog(
   input: FailAiLogInput
 ): Promise<void> {
-  try {
-    const { error } = await supabaseAdmin
-      .from('ai_generations')
-      .update({
-        status: 'failed',
-        finished_at: new Date().toISOString(),
-        error_code: input.errorCode,
-      })
-      .eq('id', input.id)
-      .eq('status', 'pending');
+  const { error } = await supabaseAdmin
+    .from('ai_generations')
+    .update({
+      status: 'failed',
+      finished_at: new Date().toISOString(),
+      error_code: input.errorCode,
+    })
+    .eq('id', input.id)
+    .eq('status', 'pending');
 
-    if (error) {
-      console.error('Failed to mark AI generation as failed', {
-        generationId: input.id,
-        error,
-      });
-    }
-  } catch (err) {
-    console.error('Failed to mark AI generation as failed:', err);
+  if (error) {
+    throw error;
   }
 }
 
 export async function cancelAiGenerationLog(
   input: CancelAiLogInput
 ): Promise<void> {
-  try {
-    const { error } = await supabaseAdmin
-      .from('ai_generations')
-      .update({
-        status: 'cancelled',
-        finished_at: new Date().toISOString(),
-        error_code: input.errorCode,
-      })
-      .eq('id', input.id)
-      .eq('status', 'pending');
+  const { error } = await supabaseAdmin
+    .from('ai_generations')
+    .update({
+      status: 'cancelled',
+      finished_at: new Date().toISOString(),
+      error_code: input.errorCode,
+    })
+    .eq('id', input.id)
+    .eq('status', 'pending');
 
-    if (error) {
-      console.error('Failed to mark AI generation as cancelled', {
-        generationId: input.id,
-        error,
-      });
-    }
-  } catch (err) {
-    console.error('Failed to mark AI generation as cancelled:', err);
+  if (error) {
+    throw error;
   }
 }

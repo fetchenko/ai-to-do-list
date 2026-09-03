@@ -81,7 +81,7 @@ export class AiGenerationResource implements AiGeneration {
     try {
       await operation();
     } catch (error) {
-      console.error('Failed to write ai log', error);
+      console.error('Failed to persist AI generation log', error);
     }
   }
 

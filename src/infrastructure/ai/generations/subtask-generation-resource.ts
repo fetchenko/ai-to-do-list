@@ -50,9 +50,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     try {
       for await (const event of events) {
         if (this.options.signal.aborted) {
-          await this.options.generation.cancel('client_disconnect');
-
-          controller.close();
+          await this.handleAbort(controller);
           return;
         }
 

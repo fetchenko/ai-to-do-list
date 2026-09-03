@@ -15,12 +15,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  const timeoutController = new AbortController();
-  const timeout = setTimeout(() => {
-    timeoutController.abort('timeout');
-  }, AI_STREAM_TIMEOUT_MS);
-
-  const signal = AbortSignal.any([request.signal, timeoutController.signal]);
+  const signal = AbortSignal.any([
+    request.signal,
+    AbortSignal.timeout(AI_STREAM_TIMEOUT_MS),
+  ]);
 
   try {
     const { user } = await getCurrentUser();
@@ -50,7 +48,5 @@ export async function POST(
     const { status, ...error } = normalizeAiError(err);
 
     return NextResponse.json({ error }, { status });
-  } finally {
-    clearTimeout(timeout);
   }
 }

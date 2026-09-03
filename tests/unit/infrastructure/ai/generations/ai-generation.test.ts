@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { AiGenerationResource } from '@/infrastructure/ai/generations/ai-generation';
-import type { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
+import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log-resource';
 import type { AiRequestLock } from '@/infrastructure/ai/generations/ai-request-lock';
 
 function createLog() {
@@ -85,7 +85,9 @@ describe('AiGenerationResource', () => {
     ]);
 
     expect(
-      complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length
+      complete.mock.calls.length +
+        fail.mock.calls.length +
+        cancel.mock.calls.length
     ).toBe(1);
     expect(release).toHaveBeenCalledOnce();
   });
@@ -103,7 +105,9 @@ describe('AiGenerationResource', () => {
     const { log, complete } = createLog();
     complete.mockRejectedValueOnce(new Error('logging failed'));
     const { lock, release } = createLock();
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     try {
       await new AiGenerationResource(log, lock).complete({

@@ -1,4 +1,4 @@
-import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
+import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log-resource';
 import {
   AiGenerationCancelReason,
   AiGenerationCompletion,

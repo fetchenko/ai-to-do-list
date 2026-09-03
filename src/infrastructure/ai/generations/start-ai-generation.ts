@@ -2,8 +2,8 @@ import {
   AiGeneration,
   AiGenerationResource,
 } from '@/infrastructure/ai/generations/ai-generation';
-import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-request-lock';
+import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/try-create-ai-generation-log';
 
 export async function startAiGeneration(input: {
   userId: string;

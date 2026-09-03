@@ -27,34 +27,23 @@ type CancelAiLogInput = {
 export async function createAiGenerationLog(
   input: CreateAiLogInput
 ): Promise<string | null> {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('ai_generations')
-      .insert({
-        user_id: input.userId,
-        task_id: input.taskId,
-        feature: input.feature,
-        status: 'pending',
-        started_at: new Date().toISOString(),
-      })
-      .select('id')
-      .single();
+  const { data, error } = await supabaseAdmin
+    .from('ai_generations')
+    .insert({
+      user_id: input.userId,
+      task_id: input.taskId,
+      feature: input.feature,
+      status: 'pending',
+      started_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single();
 
-    if (error) {
-      console.error('Failed to create AI generation log', {
-        userId: input.userId,
-        taskId: input.taskId,
-        error,
-      });
-
-      return null;
-    }
-
-    return data.id;
-  } catch (err) {
-    console.error('Failed to create AI generation log:', err);
-    return null;
+  if (error) {
+    throw error;
   }
+
+  return data.id;
 }
 
 export async function completeAiGenerationLog(

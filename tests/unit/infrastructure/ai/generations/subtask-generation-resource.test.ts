@@ -132,7 +132,9 @@ describe('SubtaskGenerationResource', () => {
       signal: controller.signal,
     });
 
-    controller.abort(new DOMException('The operation timed out.', 'TimeoutError'));
+    controller.abort(
+      new DOMException('The operation timed out.', 'TimeoutError')
+    );
 
     await expect(collectStream(resource)).resolves.toEqual([
       {
@@ -228,7 +230,7 @@ describe('SubtaskGenerationResource', () => {
       { type: 'subtask', subtask: { title: 'Book hotel' } },
     ]);
     expect(generation.fail).toHaveBeenCalledWith({
-      code: 'STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
+      code: 'AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
     });
     expect(generation.cancel).not.toHaveBeenCalled();
   });

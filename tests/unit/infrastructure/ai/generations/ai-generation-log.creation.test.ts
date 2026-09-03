@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
+import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/try-create-ai-generation-log';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 
 vi.mock('@/infrastructure/ai/services/ai-log.admin.service', () => ({

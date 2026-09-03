@@ -1,4 +1,3 @@
-import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import {
   AiGenerationCancelReason,
   AiGenerationCompletion,
@@ -11,6 +10,15 @@ import {
 } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { AI_GENERATION_CANCEL_CODES } from '@/shared/errors/code';
 
+export type AiGenerationLog = {
+  readonly id: string;
+
+  complete(input: AiGenerationCompletion): Promise<void>;
+
+  fail(error: AiGenerationFailure): Promise<void>;
+
+  cancel(reason: AiGenerationCancelReason): Promise<void>;
+};
 export class AiGenerationLogResource implements AiGenerationLog {
   constructor(private readonly generationId: string) {}
 

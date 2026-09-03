@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { startAiGeneration } from '@/infrastructure/ai/generations/start-ai-generation';
-import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-request-lock';
+import { startAiGeneration } from '@/infrastructure/ai/generations/start-ai-generation';
+import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/try-create-ai-generation-log';
 
-vi.mock('@/infrastructure/ai/generations/ai-generation-log', () => ({
+vi.mock('@/infrastructure/ai/generations/try-create-ai-generation-log', () => ({
   tryCreateAiGenerationLog: vi.fn(),
 }));
 

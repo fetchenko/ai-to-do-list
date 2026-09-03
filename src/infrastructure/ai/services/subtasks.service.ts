@@ -1,10 +1,8 @@
+import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import {
-  completeAiGenerationLog,
-  createAiGenerationLog,
-} from '@/infrastructure/ai/services/ai-log.admin.service';
+import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { TaskPreview } from '@/shared/types/database.types';
 
 export async function generateSubtasksForTask({
@@ -18,19 +16,33 @@ export async function generateSubtasksForTask({
   signal: AbortSignal;
   provider: AIProvider;
 }) {
-  const aiLogId = await createAiGenerationLog({
-    userId,
-    taskId: task.id,
+  const log = await tryCreateAiGenerationLog({
     feature: 'generate-subtasks',
+    taskId: task.id,
+    userId: userId,
   });
-  const prompt = taskDecomposerPrompt(task.title);
-  const { data, metadata, raw } = await provider.generate(prompt, signal);
 
-  if (aiLogId) {
-    await completeAiGenerationLog({ id: aiLogId, metadata, response: raw });
+  try {
+    const prompt = taskDecomposerPrompt(task.title);
+    const { data, metadata, raw } = await provider.generate(prompt, signal);
+
+    if (log) {
+      await log.complete({
+        metadata: metadata,
+        response: raw,
+      });
+    }
+
+    return { data };
+  } catch (error) {
+    if (log) {
+      await log.fail({
+        code: normalizeAiError(error).code,
+      });
+    }
+
+    throw error;
   }
-
-  return { data, aiLogId };
 }
 
 export async function streamSubtasksForTask(input: {

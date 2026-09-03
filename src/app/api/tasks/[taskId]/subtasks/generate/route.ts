@@ -4,7 +4,6 @@ import { getCurrentUser } from '@/features/auth/repository/auth.server.repositor
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import { failAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
@@ -16,7 +15,6 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  let aiLogId: string | null = null;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
@@ -39,8 +37,6 @@ export async function POST(
       provider,
     });
 
-    aiLogId = result.aiLogId;
-
     return NextResponse.json(
       {
         success: true,
@@ -53,9 +49,6 @@ export async function POST(
   } catch (err: unknown) {
     const { status, ...error } = normalizeAiError(err);
 
-    if (aiLogId) {
-      await failAiGenerationLog({ id: aiLogId, errorCode: error.code });
-    }
     return NextResponse.json({ error }, { status });
   } finally {
     clearTimeout(timeout);

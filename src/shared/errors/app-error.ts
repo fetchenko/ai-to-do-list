@@ -35,16 +35,6 @@ export class AuthorizationError extends AppError {
   }
 }
 
-export class AiTimeoutError extends AppError {
-  constructor() {
-    super(
-      ErrorCode.AI_TIMEOUT,
-      ErrorHttpStatus[ErrorCode.AI_TIMEOUT],
-      'Subtasks generation timed out'
-    );
-  }
-}
-
 export class DatabaseError extends AppError {
   constructor(details: unknown) {
     super(
@@ -161,6 +151,28 @@ export class AiRequestError extends AppError {
       ErrorCode.AI_REQUEST_ERROR,
       ErrorHttpStatus[ErrorCode.AI_REQUEST_ERROR],
       'Failed to request AI',
+      details
+    );
+  }
+}
+
+export class AiGenerationTimeout extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_GENERATION_TIMEOUT,
+      ErrorHttpStatus[ErrorCode.AI_GENERATION_TIMEOUT],
+      'AI generation timed out',
+      details
+    );
+  }
+}
+
+export class AiGenerationServerShutdown extends AppError {
+  constructor(details: unknown) {
+    super(
+      ErrorCode.AI_GENERATION_SERVER_SHUTDOWN,
+      ErrorHttpStatus[ErrorCode.AI_GENERATION_SERVER_SHUTDOWN],
+      'AI generation timed out',
       details
     );
   }

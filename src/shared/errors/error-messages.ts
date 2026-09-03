@@ -15,7 +15,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     'AI is generating a response. Please wait and try again later.',
   [ErrorCode.AI_LOCK_REQUEST_FAILED]:
     "Couldn't check generation status. Please try again.",
-  [ErrorCode.AI_TIMEOUT]:
+  [ErrorCode.AI_GENERATION_TIMEOUT]:
     'Generating subtasks took too long. Please try again.',
   [ErrorCode.AI_RATE_LIMIT]:
     'Lots of generations happening right now — try again in a moment.',

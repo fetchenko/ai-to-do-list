@@ -8,6 +8,7 @@ import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
 } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
 import { TaskPreview } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
@@ -82,7 +83,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
       // Defensive: provider ended without a terminal event.
       await this.options.generation.fail({
-        code: 'STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
+        code: ErrorCode.AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT,
       });
 
       controller.close();

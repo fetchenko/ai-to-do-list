@@ -22,4 +22,8 @@ export type SubtaskStreamEvent =
   | {
       type: 'error';
       error: AiErrorResult;
+    }
+  | {
+      type: 'cancelled';
+      error: AiErrorResult;
     };

@@ -32,6 +32,7 @@ export function useSubtaskDraftsStream(
             break;
           case 'done':
             break;
+          case 'cancelled':
           case 'error':
             throw parseApiError(chunk.error);
         }

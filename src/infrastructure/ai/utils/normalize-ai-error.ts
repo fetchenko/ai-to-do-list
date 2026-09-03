@@ -1,5 +1,5 @@
 import { AiErrorResult } from '@/infrastructure/ai/types/ai.types';
-import { AiGenerationTimeout, AppError } from '@/shared/errors/app-error';
+import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
@@ -7,7 +7,12 @@ const DEFAULT_AI_ERROR_MESSAGE = 'AI generation failed';
 
 export function normalizeAiError(err: unknown): AiErrorResult {
   if (err instanceof Error && err.name === 'AbortError') {
-    new AiGenerationTimeout('AI request timed out');
+    return {
+      success: false,
+      code: ErrorCode.AI_GENERATION_TIMEOUT,
+      message: 'AI request timed out',
+      status: ErrorHttpStatus[ErrorCode.AI_GENERATION_TIMEOUT],
+    };
   }
 
   if (err instanceof AppError) {

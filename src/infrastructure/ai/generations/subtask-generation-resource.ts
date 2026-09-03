@@ -1,8 +1,13 @@
 import { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
+import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-abort-error';
+import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
+import {
+  AiGenerationServerShutdown,
+  AiGenerationTimeout,
+} from '@/shared/errors/app-error';
 import { TaskPreview } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
@@ -83,14 +88,43 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     }
   }
 
+  private async handleAbort(
+    controller: ReadableStreamDefaultController<Uint8Array>
+  ) {
+    const reason = normalizeCancelReason(this.options.signal.reason);
+
+    await this.options.generation.cancel(reason);
+
+    switch (reason) {
+      case 'timeout':
+        controller.enqueue(
+          encodeEvent({
+            type: 'cancelled',
+            error: normalizeAiError(new AiGenerationTimeout()),
+          })
+        );
+        break;
+
+      case 'server_shutdown':
+        controller.enqueue(
+          encodeEvent({
+            type: 'cancelled',
+            error: normalizeAiError(new AiGenerationServerShutdown()),
+          })
+        );
+        break;
+    }
+
+    controller.close();
+    return;
+  }
+
   private async handleFailure(
     controller: ReadableStreamDefaultController<Uint8Array>,
     error: unknown
   ) {
     if (this.options.signal.aborted) {
-      await this.options.generation.cancel('client_disconnect');
-
-      controller.close();
+      await this.handleAbort(controller);
       return;
     }
 

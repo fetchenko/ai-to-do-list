@@ -6,8 +6,8 @@ import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
+import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
 
 const AI_STREAM_TIMEOUT_MS = 600_000;
 
@@ -15,6 +15,13 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
+  const timeoutController = new AbortController();
+  const timeout = setTimeout(() => {
+    timeoutController.abort('timeout');
+  }, AI_STREAM_TIMEOUT_MS);
+
+  const signal = AbortSignal.any([request.signal, timeoutController.signal]);
+
   try {
     const { user } = await getCurrentUser();
     const provider = getAIProvider();
@@ -25,11 +32,6 @@ export async function POST(
 
     const { taskId } = await parseAiParams(params);
     const task = await getTaskForUser(taskId, user.id);
-
-    const signal = AbortSignal.any([
-      request.signal,
-      AbortSignal.timeout(AI_STREAM_TIMEOUT_MS),
-    ]);
 
     const stream = await streamSubtasksForTask({
       task,
@@ -48,5 +50,7 @@ export async function POST(
     const { status, ...error } = normalizeAiError(err);
 
     return NextResponse.json({ error }, { status });
+  } finally {
+    clearTimeout(timeout);
   }
 }

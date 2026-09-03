@@ -157,7 +157,7 @@ export class AiRequestError extends AppError {
 }
 
 export class AiGenerationTimeout extends AppError {
-  constructor(details: unknown) {
+  constructor(details?: unknown) {
     super(
       ErrorCode.AI_GENERATION_TIMEOUT,
       ErrorHttpStatus[ErrorCode.AI_GENERATION_TIMEOUT],
@@ -168,11 +168,11 @@ export class AiGenerationTimeout extends AppError {
 }
 
 export class AiGenerationServerShutdown extends AppError {
-  constructor(details: unknown) {
+  constructor(details?: unknown) {
     super(
       ErrorCode.AI_GENERATION_SERVER_SHUTDOWN,
       ErrorHttpStatus[ErrorCode.AI_GENERATION_SERVER_SHUTDOWN],
-      'AI generation timed out',
+      'AI generation was interrupted by server shutdown',
       details
     );
   }

@@ -6,8 +6,8 @@ import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
+import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
 
 const AI_TIMEOUT_MS = 60_000;
 

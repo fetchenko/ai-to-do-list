@@ -2,7 +2,7 @@ import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/ai-gen
 import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
+import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
 import { TaskPreview } from '@/shared/types/database.types';
 
 export async function generateSubtasksForTask({

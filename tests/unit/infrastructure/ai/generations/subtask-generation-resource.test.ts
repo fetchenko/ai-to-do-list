@@ -169,7 +169,7 @@ describe('SubtaskGenerationResource', () => {
           success: false,
           status: 503,
           code: 'AI_GENERATION_SERVER_SHUTDOWN',
-          message: 'AI generation cancelled because the server is shutting down',
+          message: 'AI generation was interrupted by server shutdown',
         },
       },
     ]);

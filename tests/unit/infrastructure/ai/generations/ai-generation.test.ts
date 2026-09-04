@@ -22,6 +22,23 @@ function createLock() {
   return { lock: { release } as AiRequestLock, release };
 }
 
+async function runTerminalOperation(
+  generation: AiGenerationResource,
+  operation: 'complete' | 'fail' | 'cancel'
+) {
+  switch (operation) {
+    case 'complete':
+      await generation.complete({ metadata: {} as never });
+      break;
+    case 'fail':
+      await generation.fail({ code: 'AI_GENERATION_FAILED' });
+      break;
+    case 'cancel':
+      await generation.cancel('client_disconnect');
+      break;
+  }
+}
+
 describe('AiGenerationResource', () => {
   it('exposes the generation log id', () => {
     const { log } = createLog();
@@ -74,15 +91,9 @@ describe('AiGenerationResource', () => {
     const { lock, release } = createLock();
     const generation = new AiGenerationResource(log, lock);
 
-    if (first === 'complete') await generation.complete({ metadata: {} as never });
-    if (first === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
-    if (first === 'cancel') await generation.cancel('client_disconnect');
-    if (second === 'complete') await generation.complete({ metadata: {} as never });
-    if (second === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
-    if (second === 'cancel') await generation.cancel('client_disconnect');
-    if (third === 'complete') await generation.complete({ metadata: {} as never });
-    if (third === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
-    if (third === 'cancel') await generation.cancel('client_disconnect');
+    await runTerminalOperation(generation, first);
+    await runTerminalOperation(generation, second);
+    await runTerminalOperation(generation, third);
 
     expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
     expect(release).toHaveBeenCalledOnce();
@@ -126,9 +137,7 @@ describe('AiGenerationResource', () => {
 
     try {
       const generation = new AiGenerationResource(log, lock);
-      if (operation === 'complete') await generation.complete({ metadata: {} as never });
-      if (operation === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
-      if (operation === 'cancel') await generation.cancel('client_disconnect');
+      await runTerminalOperation(generation, operation);
 
       expect(release).toHaveBeenCalledOnce();
       expect(consoleError).toHaveBeenCalledOnce();

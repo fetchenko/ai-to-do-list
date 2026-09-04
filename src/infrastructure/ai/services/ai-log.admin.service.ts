@@ -11,7 +11,6 @@ export type CreateAiLogInput = {
 type CompleteAiLogInput = {
   id: string;
   metadata: AiGenerationMetadata;
-  response: string | null;
 };
 
 type FailAiLogInput = {

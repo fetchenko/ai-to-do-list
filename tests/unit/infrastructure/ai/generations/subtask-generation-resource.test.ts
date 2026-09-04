@@ -75,7 +75,6 @@ describe('SubtaskGenerationResource', () => {
       code: 'AI_GENERATION_FAILED',
       message: 'AI generation failed',
     };
-
     const provider = createProvider([]);
     provider.stream = vi.fn(async function* () {
       throw new Error('provider failed');
@@ -216,9 +215,9 @@ describe('SubtaskGenerationResource', () => {
     const generation = createGeneration();
     const error = {
       success: false,
-      status: 502,
+      status: 422,
       code: 'AI_INVALID_RESPONSE_FORMAT',
-      message: 'AI stream ended unexpectedly',
+      message: 'Invalid AI response format',
     };
     const resource = new SubtaskGenerationResource({
       generation,

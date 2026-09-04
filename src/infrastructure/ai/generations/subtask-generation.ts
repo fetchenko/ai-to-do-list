@@ -7,8 +7,8 @@ import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
+  AiInvalidResponseFormat,
 } from '@/shared/errors/app-error';
-import { ErrorCode } from '@/shared/errors/code';
 import { TaskPreview } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
@@ -42,11 +42,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
     return new ReadableStream<Uint8Array>({
       start: (controller) => {
-        void this.run(
-          controller,
-          signal,
-          () => outputStreamCancelled
-        );
+        void this.run(controller, signal, () => outputStreamCancelled);
       },
 
       cancel: () => {
@@ -88,7 +84,6 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
           case 'done':
             await this.options.generation.complete({
               metadata: event.metadata,
-              response: null,
             });
 
             controller.enqueue(encodeEvent(toClientEvent(event)));
@@ -106,9 +101,20 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         }
       }
 
+      const error = normalizeAiError(
+        new AiInvalidResponseFormat('AI stream ended unexpectedly')
+      );
+
       await this.options.generation.fail({
-        code: ErrorCode.AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT,
+        code: error.code,
       });
+
+      controller.enqueue(
+        encodeEvent({
+          type: 'error',
+          error,
+        })
+      );
 
       controller.close();
     } catch (error) {

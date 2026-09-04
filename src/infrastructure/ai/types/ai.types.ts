@@ -1,6 +1,6 @@
 import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 
-export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
+export type CombinedAiResponse = NormilizedAiResponse;
 
 export type AiGenerationUsage = {
   inputTokens: number | null;

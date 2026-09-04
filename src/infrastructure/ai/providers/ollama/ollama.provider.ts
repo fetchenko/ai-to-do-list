@@ -44,10 +44,7 @@ export class OllamaProvider implements AIProvider {
       throw new ResponseFormatError('Invalid format of AI response');
     }
 
-    return {
-      ...normalizeOllamaResponse(data),
-      raw: JSON.stringify(parsedResponse),
-    };
+    return normalizeOllamaResponse(data);
   }
 
   async *stream(

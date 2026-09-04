@@ -45,10 +45,8 @@ export default class DeepSeekProvider implements AIProvider {
     if (!success) {
       throw new ResponseFormatError('Invalid format of AI response');
     }
-    return {
-      ...normalizeDeepseekResponse(data),
-      raw: JSON.stringify(parsedResponse),
-    };
+    
+    return normalizeDeepseekResponse(data);
   }
 
   async *stream(

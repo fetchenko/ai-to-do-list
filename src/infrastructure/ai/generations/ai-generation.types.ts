@@ -12,5 +12,4 @@ export type AiGenerationFailure = {
 
 export type AiGenerationCompletion = {
   metadata: AiGenerationMetadata;
-  response: string | null;
 };

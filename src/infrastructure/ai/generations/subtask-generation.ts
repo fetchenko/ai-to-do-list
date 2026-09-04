@@ -32,31 +32,44 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     }
   ) {}
 
-  stream() {
-    return new ReadableStream<Uint8Array>({
-      start: (controller) => this.run(controller),
+  stream(): ReadableStream<Uint8Array> {
+    const streamAbortController = new AbortController();
+    const signal = AbortSignal.any([
+      this.options.signal,
+      streamAbortController.signal,
+    ]);
 
-      cancel: async () => {
-        await this.options.generation.cancel('client_disconnect');
+    return new ReadableStream<Uint8Array>({
+      start: (controller) => {
+        void this.run(controller, signal);
+      },
+
+      cancel: () => {
+        streamAbortController.abort(
+          new DOMException('Client disconnected', 'AbortError')
+        );
       },
     });
   }
 
-  private async run(controller: ReadableStreamDefaultController<Uint8Array>) {
-    if (this.options.signal.aborted) {
-      await this.handleAbort(controller);
+  private async run(
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    signal: AbortSignal
+  ) {
+    if (signal.aborted) {
+      await this.handleAbort(controller, signal);
       return;
     }
 
     const events = this.options.provider.stream(
       taskDecomposerStreamPrompt(this.options.task.title),
-      this.options.signal
+      signal
     );
 
     try {
       for await (const event of events) {
-        if (this.options.signal.aborted) {
-          await this.handleAbort(controller);
+        if (signal.aborted) {
+          await this.handleAbort(controller, signal);
           return;
         }
 
@@ -76,7 +89,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             return;
 
           case 'error':
-            await this.handleFailure(controller, event.error);
+            await this.handleFailure(controller, event.error, signal);
             return;
         }
       }
@@ -88,14 +101,15 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
       controller.close();
     } catch (error) {
-      await this.handleFailure(controller, error);
+      await this.handleFailure(controller, error, signal);
     }
   }
 
   private async handleAbort(
-    controller: ReadableStreamDefaultController<Uint8Array>
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    signal: AbortSignal
   ) {
-    const reason = normalizeCancelReason(this.options.signal.reason);
+    const reason = normalizeCancelReason(signal.reason);
 
     await this.options.generation.cancel(reason);
 
@@ -120,15 +134,15 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     }
 
     controller.close();
-    return;
   }
 
   private async handleFailure(
     controller: ReadableStreamDefaultController<Uint8Array>,
-    error: unknown
+    error: unknown,
+    signal: AbortSignal
   ) {
-    if (this.options.signal.aborted) {
-      await this.handleAbort(controller);
+    if (signal.aborted) {
+      await this.handleAbort(controller, signal);
       return;
     }
 

@@ -94,7 +94,6 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         }
       }
 
-      // Defensive: provider ended without a terminal event.
       await this.options.generation.fail({
         code: ErrorCode.AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT,
       });
@@ -121,7 +120,8 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             error: normalizeAiError(new AiGenerationTimeout()),
           })
         );
-        break;
+        controller.close();
+        return;
 
       case 'server_shutdown':
         controller.enqueue(
@@ -130,10 +130,14 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             error: normalizeAiError(new AiGenerationServerShutdown()),
           })
         );
-        break;
-    }
+        controller.close();
+        return;
 
-    controller.close();
+      case 'client_disconnect':
+        // The output stream is already cancelled, so its controller must not
+        // be touched after ReadableStream.cancel() has completed.
+        return;
+    }
   }
 
   private async handleFailure(

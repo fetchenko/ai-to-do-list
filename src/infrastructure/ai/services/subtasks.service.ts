@@ -81,7 +81,6 @@ export async function streamSubtasksForTask(input: {
 
     aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
   } catch (error) {
-    await aiRequestLock.release();
     console.error('Failed to create AI generation log', error);
   }
 

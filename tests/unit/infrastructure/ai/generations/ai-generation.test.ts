@@ -23,6 +23,13 @@ function createLock() {
 }
 
 describe('AiGenerationResource', () => {
+  it('exposes the generation log id', () => {
+    const { log } = createLog();
+    const { lock } = createLock();
+
+    expect(new AiGenerationResource(log, lock).id).toBe('log-1');
+  });
+
   it('completes the generation, logs it, and releases the lock', async () => {
     const { log, complete } = createLog();
     const { lock, release } = createLock();
@@ -58,18 +65,26 @@ describe('AiGenerationResource', () => {
     expect(release).toHaveBeenCalledOnce();
   });
 
-  it('does not perform another terminal transition after completion', async () => {
+  it.each([
+    ['completion', 'complete', 'fail', 'cancel'],
+    ['failure', 'fail', 'complete', 'cancel'],
+    ['cancellation', 'cancel', 'complete', 'fail'],
+  ] as const)('does not perform another terminal transition after %s', async (_name, first, second, third) => {
     const { log, complete, fail, cancel } = createLog();
     const { lock, release } = createLock();
     const generation = new AiGenerationResource(log, lock);
 
-    await generation.complete({ metadata: {} as never });
-    await generation.fail({ code: 'AI_GENERATION_FAILED' });
-    await generation.cancel('client_disconnect');
+    if (first === 'complete') await generation.complete({ metadata: {} as never });
+    if (first === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
+    if (first === 'cancel') await generation.cancel('client_disconnect');
+    if (second === 'complete') await generation.complete({ metadata: {} as never });
+    if (second === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
+    if (second === 'cancel') await generation.cancel('client_disconnect');
+    if (third === 'complete') await generation.complete({ metadata: {} as never });
+    if (third === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
+    if (third === 'cancel') await generation.cancel('client_disconnect');
 
-    expect(complete).toHaveBeenCalledOnce();
-    expect(fail).not.toHaveBeenCalled();
-    expect(cancel).not.toHaveBeenCalled();
+    expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
     expect(release).toHaveBeenCalledOnce();
   });
 
@@ -84,11 +99,7 @@ describe('AiGenerationResource', () => {
       generation.cancel('client_disconnect'),
     ]);
 
-    expect(
-      complete.mock.calls.length +
-        fail.mock.calls.length +
-        cancel.mock.calls.length
-    ).toBe(1);
+    expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
     expect(release).toHaveBeenCalledOnce();
   });
 
@@ -101,18 +112,23 @@ describe('AiGenerationResource', () => {
     expect(release).toHaveBeenCalledOnce();
   });
 
-  it('does not fail when writing the log fails', async () => {
-    const { log, complete } = createLog();
-    complete.mockRejectedValueOnce(new Error('logging failed'));
+  it.each([
+    ['complete', 'complete'],
+    ['fail', 'fail'],
+    ['cancel', 'cancel'],
+  ] as const)('releases the lock when %s log persistence fails', async (_name, operation) => {
+    const { log, complete, fail, cancel } = createLog();
     const { lock, release } = createLock();
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const method = operation === 'complete' ? complete : operation === 'fail' ? fail : cancel;
+    method.mockRejectedValueOnce(new Error('logging failed'));
 
     try {
-      await new AiGenerationResource(log, lock).complete({
-        metadata: {} as never,
-      });
+      const generation = new AiGenerationResource(log, lock);
+      if (operation === 'complete') await generation.complete({ metadata: {} as never });
+      if (operation === 'fail') await generation.fail({ code: 'AI_GENERATION_FAILED' });
+      if (operation === 'cancel') await generation.cancel('client_disconnect');
 
       expect(release).toHaveBeenCalledOnce();
       expect(consoleError).toHaveBeenCalledOnce();

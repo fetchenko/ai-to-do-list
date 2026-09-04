@@ -27,7 +27,7 @@ describe('AiGenerationResource', () => {
     const { log, complete } = createLog();
     const { lock, release } = createLock();
     const generation = new AiGenerationResource(log, lock);
-    const input = { metadata: {} as never, response: null };
+    const input = { metadata: {} as never };
 
     await generation.complete(input);
 
@@ -63,7 +63,7 @@ describe('AiGenerationResource', () => {
     const { lock, release } = createLock();
     const generation = new AiGenerationResource(log, lock);
 
-    await generation.complete({ metadata: {} as never, response: null });
+    await generation.complete({ metadata: {} as never });
     await generation.fail({ code: 'AI_GENERATION_FAILED' });
     await generation.cancel('client_disconnect');
 
@@ -79,7 +79,7 @@ describe('AiGenerationResource', () => {
     const generation = new AiGenerationResource(log, lock);
 
     await Promise.all([
-      generation.complete({ metadata: {} as never, response: null }),
+      generation.complete({ metadata: {} as never }),
       generation.fail({ code: 'AI_GENERATION_FAILED' }),
       generation.cancel('client_disconnect'),
     ]);
@@ -96,7 +96,7 @@ describe('AiGenerationResource', () => {
     const { lock, release } = createLock();
     const generation = new AiGenerationResource(null, lock);
 
-    await generation.complete({ metadata: {} as never, response: null });
+    await generation.complete({ metadata: {} as never });
 
     expect(release).toHaveBeenCalledOnce();
   });
@@ -112,7 +112,6 @@ describe('AiGenerationResource', () => {
     try {
       await new AiGenerationResource(log, lock).complete({
         metadata: {} as never,
-        response: null,
       });
 
       expect(release).toHaveBeenCalledOnce();

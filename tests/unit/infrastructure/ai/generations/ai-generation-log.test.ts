@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AiGenerationLogResource } from '@/infrastructure/ai/generations/ai-generation-log-resource';
+import { AiGenerationLogResource } from '@/infrastructure/ai/generations/ai-generation-log';
 import {
   cancelAiGenerationLog,
   completeAiGenerationLog,

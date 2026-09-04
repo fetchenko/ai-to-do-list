@@ -1,6 +1,5 @@
-import { ApiError } from 'next/dist/server/api-utils';
-
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
+import { ApiError } from '@/shared/errors/api-error.schema';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 export type AiStreamEvent =

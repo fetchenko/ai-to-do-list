@@ -36,9 +36,13 @@ export function normalizeOllamaUsage(
   response: OllamaUsageSource
 ): AiGenerationUsage {
   return {
-    inputTokens: response.prompt_eval_count ?? 0,
-    outputTokens: response.eval_count ?? 0,
-    totalTokens: (response.prompt_eval_count ?? 0) + (response.eval_count ?? 0),
+    inputTokens: response.prompt_eval_count ?? null,
+    outputTokens: response.eval_count ?? null,
+    totalTokens:
+      response.prompt_eval_count !== undefined &&
+      response.eval_count !== undefined
+        ? response.prompt_eval_count + response.eval_count
+        : null,
 
     reasoningTokens: 0,
     cacheHitTokens: 0,

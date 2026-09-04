@@ -16,9 +16,7 @@ export class ToolCallAccumulator {
     }
 
     if (delta.index < this.current.index) {
-      throw new AiInvalidResponseFormat(
-        'DeepSeek returned tool calls out of order'
-      );
+      throw new AiInvalidResponseFormat('AI returned tool calls out of order');
     }
 
     if (delta.index !== this.current.index) {

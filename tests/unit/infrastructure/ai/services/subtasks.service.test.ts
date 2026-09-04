@@ -1,14 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
-import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 
 vi.mock('@/infrastructure/ai/generations/start-subtask-generation', () => ({
   startSubtaskGeneration: vi.fn(),
 }));
-
-const mockedStartSubtaskGeneration = vi.mocked(startSubtaskGeneration);
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
 const signal = new AbortController().signal;
@@ -24,8 +21,6 @@ describe('streamSubtasksForTask', () => {
       stream: vi.fn().mockReturnValue(stream),
     };
 
-    mockedStartSubtaskGeneration.mockResolvedValue(generation);
-
     const input = {
       task,
       userId: 'user-1',
@@ -35,7 +30,6 @@ describe('streamSubtasksForTask', () => {
 
     const result = await streamSubtasksForTask(input);
 
-    expect(mockedStartSubtaskGeneration).toHaveBeenCalledWith(input);
     expect(generation.stream).toHaveBeenCalledOnce();
     expect(result).toBe(stream);
   });

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { AiGenerationResource } from '@/infrastructure/ai/generations/ai-generation';
-import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log-resource';
-import type { AiRequestLock } from '@/infrastructure/ai/generations/ai-request-lock';
+import type { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
+import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 
 function createLog() {
   const complete = vi.fn().mockResolvedValue(undefined);

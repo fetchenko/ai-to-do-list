@@ -2,7 +2,7 @@ import { collect } from '@tests/utils/collect';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
-import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation-resource';
+import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';

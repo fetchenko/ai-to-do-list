@@ -1,7 +1,10 @@
-import { startSubtaskGeneration } from '@/infrastructure/ai/generations/start-subtask-generation';
-import { tryCreateAiGenerationLog } from '@/infrastructure/ai/generations/try-create-ai-generation-log';
+import { AiGenerationResource as AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
+import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
+import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
+import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure/ai/generations/subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
 import { TaskPreview } from '@/shared/types/database.types';
 
@@ -16,18 +19,32 @@ export async function generateSubtasksForTask({
   signal: AbortSignal;
   provider: AIProvider;
 }) {
-  const log = await tryCreateAiGenerationLog({
-    feature: 'generate-subtasks',
-    taskId: task.id,
-    userId: userId,
-  });
+  const lock = await acquireAiRequestLock(userId);
 
+  let aiGeneration = null;
+
+  try {
+    const generationId = await createAiGenerationLog({
+      userId: userId,
+      taskId: task.id,
+      feature: 'generate-subtasks',
+    });
+
+    const log = generationId ? new AiGenerationLog(generationId) : null;
+
+    aiGeneration = new AiGeneration(log, lock);
+  } catch (error) {
+    await lock.release();
+    console.error('Failed to create AI generation log', error);
+
+    throw error;
+  }
   try {
     const prompt = taskDecomposerPrompt(task.title);
     const { data, metadata, raw } = await provider.generate(prompt, signal);
 
-    if (log) {
-      await log.complete({
+    if (aiGeneration) {
+      await aiGeneration.complete({
         metadata: metadata,
         response: raw,
       });
@@ -35,8 +52,8 @@ export async function generateSubtasksForTask({
 
     return { data };
   } catch (error) {
-    if (log) {
-      await log.fail({
+    if (aiGeneration) {
+      await aiGeneration.fail({
         code: normalizeAiError(error).code,
       });
     }
@@ -51,7 +68,31 @@ export async function streamSubtasksForTask(input: {
   provider: AIProvider;
   signal: AbortSignal;
 }) {
-  const generation = await startSubtaskGeneration(input);
+  const aiRequestLock = await acquireAiRequestLock(input.userId);
+
+  let aiGenerationLog = null;
+
+  try {
+    const generationId = await createAiGenerationLog({
+      userId: input.userId,
+      taskId: input.task.id,
+      feature: 'generate-subtasks',
+    });
+
+    aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
+  } catch (error) {
+    await aiRequestLock.release();
+    console.error('Failed to create AI generation log', error);
+  }
+
+  const aiGeneration = new AiGeneration(aiGenerationLog, aiRequestLock);
+
+  const generation = new SubtaskGeneration({
+    generation: aiGeneration,
+    task: input.task,
+    provider: input.provider,
+    signal: input.signal,
+  });
 
   return generation.stream();
 }

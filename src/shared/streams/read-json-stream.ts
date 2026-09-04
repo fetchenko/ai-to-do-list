@@ -5,6 +5,7 @@ export async function* readJsonStream<T>(
   const decoder = new TextDecoder();
 
   let buffer = '';
+  let completed = false;
 
   try {
     while (true) {
@@ -21,7 +22,10 @@ export async function* readJsonStream<T>(
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
-        if (!line.trim()) continue;
+        if (!line.trim()) {
+          continue;
+        }
+
         yield JSON.parse(line) as T;
       }
     }
@@ -29,7 +33,13 @@ export async function* readJsonStream<T>(
     if (buffer.trim()) {
       yield JSON.parse(buffer) as T;
     }
+
+    completed = true;
   } finally {
+    if (!completed) {
+      await reader.cancel();
+    }
+
     reader.releaseLock();
   }
 }

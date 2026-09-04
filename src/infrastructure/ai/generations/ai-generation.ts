@@ -1,11 +1,11 @@
-import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log-resource';
+import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
+import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import {
   AiGenerationCancelReason,
   AiGenerationCompletion,
   AiGenerationFailure,
   AiGenerationStatus,
 } from '@/infrastructure/ai/generations/ai-generation.types';
-import { AiRequestLock } from '@/infrastructure/ai/generations/ai-request-lock';
 
 export type AiGeneration = {
   readonly id: string | null;

@@ -62,10 +62,7 @@ describe('SubtaskGenerationResource', () => {
       { type: 'subtask', subtask: { title: 'Book hotel' } },
       { type: 'done' },
     ]);
-    expect(generation.complete).toHaveBeenCalledWith({
-      metadata,
-      response: null,
-    });
+    expect(generation.complete).toHaveBeenCalledWith({ metadata });
     expect(generation.fail).not.toHaveBeenCalled();
     expect(generation.cancel).not.toHaveBeenCalled();
   });
@@ -215,8 +212,14 @@ describe('SubtaskGenerationResource', () => {
     expect(generation.complete).not.toHaveBeenCalled();
   });
 
-  it('fails when the provider ends without a terminal event', async () => {
+  it('fails and emits an error when the provider ends without a terminal event', async () => {
     const generation = createGeneration();
+    const error = {
+      success: false,
+      status: 502,
+      code: 'AI_INVALID_RESPONSE_FORMAT',
+      message: 'AI stream ended unexpectedly',
+    };
     const resource = new SubtaskGenerationResource({
       generation,
       task,
@@ -228,11 +231,11 @@ describe('SubtaskGenerationResource', () => {
 
     await expect(collectStream(resource)).resolves.toEqual([
       { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'error', error },
     ]);
-    expect(generation.fail).toHaveBeenCalledWith({
-      code: 'AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT',
-    });
+    expect(generation.fail).toHaveBeenCalledWith({ code: error.code });
     expect(generation.cancel).not.toHaveBeenCalled();
+    expect(generation.complete).not.toHaveBeenCalled();
   });
 
   it('stops consuming provider events after done', async () => {

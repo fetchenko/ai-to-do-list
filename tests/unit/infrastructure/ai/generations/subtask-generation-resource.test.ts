@@ -291,7 +291,11 @@ describe('SubtaskGenerationResource', () => {
       generate: vi.fn(),
       stream: async function* (_prompt, signal) {
         providerSignal = signal;
-        await new Promise(() => {});
+        await new Promise<void>((resolve, reject) => {
+          signal.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
+        });
       },
     };
     const generation = createGeneration();
@@ -308,6 +312,6 @@ describe('SubtaskGenerationResource', () => {
     await reader.cancel();
 
     expect(providerSignal?.aborted).toBe(true);
-    expect(generation.cancel).not.toHaveBeenCalled();
+    expect(generation.cancel).toHaveBeenCalledWith('client_disconnect');
   });
 });

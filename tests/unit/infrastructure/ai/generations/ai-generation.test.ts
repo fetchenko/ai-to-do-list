@@ -86,18 +86,26 @@ describe('AiGenerationResource', () => {
     ['completion', 'complete', 'fail', 'cancel'],
     ['failure', 'fail', 'complete', 'cancel'],
     ['cancellation', 'cancel', 'complete', 'fail'],
-  ] as const)('does not perform another terminal transition after %s', async (_name, first, second, third) => {
-    const { log, complete, fail, cancel } = createLog();
-    const { lock, release } = createLock();
-    const generation = new AiGenerationResource(log, lock);
+  ] as const)(
+    'does not perform another terminal transition after %s',
+    async (_name, first, second, third) => {
+      const { log, complete, fail, cancel } = createLog();
+      const { lock, release } = createLock();
+      const generation = new AiGenerationResource(log, lock);
 
-    await runTerminalOperation(generation, first);
-    await runTerminalOperation(generation, second);
-    await runTerminalOperation(generation, third);
+      await runTerminalOperation(generation, first);
+      await runTerminalOperation(generation, second);
+      await runTerminalOperation(generation, third);
 
-    expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
-    expect(release).toHaveBeenCalledOnce();
-  });
+      expect(
+        complete.mock.calls.length +
+          fail.mock.calls.length +
+          cancel.mock.calls.length
+      ).toBe(1);
+
+      expect(release).toHaveBeenCalledOnce();
+    }
+  );
 
   it('allows only one terminal transition under concurrent calls', async () => {
     const { log, complete, fail, cancel } = createLog();
@@ -110,7 +118,11 @@ describe('AiGenerationResource', () => {
       generation.cancel('client_disconnect'),
     ]);
 
-    expect(complete.mock.calls.length + fail.mock.calls.length + cancel.mock.calls.length).toBe(1);
+    expect(
+      complete.mock.calls.length +
+        fail.mock.calls.length +
+        cancel.mock.calls.length
+    ).toBe(1);
     expect(release).toHaveBeenCalledOnce();
   });
 
@@ -127,22 +139,32 @@ describe('AiGenerationResource', () => {
     ['complete', 'complete'],
     ['fail', 'fail'],
     ['cancel', 'cancel'],
-  ] as const)('releases the lock when %s log persistence fails', async (_name, operation) => {
-    const { log, complete, fail, cancel } = createLog();
-    const { lock, release } = createLock();
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  ] as const)(
+    'releases the lock when %s log persistence fails',
+    async (_name, operation) => {
+      const { log, complete, fail, cancel } = createLog();
+      const { lock, release } = createLock();
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
 
-    const method = operation === 'complete' ? complete : operation === 'fail' ? fail : cancel;
-    method.mockRejectedValueOnce(new Error('logging failed'));
+      const method =
+        operation === 'complete'
+          ? complete
+          : operation === 'fail'
+            ? fail
+            : cancel;
+      method.mockRejectedValueOnce(new Error('logging failed'));
 
-    try {
-      const generation = new AiGenerationResource(log, lock);
-      await runTerminalOperation(generation, operation);
+      try {
+        const generation = new AiGenerationResource(log, lock);
+        await runTerminalOperation(generation, operation);
 
-      expect(release).toHaveBeenCalledOnce();
-      expect(consoleError).toHaveBeenCalledOnce();
-    } finally {
-      consoleError.mockRestore();
+        expect(release).toHaveBeenCalledOnce();
+        expect(consoleError).toHaveBeenCalledOnce();
+      } finally {
+        consoleError.mockRestore();
+      }
     }
-  });
+  );
 });

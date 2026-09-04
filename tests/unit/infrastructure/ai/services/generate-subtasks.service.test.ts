@@ -40,13 +40,13 @@ function setupGeneration() {
   const fail = vi.fn().mockResolvedValue(undefined);
   const cancel = vi.fn().mockResolvedValue(undefined);
 
-  mocks.AiGeneration.mockImplementation(
-    class AiGenerationMock {
-      complete = complete;
-      fail = fail;
-      cancel = cancel;
-    }
-  );
+  mocks.AiGeneration.mockImplementation(function AiGenerationMock() {
+    return {
+      complete,
+      fail,
+      cancel,
+    };
+  });
 
   return { complete, fail, cancel };
 }
@@ -56,11 +56,9 @@ describe('generateSubtasksForTask', () => {
     vi.clearAllMocks();
     mocks.acquireAiRequestLock.mockResolvedValue(lock);
     mocks.createAiGenerationLog.mockResolvedValue('generation-1');
-    mocks.AiGenerationLog.mockImplementation(
-      class AiGenerationLogMock {
-        constructor(readonly id: string) {}
-      }
-    );
+    mocks.AiGenerationLog.mockImplementation((id: string) => ({
+      id,
+    }));
   });
 
   it('completes the generation with provider metadata on success', async () => {

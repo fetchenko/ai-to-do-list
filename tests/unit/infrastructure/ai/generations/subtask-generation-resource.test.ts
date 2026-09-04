@@ -218,6 +218,7 @@ describe('SubtaskGenerationResource', () => {
       status: 422,
       code: 'AI_INVALID_RESPONSE_FORMAT',
       message: 'Invalid AI response format',
+      details: 'AI stream ended unexpectedly',
     };
     const resource = new SubtaskGenerationResource({
       generation,

@@ -26,7 +26,9 @@ vi.mock('@/infrastructure/ai/generations/ai-generation-log', () => ({
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
 const signal = new AbortController().signal;
-const lock = { release: vi.fn().mockResolvedValue(undefined) } satisfies AiRequestLock;
+const lock = {
+  release: vi.fn().mockResolvedValue(undefined),
+} satisfies AiRequestLock;
 const provider = {
   quotaLimit: undefined,
   generate: vi.fn(),
@@ -36,9 +38,17 @@ const provider = {
 function setupGeneration() {
   const complete = vi.fn().mockResolvedValue(undefined);
   const fail = vi.fn().mockResolvedValue(undefined);
-  const generation = { complete, fail };
-  mocks.AiGeneration.mockReturnValue(generation);
-  return { generation, complete, fail };
+  const cancel = vi.fn().mockResolvedValue(undefined);
+
+  mocks.AiGeneration.mockImplementation(
+    class AiGenerationMock {
+      complete = complete;
+      fail = fail;
+      cancel = cancel;
+    }
+  );
+
+  return { complete, fail, cancel };
 }
 
 describe('generateSubtasksForTask', () => {
@@ -46,13 +56,15 @@ describe('generateSubtasksForTask', () => {
     vi.clearAllMocks();
     mocks.acquireAiRequestLock.mockResolvedValue(lock);
     mocks.createAiGenerationLog.mockResolvedValue('generation-1');
-    mocks.AiGenerationLog.mockImplementation(function AiGenerationLogMock(id: string) {
-      return { id };
-    });
+    mocks.AiGenerationLog.mockImplementation(
+      class AiGenerationLogMock {
+        constructor(readonly id: string) {}
+      }
+    );
   });
 
   it('completes the generation with provider metadata on success', async () => {
-    const { generation, complete } = setupGeneration();
+    const { complete, fail } = setupGeneration();
     const metadata = {
       model: 'test',
       response: '[{"title":"Book hotel"}]',
@@ -64,11 +76,18 @@ describe('generateSubtasksForTask', () => {
       metadata,
     });
 
-    const result = await generateSubtasksForTask({ task, userId: 'user-1', signal, provider });
+    const result = await generateSubtasksForTask({
+      task,
+      userId: 'user-1',
+      signal,
+      provider,
+    });
 
-    expect(result).toEqual({ data: { subtasks: [{ id: 'subtask-1', title: 'Book hotel' }] } });
+    expect(result).toEqual({
+      data: { subtasks: [{ id: 'subtask-1', title: 'Book hotel' }] },
+    });
     expect(complete).toHaveBeenCalledWith({ metadata });
-    expect(generation.fail).not.toHaveBeenCalled();
+    expect(fail).not.toHaveBeenCalled();
     expect(lock.release).not.toHaveBeenCalled();
   });
 
@@ -77,7 +96,9 @@ describe('generateSubtasksForTask', () => {
     const error = new Error('provider failed');
     provider.generate.mockRejectedValue(error);
 
-    await expect(generateSubtasksForTask({ task, userId: 'user-1', signal, provider })).rejects.toBe(error);
+    await expect(
+      generateSubtasksForTask({ task, userId: 'user-1', signal, provider })
+    ).rejects.toBe(error);
 
     expect(fail).toHaveBeenCalledWith({ code: 'AI_GENERATION_FAILED' });
   });
@@ -86,15 +107,29 @@ describe('generateSubtasksForTask', () => {
     const { complete } = setupGeneration();
     const error = new Error('log creation failed');
     mocks.createAiGenerationLog.mockRejectedValue(error);
-    provider.generate.mockResolvedValue({ data: { subtasks: [] }, metadata: {} as never });
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    provider.generate.mockResolvedValue({
+      data: { subtasks: [] },
+      metadata: {} as never,
+    });
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
 
     try {
-      await generateSubtasksForTask({ task, userId: 'user-1', signal, provider });
+      await generateSubtasksForTask({
+        task,
+        userId: 'user-1',
+        signal,
+        provider,
+      });
+
       expect(mocks.AiGenerationLog).not.toHaveBeenCalled();
       expect(complete).toHaveBeenCalledWith({ metadata: {} });
       expect(lock.release).not.toHaveBeenCalled();
-      expect(consoleError).toHaveBeenCalledWith('Failed to create AI generation log', error);
+      expect(consoleError).toHaveBeenCalledWith(
+        'Failed to create AI generation log',
+        error
+      );
     } finally {
       consoleError.mockRestore();
     }
@@ -104,7 +139,9 @@ describe('generateSubtasksForTask', () => {
     const error = new Error('lock failed');
     mocks.acquireAiRequestLock.mockRejectedValue(error);
 
-    await expect(generateSubtasksForTask({ task, userId: 'user-1', signal, provider })).rejects.toBe(error);
+    await expect(
+      generateSubtasksForTask({ task, userId: 'user-1', signal, provider })
+    ).rejects.toBe(error);
 
     expect(mocks.createAiGenerationLog).not.toHaveBeenCalled();
     expect(mocks.AiGeneration).not.toHaveBeenCalled();

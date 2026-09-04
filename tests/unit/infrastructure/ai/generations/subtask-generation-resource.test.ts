@@ -284,4 +284,30 @@ describe('SubtaskGenerationResource', () => {
     expect(generation.cancel).not.toHaveBeenCalled();
     expect(generation.complete).not.toHaveBeenCalled();
   });
+
+  it('aborts the provider signal when the output stream is cancelled', async () => {
+    let providerSignal: AbortSignal | undefined;
+    const provider: AIProvider = {
+      generate: vi.fn(),
+      stream: async function* (_prompt, signal) {
+        providerSignal = signal;
+        await new Promise(() => {});
+      },
+    };
+    const generation = createGeneration();
+    const resource = new SubtaskGenerationResource({
+      generation,
+      task,
+      provider,
+      signal: new AbortController().signal,
+    });
+
+    const reader = resource.stream().getReader();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    await reader.cancel();
+
+    expect(providerSignal?.aborted).toBe(true);
+    expect(generation.cancel).not.toHaveBeenCalled();
+  });
 });

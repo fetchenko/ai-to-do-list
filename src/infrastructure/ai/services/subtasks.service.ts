@@ -21,39 +21,33 @@ export async function generateSubtasksForTask({
 }) {
   const lock = await acquireAiRequestLock(userId);
 
-  let aiGeneration = null;
+  let aiGenerationLog = null;
 
   try {
     const generationId = await createAiGenerationLog({
-      userId: userId,
+      userId,
       taskId: task.id,
       feature: 'generate-subtasks',
     });
 
-    const log = generationId ? new AiGenerationLog(generationId) : null;
-
-    aiGeneration = new AiGeneration(log, lock);
+    aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
   } catch (error) {
-    await lock.release();
     console.error('Failed to create AI generation log', error);
   }
+
+  const aiGeneration = new AiGeneration(aiGenerationLog, lock);
+
   try {
     const prompt = taskDecomposerPrompt(task.title);
     const { data, metadata } = await provider.generate(prompt, signal);
 
-    if (aiGeneration) {
-      await aiGeneration.complete({
-        metadata: metadata,
-      });
-    }
+    await aiGeneration.complete({ metadata });
 
     return { data };
   } catch (error) {
-    if (aiGeneration) {
-      await aiGeneration.fail({
-        code: normalizeAiError(error).code,
-      });
-    }
+    await aiGeneration.fail({
+      code: normalizeAiError(error).code,
+    });
 
     throw error;
   }

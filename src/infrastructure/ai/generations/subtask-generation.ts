@@ -38,13 +38,19 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
       this.options.signal,
       streamAbortController.signal,
     ]);
+    let outputStreamCancelled = false;
 
     return new ReadableStream<Uint8Array>({
       start: (controller) => {
-        void this.run(controller, signal);
+        void this.run(
+          controller,
+          signal,
+          () => outputStreamCancelled
+        );
       },
 
       cancel: () => {
+        outputStreamCancelled = true;
         streamAbortController.abort(
           new DOMException('Client disconnected', 'AbortError')
         );
@@ -54,10 +60,11 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
   private async run(
     controller: ReadableStreamDefaultController<Uint8Array>,
-    signal: AbortSignal
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
   ) {
     if (signal.aborted) {
-      await this.handleAbort(controller, signal);
+      await this.handleAbort(controller, signal, isOutputStreamCancelled);
       return;
     }
 
@@ -69,7 +76,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     try {
       for await (const event of events) {
         if (signal.aborted) {
-          await this.handleAbort(controller, signal);
+          await this.handleAbort(controller, signal, isOutputStreamCancelled);
           return;
         }
 
@@ -89,7 +96,12 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             return;
 
           case 'error':
-            await this.handleFailure(controller, event.error, signal);
+            await this.handleFailure(
+              controller,
+              event.error,
+              signal,
+              isOutputStreamCancelled
+            );
             return;
         }
       }
@@ -100,13 +112,19 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
       controller.close();
     } catch (error) {
-      await this.handleFailure(controller, error, signal);
+      await this.handleFailure(
+        controller,
+        error,
+        signal,
+        isOutputStreamCancelled
+      );
     }
   }
 
   private async handleAbort(
     controller: ReadableStreamDefaultController<Uint8Array>,
-    signal: AbortSignal
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
   ) {
     const reason = normalizeCancelReason(signal.reason);
 
@@ -134,8 +152,9 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         return;
 
       case 'client_disconnect':
-        // The output stream is already cancelled, so its controller must not
-        // be touched after ReadableStream.cancel() has completed.
+        if (!isOutputStreamCancelled()) {
+          controller.close();
+        }
         return;
     }
   }
@@ -143,10 +162,11 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
   private async handleFailure(
     controller: ReadableStreamDefaultController<Uint8Array>,
     error: unknown,
-    signal: AbortSignal
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
   ) {
     if (signal.aborted) {
-      await this.handleAbort(controller, signal);
+      await this.handleAbort(controller, signal, isOutputStreamCancelled);
       return;
     }
 

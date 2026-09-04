@@ -7,9 +7,13 @@ import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.ser
 const mocks = vi.hoisted(() => ({
   acquireAiRequestLock: vi.fn(),
   createAiGenerationLog: vi.fn(),
-  AiGeneration: vi.fn(),
-  AiGenerationLog: vi.fn(),
-  SubtaskGeneration: vi.fn(),
+  AiGeneration: vi.fn(function AiGenerationMock() {}),
+  AiGenerationLog: vi.fn(function AiGenerationLogMock() {}),
+  SubtaskGeneration: vi.fn(function SubtaskGenerationMock() {
+    return {
+      stream: vi.fn(),
+    };
+  }),
 }));
 
 vi.mock('@/infrastructure/ai/generations/ai-generation-lock', () => ({
@@ -51,11 +55,13 @@ describe('streamSubtasksForTask', () => {
     vi.clearAllMocks();
     mocks.acquireAiRequestLock.mockResolvedValue(lock);
     mocks.createAiGenerationLog.mockResolvedValue('generation-1');
-    mocks.AiGeneration.mockImplementation(() => ({}));
-    mocks.AiGenerationLog.mockImplementation(() => ({}));
-    mocks.SubtaskGeneration.mockImplementation(() => ({
-      stream: vi.fn().mockReturnValue(stream),
-    }));
+    mocks.AiGeneration.mockImplementation(function AiGenerationMock() {});
+    mocks.AiGenerationLog.mockImplementation(function AiGenerationLogMock() {});
+    mocks.SubtaskGeneration.mockImplementation(function SubtaskGenerationMock() {
+      return {
+        stream: vi.fn().mockReturnValue(stream),
+      };
+    });
   });
 
   it('creates the generation and returns its stream', async () => {

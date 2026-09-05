@@ -116,7 +116,7 @@ test.describe('AI subtask generation', () => {
 
     await tasksPage.generateSubtasks(taskId);
 
-    await expect(page.getByText('Generating subtasks…')).toBeVisible();
+    await expect(page.getByText('Generating…')).toBeVisible();
 
     const drafts = tasksPage.draftRows();
     await drafts.first().waitFor();

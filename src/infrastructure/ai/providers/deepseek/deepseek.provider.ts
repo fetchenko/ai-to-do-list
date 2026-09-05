@@ -14,6 +14,7 @@ import {
 } from '@/shared/errors/app-error';
 
 const DEFAULT_DEEPSEEK_QUOTA_LIMIT = 2000;
+const DEEPSEEK_MODEL = 'deepseek-v4-flash';
 
 export default class DeepSeekProvider implements AIProvider {
   quotaLimit = DEFAULT_DEEPSEEK_QUOTA_LIMIT;
@@ -29,7 +30,7 @@ export default class DeepSeekProvider implements AIProvider {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-v4-flash',
+        model: DEEPSEEK_MODEL,
         messages: [{ role: 'user', content: prompt }],
         stream: false,
         response_format: { type: 'json_object' },
@@ -45,7 +46,7 @@ export default class DeepSeekProvider implements AIProvider {
     if (!success) {
       throw new ResponseFormatError('Invalid format of AI response');
     }
-    
+
     return normalizeDeepseekResponse(data);
   }
 
@@ -60,7 +61,7 @@ export default class DeepSeekProvider implements AIProvider {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-v4-flash',
+        model: DEEPSEEK_MODEL,
         messages: [
           {
             role: 'user',

@@ -178,21 +178,37 @@ describe('AiGenerationResource', () => {
     expect(release).toHaveBeenCalledOnce();
   });
 
-  it('shares the same cleanup promise for concurrent terminal operations', async () => {
+  it('waits for lock release before completing the terminal operation', async () => {
     const { log, complete } = createLog();
     const { lock, release } = createLock();
     let resolveRelease!: () => void;
-    release.mockImplementationOnce(
-      () => new Promise<void>((resolve) => { resolveRelease = resolve; })
-    );
-    const generation = new AiGenerationResource(log, lock);
+    let releaseStarted!: () => void;
+    const releaseCalled = new Promise<void>((resolve) => {
+      releaseStarted = resolve;
+    });
 
-    const completion = generation.complete({ metadata: {} as never });
-    await Promise.resolve();
+    release.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseStarted();
+          resolveRelease = resolve;
+        })
+    );
+
+    const generation = new AiGenerationResource(log, lock);
+    let completed = false;
+    const completion = generation.complete({ metadata: {} as never }).then(() => {
+      completed = true;
+    });
+
+    await releaseCalled;
+    expect(completed).toBe(false);
+    expect(complete).toHaveBeenCalledOnce();
+    expect(release).toHaveBeenCalledOnce();
+
     resolveRelease();
     await completion;
 
-    expect(complete).toHaveBeenCalledOnce();
-    expect(release).toHaveBeenCalledOnce();
+    expect(completed).toBe(true);
   });
 });

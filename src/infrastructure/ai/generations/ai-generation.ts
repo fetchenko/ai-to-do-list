@@ -66,7 +66,7 @@ export class AiGenerationResource implements AiGeneration {
     }
   }
 
-  private transition(next: AiGenerationStatus): boolean {
+  private transition(next: Exclude<AiGenerationStatus, 'pending'>): boolean {
     if (this.status !== 'pending') {
       return false;
     }

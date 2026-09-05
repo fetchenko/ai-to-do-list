@@ -1,108 +1,225 @@
 import { collect } from '@tests/utils/collect';
+import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
 
-function createStream(events: string[]): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(
-        encoder.encode(events.map((event) => `data: ${event}`).join('\n\n'))
-      );
-      controller.close();
-    },
-  });
-}
-
-function deepSeekChunk(overrides: Record<string, unknown> = {}) {
-  return {
-    id: 'chunk-1',
+function deepSeekChunk(
+  choice: Record<string, unknown>,
+  overrides: Record<string, unknown> = {}
+): string {
+  return `data: ${JSON.stringify({
+    id: 'test-id',
     object: 'chat.completion.chunk',
-    created: 1,
+    created: 1750000000,
     model: 'deepseek-v4-flash',
-    system_fingerprint: 'fp-1',
+    system_fingerprint: 'test-fingerprint',
     choices: [
       {
         index: 0,
         delta: {},
         finish_reason: null,
+        ...choice,
       },
     ],
     ...overrides,
-  };
+  })}\n\n`;
 }
 
 describe('normalizeDeepSeekStream', () => {
   it('normalizes a valid tool call stream', async () => {
-    const firstChunk = deepSeekChunk({
-      choices: [
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              type: 'function',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"First","description":"Do first"}',
+              },
+            },
+          ],
+        },
+      }),
+      deepSeekChunk(
+        { delta: {}, finish_reason: 'tool_calls' },
         {
-          index: 0,
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 2,
+            total_tokens: 3,
+          },
+        }
+      ),
+      'data: [DONE]\n\n',
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'First', description: 'Do first' },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          model: 'deepseek-v4-flash',
+          finishReason: 'tool_calls',
+          response:
+            '[{"title":"First","description":"Do first"}]',
+        }),
+      },
+    ]);
+  });
+
+  it('accumulates fragmented tool-call arguments', async () => {
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              type: 'function',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"Buy ',
+              },
+            },
+          ],
+        },
+      }),
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              function: {
+                arguments: 'a phone","description":"Choose a phone"}',
+              },
+            },
+          ],
+        },
+        finish_reason: 'tool_calls',
+      }),
+      'data: [DONE]\n\n',
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          response:
+            '[{"title":"Buy a phone","description":"Choose a phone"}]',
+        }),
+      },
+    ]);
+  });
+
+  it('emits multiple subtasks in tool-call order', async () => {
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"First","description":"First description"}',
+              },
+            },
+          ],
+        },
+      }),
+      deepSeekChunk(
+        {
           delta: {
             tool_calls: [
               {
-                index: 0,
-                id: 'call-0',
-                type: 'function',
+                index: 1,
+                id: 'call_1',
                 function: {
                   name: 'create_subtask',
-                  arguments: '{"title":"First","description":"Do first"}',
+                  arguments:
+                    '{"title":"Second","description":"Second description"}',
                 },
               },
             ],
           },
-          finish_reason: null,
-        },
-      ],
-    });
-
-    const doneChunk = deepSeekChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {},
           finish_reason: 'tool_calls',
         },
-      ],
-      usage: {
-        prompt_tokens: 1,
-        completion_tokens: 2,
-        total_tokens: 3,
-        prompt_cache_hit_tokens: 0,
-        prompt_cache_miss_tokens: 1,
-      },
-    });
+        { usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 } }
+      ),
+      'data: [DONE]\n\n',
+    ]);
 
-    const events: unknown[] = [];
+    const result = await collect(normalizeDeepSeekStream(stream));
 
-    for await (const event of normalizeDeepSeekStream(
-      createStream([
-        JSON.stringify(firstChunk),
-        JSON.stringify(doneChunk),
-        '[DONE]',
-      ])
-    )) {
-      events.push(event);
-    }
+    expect(result).toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'First', description: 'First description' },
+      },
+      {
+        type: 'subtask',
+        subtask: { title: 'Second', description: 'Second description' },
+      },
+      {
+        type: 'done',
+        metadata: expect.objectContaining({
+          response:
+            '[{"title":"First","description":"First description"},{"title":"Second","description":"Second description"}]',
+        }),
+      },
+    ]);
+  });
 
-    expect(events).toHaveLength(2);
-    expect(events[0]).toEqual({
-      type: 'subtask',
-      subtask: {
-        title: 'First',
-        description: 'Do first',
+  it('flushes the current tool call before emitting done', async () => {
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments:
+                  '{"title":"Buy a phone","description":"Choose a phone"}',
+              },
+            },
+          ],
+        },
+      }),
+      deepSeekChunk({ delta: {}, finish_reason: 'tool_calls' }),
+      'data: [DONE]\n\n',
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
+      {
+        type: 'subtask',
+        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
       },
-    });
-    expect(events[1]).toMatchObject({
-      type: 'done',
-      metadata: {
-        model: 'deepseek-v4-flash',
-        finishReason: 'tool_calls',
-      },
-    });
+      { type: 'done', metadata: expect.objectContaining({ model: 'deepseek-v4-flash' }) },
+    ]);
+  });
+
+  it("doesn't emit content chunks", async () => {
+    const stream = createStream([
+      deepSeekChunk({ delta: { content: 'Hello' } }),
+      deepSeekChunk({ delta: { content: ' world' } }),
+      'data: [DONE]\n\n',
+    ]);
+
+    await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([]);
   });
 
   it('rejects malformed JSON', async () => {
@@ -112,121 +229,77 @@ describe('normalizeDeepSeekStream', () => {
   });
 
   it('rejects a chunk that does not match the schema', async () => {
-    const invalidChunk = deepSeekChunk({
-      object: 'unexpected.object',
-    });
-
     await expect(
       collect(
-        normalizeDeepSeekStream(createStream([JSON.stringify(invalidChunk)]))
+        normalizeDeepSeekStream(
+          createStream([
+            deepSeekChunk({ delta: {} }, { object: 'unexpected.object' }),
+          ])
+        )
       )
     ).rejects.toThrow(AiInvalidResponseFormat);
   });
 
-  it('does not yield a tool call when the following chunk is invalid', async () => {
-    const firstChunk = deepSeekChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {
-            tool_calls: [
-              {
-                index: 0,
-                id: 'call-0',
-                type: 'function',
-                function: {
-                  name: 'create_subtask',
-                  arguments: '{"title":"First","description":"Do first"}',
-                },
+  it('throws when the response is truncated before tool calls complete', async () => {
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {
+          tool_calls: [
+            {
+              index: 0,
+              id: 'call_0',
+              function: {
+                name: 'create_subtask',
+                arguments: '{"title":"Incomplete',
               },
-            ],
-          },
-          finish_reason: null,
+            },
+          ],
         },
-      ],
-    });
+        finish_reason: 'length',
+      }),
+    ]);
 
-    const invalidChunk = deepSeekChunk({
-      object: 'unexpected.object',
-    });
-
-    const iterator = normalizeDeepSeekStream(
-      createStream([JSON.stringify(firstChunk), JSON.stringify(invalidChunk)])
-    )[Symbol.asyncIterator]();
-
-    await expect(iterator.next()).rejects.toThrow(AiInvalidResponseFormat);
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat(
+        'DeepSeek response was truncated before completing tool calls'
+      )
+    );
   });
 
-  it('yields the completed earlier tool call but not the next one when a following chunk is invalid', async () => {
-    const firstChunk = deepSeekChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {
-            tool_calls: [
-              {
-                index: 0,
-                id: 'call-0',
-                type: 'function',
-                function: {
-                  name: 'create_subtask',
-                  arguments: '{"title":"First","description":"Do first"}',
-                },
-              },
-            ],
-          },
-          finish_reason: null,
-        },
-      ],
-    });
+  it('throws when DeepSeek stops because of the content filter', async () => {
+    const stream = createStream([
+      deepSeekChunk({ delta: {}, finish_reason: 'content_filter' }),
+    ]);
 
-    const secondChunk = deepSeekChunk({
-      choices: [
-        {
-          index: 0,
-          delta: {
-            tool_calls: [
-              {
-                index: 1,
-                id: 'call-1',
-                type: 'function',
-                function: {
-                  name: 'create_subtask',
-                  arguments: '{"title":"Second","description":"Do second"}',
-                },
-              },
-            ],
-          },
-          finish_reason: null,
-        },
-      ],
-    });
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of its content filter'
+      )
+    );
+  });
 
-    const invalidChunk = deepSeekChunk({
-      object: 'unexpected.object',
-    });
+  it('throws when DeepSeek stops because of insufficient system resources', async () => {
+    const stream = createStream([
+      deepSeekChunk({
+        delta: {},
+        finish_reason: 'insufficient_system_resource',
+      }),
+    ]);
 
-    const iterator = normalizeDeepSeekStream(
-      createStream([
-        JSON.stringify(firstChunk),
-        JSON.stringify(secondChunk),
-        JSON.stringify(invalidChunk),
-      ])
-    )[Symbol.asyncIterator]();
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat(
+        'DeepSeek stopped the response because of insufficient system resources'
+      )
+    );
+  });
 
-    const firstEvent = await iterator.next();
+  it('throws when the stream ends without [DONE] or tool_calls finish reason', async () => {
+    const stream = createStream([
+      deepSeekChunk({ delta: { content: 'partial response' } }),
+    ]);
 
-    expect(firstEvent).toEqual({
-      done: false,
-      value: {
-        type: 'subtask',
-        subtask: {
-          title: 'First',
-          description: 'Do first',
-        },
-      },
-    });
-
-    await expect(iterator.next()).rejects.toThrow(AiInvalidResponseFormat);
+    await expect(collect(normalizeDeepSeekStream(stream))).rejects.toEqual(
+      new AiInvalidResponseFormat('DeepSeek stream ended unexpectedly')
+    );
   });
 });

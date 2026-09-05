@@ -93,8 +93,13 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
+    let releaseStream!: () => void;
+    const streamReady = new Promise<void>((resolve) => {
+      releaseStream = resolve;
+    });
+
     await page.route(MOCK_STREAM_ENDPOINT, async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await streamReady;
 
       return route.fulfill({
         status: 200,
@@ -117,6 +122,8 @@ test.describe('AI subtask generation', () => {
     await tasksPage.generateSubtasks(taskId);
 
     await expect(page.getByText('Generating…')).toBeVisible();
+
+    releaseStream();
 
     const drafts = tasksPage.draftRows();
     await drafts.first().waitFor();

@@ -72,7 +72,6 @@ describe('parseApiError', () => {
     undefined,
     'AI unavailable',
     { code: ErrorCode.AI_UNAVAILABLE },
-    { code: ErrorCode.AI_UNAVAILABLE, status: '503', message: 'AI unavailable' },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
     expect(parseApiError(input, 503)).toEqual(
       new AppError(

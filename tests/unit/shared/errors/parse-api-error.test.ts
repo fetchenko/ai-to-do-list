@@ -82,4 +82,17 @@ describe('parseApiError', () => {
       )
     );
   });
+
+  it('accepts a valid error body even when its status is represented as a string', () => {
+    expect(
+      parseApiError(
+        {
+          code: ErrorCode.AI_UNAVAILABLE,
+          status: '503',
+          message: 'AI unavailable',
+        },
+        503
+      )
+    ).toEqual(new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable'));
+  });
 });

@@ -32,7 +32,7 @@ export async function* streamSubtasks(
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    throw parseApiError(body?.error);
+    throw parseApiError(body?.error, response.status);
   }
 
   if (!response.body) {

@@ -7,7 +7,8 @@ import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
-import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
+import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
+import { getHttpStatusCode } from '@/shared/errors/get-http-status-code';
 
 const AI_TIMEOUT_MS = 60_000;
 
@@ -47,7 +48,8 @@ export async function POST(
       }
     );
   } catch (err: unknown) {
-    const { status, ...error } = normalizeAiError(err);
+    const error = normalizeApiError(err);
+    const status = getHttpStatusCode(error.code);
 
     return NextResponse.json({ error }, { status });
   } finally {

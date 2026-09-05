@@ -5,7 +5,7 @@ import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
-import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
+import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { TaskPreview } from '@/shared/types/database.types';
 
 export async function generateSubtasksForTask({
@@ -46,7 +46,7 @@ export async function generateSubtasksForTask({
     return { data };
   } catch (error) {
     await aiGeneration.fail({
-      code: normalizeAiError(error).code,
+      code: normalizeApiError(error).code,
     });
 
     throw error;

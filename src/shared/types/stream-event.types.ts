@@ -1,4 +1,4 @@
-import { ApiError } from '@/shared/errors/api-error.schema';
+import { ApiEventError } from '@/shared/errors/api-error.schema';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 /**
@@ -22,9 +22,9 @@ export type SubtaskStreamEvent =
     }
   | {
       type: 'error';
-      error: ApiError;
+      error: ApiEventError;
     }
   | {
       type: 'cancelled';
-      error: ApiError;
+      error: ApiEventError;
     };

@@ -1,5 +1,5 @@
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
-import { ApiError } from '@/shared/errors/api-error.schema';
+import { ApiEventError } from '@/shared/errors/api-error.schema';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 export type AiStreamEvent =
@@ -13,5 +13,5 @@ export type AiStreamEvent =
     }
   | {
       type: 'error';
-      error: ApiError;
+      error: ApiEventError;
     };

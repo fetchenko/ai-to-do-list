@@ -2,7 +2,7 @@ import { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-abort-error';
-import { normalizeAiError } from '@/infrastructure/ai/utils/normalize-ai-error';
+import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-error copy';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,
@@ -101,7 +101,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         }
       }
 
-      const error = normalizeAiError(
+      const error = normalizeApiEventError(
         new AiInvalidResponseFormat('AI stream ended unexpectedly')
       );
 
@@ -141,7 +141,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         controller.enqueue(
           encodeEvent({
             type: 'cancelled',
-            error: normalizeAiError(new AiGenerationTimeout()),
+            error: normalizeApiEventError(new AiGenerationTimeout()),
           })
         );
         controller.close();
@@ -151,7 +151,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         controller.enqueue(
           encodeEvent({
             type: 'cancelled',
-            error: normalizeAiError(new AiGenerationServerShutdown()),
+            error: normalizeApiEventError(new AiGenerationServerShutdown()),
           })
         );
         controller.close();
@@ -176,7 +176,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
       return;
     }
 
-    const normalized = normalizeAiError(error);
+    const normalized = normalizeApiEventError(error);
 
     await this.options.generation.fail({
       code: normalized.code,

@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
+import { ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { parseApiError } from '@/shared/errors/parse-api-error';
+import { parseApiEventError } from '@/shared/errors/parse-api-event-error';
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
@@ -34,7 +34,7 @@ export function useSubtaskDraftsStream(
             break;
           case 'cancelled':
           case 'error':
-            throw parseApiError(chunk.error);
+            throw parseApiEventError(chunk.error);
         }
       }
     },
@@ -42,11 +42,7 @@ export function useSubtaskDraftsStream(
     onError: (error: Error) => {
       if (isAbortError(error)) return;
 
-      const message =
-        error instanceof AppError
-          ? getFriendlyErrorMessage(error)
-          : 'Something went wrong generating subtasks. Try again.';
-
+      const message = getFriendlyErrorMessage(error);
       toast.info(message);
     },
   });

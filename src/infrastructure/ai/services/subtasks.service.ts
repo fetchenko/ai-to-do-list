@@ -6,7 +6,7 @@ import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decompose
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
-import { TaskPreview } from '@/shared/types/database.types';
+import { TaskForSubtaskGeneration } from '@/shared/types/database.types';
 
 export async function generateSubtasksForTask({
   task,
@@ -14,7 +14,7 @@ export async function generateSubtasksForTask({
   signal,
   provider,
 }: {
-  task: TaskPreview;
+  task: TaskForSubtaskGeneration;
   userId: string;
   signal: AbortSignal;
   provider: AIProvider;
@@ -55,7 +55,7 @@ export async function generateSubtasksForTask({
 
 export async function streamSubtasksForTask(input: {
   userId: string;
-  task: TaskPreview;
+  task: TaskForSubtaskGeneration;
   provider: AIProvider;
   signal: AbortSignal;
 }) {

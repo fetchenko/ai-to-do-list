@@ -1,27 +1,30 @@
 import { expect, getSubtaskRows, test } from '@e2e/fixtures/tasks.fixture';
 
-const MOCK_ENDPOINT = '**/api/tasks/*/subtasks/generate';
+const MOCK_STREAM_ENDPOINT = '**/api/tasks/*/subtasks/stream';
 
 test.describe.configure({ mode: 'serial' });
 
 test.describe('AI subtask generation', () => {
-  test('generates draft subtasks and saves them when accepted', async ({
+  test('generates draft subtasks from the stream and saves them when accepted', async ({
     page,
     tasksPage,
     taskFactory,
   }) => {
-    await page.route(MOCK_ENDPOINT, (route) =>
+    await page.route(MOCK_STREAM_ENDPOINT, (route) =>
       route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: {
-            subtasks: [
-              { title: 'Mocked subtask one' },
-              { title: 'Mocked subtask two' },
-            ],
-          },
-        }),
+        contentType: 'application/x-ndjson',
+        body: [
+          JSON.stringify({
+            type: 'subtask',
+            subtask: { title: 'Mocked subtask one' },
+          }),
+          JSON.stringify({
+            type: 'subtask',
+            subtask: { title: 'Mocked subtask two' },
+          }),
+          JSON.stringify({ type: 'done' }),
+        ].join('\n'),
       })
     );
 
@@ -57,7 +60,7 @@ test.describe('AI subtask generation', () => {
     tasksPage,
     taskFactory,
   }) => {
-    await page.route(MOCK_ENDPOINT, (route) =>
+    await page.route(MOCK_STREAM_ENDPOINT, (route) =>
       route.fulfill({
         status: 429,
         contentType: 'application/json',
@@ -85,19 +88,24 @@ test.describe('AI subtask generation', () => {
     expect(await getSubtaskRows(taskId)).toHaveLength(0);
   });
 
-  test('shows a loading state while generating, then the drafts', async ({
+  test('shows a loading state while the stream is pending, then the drafts', async ({
     page,
     tasksPage,
     taskFactory,
   }) => {
-    await page.route(MOCK_ENDPOINT, async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 150)); // force the pending window to be observable
+    await page.route(MOCK_STREAM_ENDPOINT, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       return route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: { subtasks: [{ title: 'Mocked subtask one' }] },
-        }),
+        contentType: 'application/x-ndjson',
+        body: [
+          JSON.stringify({
+            type: 'subtask',
+            subtask: { title: 'Mocked subtask one' },
+          }),
+          JSON.stringify({ type: 'done' }),
+        ].join('\n'),
       });
     });
 
@@ -108,11 +116,11 @@ test.describe('AI subtask generation', () => {
 
     await tasksPage.generateSubtasks(taskId);
 
-    // this is the exact state that was reading from the wrong hook instance
     await expect(page.getByText('Generating subtasks…')).toBeVisible();
 
     const drafts = tasksPage.draftRows();
     await drafts.first().waitFor();
+    await expect(drafts).toHaveCount(1);
     await expect(page.getByText('Generating subtasks…')).not.toBeVisible();
   });
 });

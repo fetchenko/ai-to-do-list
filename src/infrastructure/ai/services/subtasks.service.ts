@@ -8,6 +8,8 @@ import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { TaskForSubtaskGeneration } from '@/shared/types/database.types';
 
+const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
+
 export async function generateSubtasksForTask({
   task,
   userId,
@@ -27,7 +29,7 @@ export async function generateSubtasksForTask({
     const generationId = await createAiGenerationLog({
       userId,
       taskId: task.id,
-      feature: 'generate-subtasks',
+      feature: SUBTASK_GENERATION_FEATURE,
     });
 
     aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
@@ -67,7 +69,7 @@ export async function streamSubtasksForTask(input: {
     const generationId = await createAiGenerationLog({
       userId: input.userId,
       taskId: input.task.id,
-      feature: 'generate-subtasks',
+      feature: SUBTASK_GENERATION_FEATURE,
     });
 
     aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;

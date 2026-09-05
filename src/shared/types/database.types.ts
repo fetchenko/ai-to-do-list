@@ -84,6 +84,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           input_tokens?: number | null;
+          model?: string | null;
           output_tokens?: number | null;
           prompt?: string | null;
           prompt_version?: string | null;

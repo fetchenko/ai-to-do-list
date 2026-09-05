@@ -1,15 +1,15 @@
 import { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-abort-error';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
+import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/app-error';
-import { TaskPreview } from '@/shared/types/database.types';
+import { TaskForSubtaskGeneration } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export type SubtaskGeneration = {
@@ -26,7 +26,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
   constructor(
     private readonly options: {
       generation: AiGeneration;
-      task: TaskPreview;
+      task: TaskForSubtaskGeneration;
       provider: AIProvider;
       signal: AbortSignal;
     }

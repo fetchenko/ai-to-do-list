@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '@/app/api/tasks/[taskId]/subtasks/stream/route';
+import { ErrorCode } from '@/shared/errors/code';
 
 vi.mock('server-only', () => ({}));
 
@@ -32,7 +33,7 @@ vi.mock('@/infrastructure/ai/services/subtasks.service', () => ({
 vi.mock('@/infrastructure/ai/utils/ai-params.utils', () => ({
   parseAiParams: mocks.parseAiParams,
 }));
-vi.mock('@/infrastructure/ai/utils/normalize-ai-error', () => ({
+vi.mock('@/infrastructure/ai/utils/normalize-api-error', () => ({
   normalizeApiError: mocks.normalizeApiError,
 }));
 
@@ -49,8 +50,7 @@ describe('POST /api/tasks/[taskId]/subtasks/stream/route', () => {
     });
     mocks.streamSubtasksForTask.mockResolvedValue(new ReadableStream());
     mocks.normalizeApiError.mockImplementation((error: Error) => ({
-      status: 500,
-      code: 'AI_GENERATION_FAILED',
+      code: ErrorCode.AI_GENERATION_FAILED,
       message: error.message,
       success: false,
     }));
@@ -123,12 +123,11 @@ describe('POST /api/tasks/[taskId]/subtasks/stream/route', () => {
     );
   });
 
-  it('returns normalized errors when setup fails', async () => {
+  it('returns the mapped quota error when setup fails', async () => {
     const error = new Error('quota failed');
     mocks.checkAiQuotaLimit.mockRejectedValue(error);
     mocks.normalizeApiError.mockReturnValue({
-      status: 409,
-      code: 'AI_REQUEST_LIMIT',
+      code: ErrorCode.AI_REQUEST_LIMIT,
       message: 'Reached limit of AI requests',
       success: false,
     });
@@ -144,11 +143,12 @@ describe('POST /api/tasks/[taskId]/subtasks/stream/route', () => {
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({
       error: {
-        code: 'AI_REQUEST_LIMIT',
+        code: ErrorCode.AI_REQUEST_LIMIT,
         message: 'Reached limit of AI requests',
         success: false,
       },
     });
+    expect(mocks.normalizeApiError).toHaveBeenCalledWith(error);
     expect(mocks.streamSubtasksForTask).not.toHaveBeenCalled();
   });
 
@@ -156,8 +156,7 @@ describe('POST /api/tasks/[taskId]/subtasks/stream/route', () => {
     const error = new Error('task not found');
     mocks.getTaskForUser.mockRejectedValue(error);
     mocks.normalizeApiError.mockReturnValue({
-      status: 404,
-      code: 'NOT_FOUND',
+      code: ErrorCode.UNKNOWN,
       message: 'Task not found',
       success: false,
     });
@@ -170,7 +169,8 @@ describe('POST /api/tasks/[taskId]/subtasks/stream/route', () => {
       params: Promise.resolve({ taskId: 'task-1' }),
     });
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(500);
+    expect(mocks.normalizeApiError).toHaveBeenCalledWith(error);
     expect(mocks.streamSubtasksForTask).not.toHaveBeenCalled();
   });
 });

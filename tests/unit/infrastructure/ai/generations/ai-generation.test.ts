@@ -102,7 +102,6 @@ describe('AiGenerationResource', () => {
           fail.mock.calls.length +
           cancel.mock.calls.length
       ).toBe(1);
-
       expect(release).toHaveBeenCalledOnce();
     }
   );
@@ -167,4 +166,33 @@ describe('AiGenerationResource', () => {
       }
     }
   );
+
+  it('propagates a lock release failure', async () => {
+    const { log } = createLog();
+    const { lock, release } = createLock();
+    const error = new Error('release failed');
+    release.mockRejectedValueOnce(error);
+    const generation = new AiGenerationResource(log, lock);
+
+    await expect(generation.complete({ metadata: {} as never })).rejects.toBe(error);
+    expect(release).toHaveBeenCalledOnce();
+  });
+
+  it('shares the same cleanup promise for concurrent terminal operations', async () => {
+    const { log, complete } = createLog();
+    const { lock, release } = createLock();
+    let resolveRelease!: () => void;
+    release.mockImplementationOnce(
+      () => new Promise<void>((resolve) => { resolveRelease = resolve; })
+    );
+    const generation = new AiGenerationResource(log, lock);
+
+    const completion = generation.complete({ metadata: {} as never });
+    await Promise.resolve();
+    resolveRelease();
+    await completion;
+
+    expect(complete).toHaveBeenCalledOnce();
+    expect(release).toHaveBeenCalledOnce();
+  });
 });

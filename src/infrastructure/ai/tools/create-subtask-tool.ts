@@ -1,7 +1,9 @@
+export const CREATE_SUBTASK_TOOL_NAME = 'create_subtask';
+
 export const createSubtaskTool = {
   type: 'function',
   function: {
-    name: 'create_subtask',
+    name: CREATE_SUBTASK_TOOL_NAME,
     description:
       'Create one actionable subtask. Call this tool once for each subtask you want to propose.',
     parameters: {

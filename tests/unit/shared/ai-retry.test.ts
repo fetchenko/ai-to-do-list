@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  AiTimeoutError,
+  AiGenerationTimeout,
   ValidationRequestError,
 } from '@/shared/errors/app-error';
 import {
@@ -23,7 +23,7 @@ describe('shouldRetry', () => {
     {
       name: 'retries retryable AppErrors',
       failureCount: 0,
-      error: new AiTimeoutError(),
+      error: new AiGenerationTimeout('AI generation timed out'),
       expected: true,
     },
     {
@@ -35,7 +35,7 @@ describe('shouldRetry', () => {
     {
       name: 'stops retrying once retry limit is reached',
       failureCount: MAX_AI_RETRIES,
-      error: new AiTimeoutError(),
+      error: new AiGenerationTimeout('AI generation timed out'),
       expected: false,
     },
   ])('$name', ({ failureCount, error, expected }) => {

@@ -4,32 +4,25 @@ import { getCurrentUser } from '@/features/auth/repository/auth.server.repositor
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
-import {
-  checkRequestLock,
-  releaseRequestLock,
-} from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { updateAiLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import { normalizeAiError } from '@/infrastructure/ai/utils/ai-error.utils';
-import { getFailedAiLogs } from '@/infrastructure/ai/utils/ai-log.utils';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
+import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
+import { getHttpStatusCode } from '@/shared/errors/get-http-status-code';
+
+const AI_TIMEOUT_MS = 60_000;
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  let aiLogId: string | null = null;
-  let userId;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+  const signal = AbortSignal.any([
+    request.signal,
+    AbortSignal.timeout(AI_TIMEOUT_MS),
+  ]);
 
   try {
     const { user } = await getCurrentUser();
-    userId = user.id;
-
-    await checkRequestLock(user.id);
 
     const provider = getAIProvider();
 
@@ -38,17 +31,14 @@ export async function POST(
     }
 
     const { taskId } = await parseAiParams(params);
-
     const task = await getTaskForUser(taskId, user.id);
 
     const result = await generateSubtasksForTask({
       task,
       userId: user.id,
-      signal: controller.signal,
+      signal: signal,
       provider,
     });
-
-    aiLogId = result.aiLogId;
 
     return NextResponse.json(
       {
@@ -60,15 +50,9 @@ export async function POST(
       }
     );
   } catch (err: unknown) {
-    const { status, ...error } = normalizeAiError(err);
+    const error = normalizeApiError(err);
+    const status = getHttpStatusCode(error.code);
 
-    if (aiLogId) {
-      await updateAiLog(aiLogId, getFailedAiLogs(error));
-    }
     return NextResponse.json({ error }, { status });
-  } finally {
-    clearTimeout(timeout);
-
-    await releaseRequestLock(userId);
   }
 }

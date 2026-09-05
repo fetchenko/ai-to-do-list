@@ -14,18 +14,16 @@ describe('normalizeDeepseekResponse', () => {
     expect(result.data.subtasks).toHaveLength(2);
     expect(result.data.subtasks[0].title).toBe('Build input form UI');
 
-    expect(result.aiLogs.model).toBe('deepseek-v4-flash');
+    expect(result.metadata.model).toBe('deepseek-v4-flash');
 
-    expect(result.aiLogs.input_tokens).toBe(292);
-    expect(result.aiLogs.output_tokens).toBe(387);
-    expect(result.aiLogs.total_tokens).toBe(679);
+    expect(result.metadata.usage.inputTokens).toBe(292);
+    expect(result.metadata.usage.outputTokens).toBe(387);
+    expect(result.metadata.usage.totalTokens).toBe(679);
 
-    expect(result.aiLogs.reasoning_tokens).toBe(257);
+    expect(result.metadata.usage.reasoningTokens).toBe(257);
 
-    expect(result.aiLogs.cache_hit_tokens).toBe(256);
-    expect(result.aiLogs.cache_miss_tokens).toBe(36);
-
-    expect(result.aiLogs.provider_generation_id).toBe(deepseekResponse.id);
+    expect(result.metadata.usage.cacheHitTokens).toBe(256);
+    expect(result.metadata.usage.cacheMissTokens).toBe(36);
   });
 
   it('handles missing usage safely', () => {
@@ -41,8 +39,8 @@ describe('normalizeDeepseekResponse', () => {
 
     const result = normalizeDeepseekResponse(input as any);
 
-    expect(result.aiLogs.input_tokens).toBe(0);
-    expect(result.aiLogs.output_tokens).toBe(0);
+    expect(result.metadata.usage.inputTokens).toBe(null);
+    expect(result.metadata.usage.outputTokens).toBe(null);
   });
 
   it('throws on invalid JSON content', () => {

@@ -1,31 +1,27 @@
-import { ErrorCode } from '@/shared/errors/code';
 import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
 
-export type CombinedAiResponse = NormilizedAiResponse & { raw: string };
+export type CombinedAiResponse = NormilizedAiResponse;
 
-export type AiLogs = {
+export type AiGenerationUsage = {
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+
+  reasoningTokens?: number | null;
+  cacheHitTokens?: number | null;
+  cacheMissTokens?: number | null;
+  durationMs?: number | null;
+};
+
+export type AiGenerationMetadata = {
   model: string | null;
   response: string | null;
-
-  input_tokens: number;
-  output_tokens: number;
-  total_tokens: number;
-
-  finish_reason?: string | null;
-  provider_generation_id?: string | null;
-
-  reasoning_tokens?: number;
-  cache_hit_tokens?: number;
-  cache_miss_tokens?: number;
+  finishReason?: string | null;
+  providerGenerationId?: string | null;
+  usage: AiGenerationUsage;
 };
 
 export type NormilizedAiResponse = {
   data: SubtasksResponse;
-  aiLogs: AiLogs;
+  metadata: AiGenerationMetadata;
 };
-export interface AiErrorResult {
-  success: false;
-  code: ErrorCode;
-  status: number;
-  error?: string;
-}

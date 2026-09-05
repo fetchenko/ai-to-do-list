@@ -6,12 +6,11 @@ import { Card } from '@/components/ui/card';
 import { AddTaskForm } from '@/features/tasks/components/forms/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { testIds } from '@/shared/testing/test-ids';
-import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
 import { TaskRow } from '@/features/tasks/components/task-row';
 import SubtaskList from '@/features/tasks/components/subtask-list';
+import { useBaseTaskActions } from '@/features/tasks/hooks/use-base-task-actions';
 
 type TaskItemProps = {
   task: Task;
@@ -22,11 +21,7 @@ type TaskItemProps = {
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
   const { mutateAsync: createTask, error: createTaskError } = useCreateTask(task.id);
 
-  const { drafts, error, isGenerating, generate, discard } = useSubtaskDrafts(task.id);
-
-  const actions = useTaskActions(task, generate);
-
-  const showDraftPanel = isGenerating || drafts !== null || error !== null;
+  const actions = useBaseTaskActions(task);
 
   return (
     <Card
@@ -42,16 +37,7 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
 
         <SubtaskList parentTitle={task.title} subtasks={subtasks} />
 
-        {showDraftPanel && (
-          <DraftSubtasks
-            loading={isGenerating}
-            task={task}
-            drafts={drafts ?? []}
-            onDiscard={discard}
-            onRetry={generate}
-            error={error}
-          />
-        )}
+        <DraftSubtasks task={task} />
         <AddTaskForm
           variant="subtask"
           error={createTaskError}

@@ -1,28 +1,59 @@
 import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
-import { NormilizedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import {
+  AiGenerationMetadata,
+  AiGenerationUsage,
+  NormilizedAiResponse,
+} from '@/infrastructure/ai/types/ai.types';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
+
+type OllamaUsageSource = Pick<
+  OllamaResponse,
+  'prompt_eval_count' | 'eval_count' | 'total_duration'
+>;
+
+const NANOSECONDS_PER_MILLISECOND = 1_000_000;
 
 export function normalizeOllamaResponse(
   response: OllamaResponse
 ): NormilizedAiResponse {
   return {
     data: subtasksResponseSchema.parse(JSON.parse(response.response)),
-    aiLogs: {
-      model: response.model ?? null,
+    metadata: normalizeOllamaMetadata(response),
+  };
+}
 
-      response: response.response ?? null,
+export function normalizeOllamaMetadata(
+  response: OllamaResponse
+): AiGenerationMetadata {
+  return {
+    model: response.model ?? null,
+    response: response.response ?? null,
+    finishReason: response.done_reason,
+    providerGenerationId: null,
+    usage: normalizeOllamaUsage(response),
+  };
+}
 
-      input_tokens: response.prompt_eval_count ?? 0,
-      output_tokens: response.eval_count ?? 0,
-      total_tokens:
-        (response.prompt_eval_count ?? 0) + (response.eval_count ?? 0),
+export function normalizeOllamaUsage(
+  response: OllamaUsageSource
+): AiGenerationUsage {
+  return {
+    inputTokens: response.prompt_eval_count ?? null,
+    outputTokens: response.eval_count ?? null,
+    totalTokens:
+      response.prompt_eval_count !== undefined &&
+      response.eval_count !== undefined
+        ? response.prompt_eval_count + response.eval_count
+        : null,
 
-      finish_reason: response.done_reason,
-      provider_generation_id: null,
+    reasoningTokens: 0,
+    cacheHitTokens: 0,
+    cacheMissTokens: 0,
 
-      reasoning_tokens: 0,
-      cache_hit_tokens: 0,
-      cache_miss_tokens: 0,
-    },
+    durationMs: response.total_duration
+      ? Math.round(
+          response.total_duration / NANOSECONDS_PER_MILLISECOND
+        )
+      : null,
   };
 }

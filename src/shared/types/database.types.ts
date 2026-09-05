@@ -7,7 +7,17 @@ export type Json =
   | Json[];
 
 export type TaskStatus = Database['public']['Enums']['task_status'];
-export type AiGeneration = Database['public']['Tables']['ai_generations'];
+
+export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
+export type DbTask = DbTaskRow;
+
+export type DbTaskInsert = Database['public']['Tables']['tasks']['Insert'];
+export type DbTaskUpdate = Database['public']['Tables']['tasks']['Update'];
+
+export type TaskForSubtaskGeneration = Pick<DbTask, 'id' | 'user_id' | 'title'>;
+
+export type DbAiGenerationUpdate =
+  Database['public']['Tables']['ai_generations']['Update'];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -51,8 +61,8 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           input_tokens?: number | null;
-          model?: string | null;
           output_tokens?: number | null;
+          model?: string | null;
           prompt?: string | null;
           prompt_version?: string | null;
           provider_generation_id?: string | null;
@@ -125,8 +135,8 @@ export type Database = {
           priority?: number | null;
           status?: string;
           title: string;
-          updated_at?: string | null;
           user_id: string;
+          updated_at?: string | null;
         };
         Update: {
           completed_at?: string | null;

@@ -54,5 +54,6 @@ export function useSubtaskDrafts(taskId: string) {
     isGenerating: mutation.isPending,
     generate,
     discard,
+    isGenerated: mutation.isSuccess,
   };
 }

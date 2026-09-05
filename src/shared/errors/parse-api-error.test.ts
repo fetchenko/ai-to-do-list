@@ -7,12 +7,15 @@ import { parseApiError } from '@/shared/errors/parse-api-error';
 
 describe('parseApiError', () => {
   it('parses a valid API error into an AppError', () => {
-    const error = parseApiError({
-      code: ErrorCode.AI_UNAVAILABLE,
-      status: 503,
-      message: 'AI unavailable',
-      details: { provider: 'deepseek' },
-    });
+    const error = parseApiError(
+      {
+        code: ErrorCode.AI_UNAVAILABLE,
+        status: 503,
+        message: 'AI unavailable',
+        details: { provider: 'deepseek' },
+      },
+      503
+    );
 
     expect(error).toEqual(
       new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable', {
@@ -21,12 +24,30 @@ describe('parseApiError', () => {
     );
   });
 
+  it('uses the HTTP response status instead of the status in the error body', () => {
+    const error = parseApiError(
+      {
+        code: ErrorCode.AI_UNAVAILABLE,
+        status: 500,
+        message: 'AI unavailable',
+      },
+      503
+    );
+
+    expect(error).toEqual(
+      new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable')
+    );
+  });
+
   it('parses an API error without details', () => {
-    const error = parseApiError({
-      code: ErrorCode.AI_GENERATION_TIMEOUT,
-      status: 504,
-      message: 'AI request timed out',
-    });
+    const error = parseApiError(
+      {
+        code: ErrorCode.AI_GENERATION_TIMEOUT,
+        status: 504,
+        message: 'AI request timed out',
+      },
+      504
+    );
 
     expect(error).toEqual(
       new AppError(ErrorCode.AI_GENERATION_TIMEOUT, 504, 'AI request timed out')
@@ -34,11 +55,14 @@ describe('parseApiError', () => {
   });
 
   it('returns an UNKNOWN AppError for an invalid API error', () => {
-    const error = parseApiError({
-      code: 'INVALID_CODE',
-      status: 503,
-      message: 'AI unavailable',
-    });
+    const error = parseApiError(
+      {
+        code: 'INVALID_CODE',
+        status: 503,
+        message: 'AI unavailable',
+      },
+      503
+    );
 
     expect(error).toEqual(
       new AppError(
@@ -60,7 +84,7 @@ describe('parseApiError', () => {
       message: 'AI unavailable',
     },
   ])('returns an UNKNOWN AppError for invalid input: %s', (input) => {
-    expect(parseApiError(input)).toEqual(
+    expect(parseApiError(input, 503)).toEqual(
       new AppError(
         ErrorCode.UNKNOWN,
         ErrorHttpStatus[ErrorCode.UNKNOWN],

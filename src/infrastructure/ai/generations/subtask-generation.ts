@@ -2,7 +2,7 @@ import { AiGeneration } from '@/infrastructure/ai/generations/ai-generation';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-abort-error';
-import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-error copy';
+import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,

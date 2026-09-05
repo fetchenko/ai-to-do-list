@@ -13,11 +13,13 @@ import { getHttpStatusCode } from '@/shared/errors/get-http-status-code';
 const AI_TIMEOUT_MS = 60_000;
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+  const signal = AbortSignal.any([
+    request.signal,
+    AbortSignal.timeout(AI_TIMEOUT_MS),
+  ]);
 
   try {
     const { user } = await getCurrentUser();
@@ -34,7 +36,7 @@ export async function POST(
     const result = await generateSubtasksForTask({
       task,
       userId: user.id,
-      signal: controller.signal,
+      signal: signal,
       provider,
     });
 
@@ -52,7 +54,5 @@ export async function POST(
     const status = getHttpStatusCode(error.code);
 
     return NextResponse.json({ error }, { status });
-  } finally {
-    clearTimeout(timeout);
   }
 }

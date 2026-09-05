@@ -11,6 +11,8 @@ type OllamaUsageSource = Pick<
   'prompt_eval_count' | 'eval_count' | 'total_duration'
 >;
 
+const NANOSECONDS_PER_MILLISECOND = 1_000_000;
+
 export function normalizeOllamaResponse(
   response: OllamaResponse
 ): NormilizedAiResponse {
@@ -49,7 +51,9 @@ export function normalizeOllamaUsage(
     cacheMissTokens: 0,
 
     durationMs: response.total_duration
-      ? Math.round(response.total_duration / 1_000_000)
+      ? Math.round(
+          response.total_duration / NANOSECONDS_PER_MILLISECOND
+        )
       : null,
   };
 }

@@ -1,13 +1,13 @@
 import 'server-only';
 
-import { TaskPreview } from '@/features/tasks/types/database.types';
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 import { DatabaseError } from '@/shared/errors/app-error';
+import { DbTaskForSubtaskGeneration } from '@/shared/types/database.types';
 
 export async function getTaskForUser(
   taskId: string,
   userId: string
-): Promise<TaskPreview> {
+): Promise<DbTaskForSubtaskGeneration> {
   const { data, error } = await supabaseAdmin
     .from('tasks')
     .select('id, user_id, title')

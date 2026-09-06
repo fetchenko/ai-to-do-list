@@ -19,7 +19,7 @@ setup('authenticate', async ({ page }) => {
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: /login/i }).click();
 
-  await expect(page).toHaveURL('/', { timeout: 15000 });
+  await expect(page).toHaveURL('/');
 
   fs.mkdirSync('playwright/.auth', {
     recursive: true,

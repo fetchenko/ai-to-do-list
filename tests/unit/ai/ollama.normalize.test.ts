@@ -8,8 +8,8 @@ describe('normalizeOllamaResponse', () => {
     const result = normalizeOllamaResponse(mockOllamaResponse as any);
 
     expect(result.data.subtasks).toHaveLength(3);
-    expect(result.aiLogs.model).toBe(mockOllamaResponse.model);
-    expect(result.aiLogs.total_tokens).toBe(
+    expect(result.metadata.model).toBe(mockOllamaResponse.model);
+    expect(result.metadata.usage.totalTokens).toBe(
       mockOllamaResponse.prompt_eval_count + mockOllamaResponse.eval_count
     );
   });

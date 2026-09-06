@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 
   parseAiParams: vi.fn(),
   getFailedAiLogs: vi.fn(),
-  normalizeAiError: vi.fn(),
+  normalizeApiError: vi.fn(),
 }));
 
 vi.mock('@/infrastructure/ai/providers/ai-provider', () => ({
@@ -54,7 +54,7 @@ vi.mock('@/infrastructure/ai/utils/ai-log.utils', () => ({
 }));
 
 vi.mock('@/infrastructure/ai/utils/ai-error.utils', () => ({
-  normalizeAiError: mocks.normalizeAiError,
+  normalizeApiError: mocks.normalizeApiError,
 }));
 
 vi.mock('@/infrastructure/ai/utils/ai-params.utils', () => ({
@@ -88,7 +88,7 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
       title: 'Test task',
     });
 
-    mocks.normalizeAiError.mockImplementation((error: Error) => ({
+    mocks.normalizeApiError.mockImplementation((error: Error) => ({
       status: 500,
       message: error.message,
       code: 'AI_GENERATION_FAILED',
@@ -111,14 +111,15 @@ describe('POST /api/tasks/[taskId]/subtasks/generate/route', () => {
       }),
     });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(502);
 
     const body = await response.json();
 
     expect(body).toEqual({
       error: {
         code: 'AI_GENERATION_FAILED',
-        message: 'AI unavailable',
+        message: 'AI generation failed',
+        success: false,
       },
     });
   });

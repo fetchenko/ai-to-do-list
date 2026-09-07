@@ -2,7 +2,7 @@ import {
   releaseRequestLock,
   tryAcquireLock,
 } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { AiLockActiveError } from '@/shared/errors/app-error';
+import { AiLockActiveError } from '@/shared/errors/ai-app-error';
 
 export type AiRequestLock = {
   release(): Promise<void>;

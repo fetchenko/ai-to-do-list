@@ -5,12 +5,12 @@ import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/o
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
+import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
 import {
   AiEmptyResponseError,
+  AiInvalidResponseFormat,
   AiUnavailableError,
-  ResponseFormatError,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 const OLLAMA_URL = 'http://localhost:11434';
@@ -40,7 +40,7 @@ export class OllamaProvider implements AIProvider {
     const result = ollamaChatResponseSchema.safeParse(parsedResponse);
 
     if (!result.success) {
-      throw new ResponseFormatError(
+      throw new AiInvalidResponseFormat(
         `Invalid format of Ollama response: ${result.error}`
       );
     }

@@ -1,13 +1,5 @@
-import {
-  Task,
-  TaskInsert,
-  TaskUpdate,
-} from '@/features/tasks/types/tasks.types';
-import {
-  DbTask,
-  DbTaskInsert,
-  DbTaskUpdate,
-} from '@/shared/types/database.types';
+import { TaskInsert, TaskUpdate } from '@/features/tasks/types/tasks.types';
+import { DbTaskInsert, DbTaskUpdate } from '@/shared/types/database.types';
 
 export const taskKeyMap = {
   id: 'id',
@@ -30,24 +22,6 @@ export const taskKeyMapReverse = Object.fromEntries(
 ) as {
   [K in keyof typeof taskKeyMap as (typeof taskKeyMap)[K]]: K;
 };
-
-export function mapDbTask(dbTask: DbTask): Task {
-  return {
-    id: dbTask.id,
-    completedAt: dbTask.completed_at,
-    deletedAt: dbTask.deleted_at,
-    createdAt: dbTask.created_at,
-    description: dbTask.description,
-    dueDate: dbTask.due_date,
-    parentTaskId: dbTask.parent_task_id,
-    position: dbTask.position,
-    priority: dbTask.priority,
-    status: dbTask.status as Task['status'],
-    title: dbTask.title,
-    updatedAt: dbTask.updated_at,
-    userId: dbTask.user_id,
-  };
-}
 
 function mapTaskBase(task: Record<string, unknown>) {
   const result: Record<string, unknown> = {};

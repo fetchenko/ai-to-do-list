@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
-import { AiRequestLimitError } from '@/shared/errors/app-error';
+import { AiRequestLimitError } from '@/shared/errors/ai-app-error';
 
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),

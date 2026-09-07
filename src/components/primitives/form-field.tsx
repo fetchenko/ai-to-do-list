@@ -19,21 +19,13 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <div className="w-full min-w-0 space-y-2">
-      <Label
-        htmlFor={idPrefix}
-        className={cn(hideLabel && 'sr-only')}
-      >
+      <Label htmlFor={idPrefix} className={cn(hideLabel && 'sr-only')}>
         {label}
       </Label>
 
-      <div className="w-full min-w-0">
-        {children}
-      </div>
+      <div className="w-full min-w-0">{children}</div>
 
-      <FieldError
-        id={`${idPrefix}-error`}
-        message={error}
-      />
+      <FieldError id={`${idPrefix}-error`} message={error} />
     </div>
   );
 }

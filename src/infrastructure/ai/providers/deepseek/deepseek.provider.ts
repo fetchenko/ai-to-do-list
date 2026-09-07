@@ -5,13 +5,13 @@ import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/d
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { parseResponseJson } from '@/infrastructure/ai/utils/response.utils';
+import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
 import { aiEnv } from '@/shared/env/ai-env';
 import {
   AiEmptyResponseError,
+  AiInvalidResponseFormat,
   AiUnavailableError,
-  ResponseFormatError,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 
 const DEFAULT_DEEPSEEK_QUOTA_LIMIT = 20;
 const DEEPSEEK_MODEL = 'deepseek-v4-flash';
@@ -45,7 +45,7 @@ export default class DeepSeekProvider implements AIProvider {
     const result = deepSeekResponseSchema.safeParse(parsedResponse);
 
     if (!result.success) {
-      throw new ResponseFormatError(
+      throw new AiInvalidResponseFormat(
         `Invalid format of Deepseek response: ${result.error}`
       );
     }

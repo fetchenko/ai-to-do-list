@@ -2,13 +2,13 @@ import { createTask } from '@tests/factories/task.factory';
 import { describe, expect, it } from 'vitest';
 
 import { Task } from '@/features/tasks/types/tasks.types';
+import { buildGroups } from '@/features/tasks/utils/build-groups';
 import {
   findTask,
   removeFromCache,
   restoreToCache,
   updateTaskInCache,
 } from '@/features/tasks/utils/tasks-cache';
-import { buildGroups } from '@/features/tasks/utils/tasks.utils';
 
 describe('task cache utils', () => {
   const tasks: Task[] = [

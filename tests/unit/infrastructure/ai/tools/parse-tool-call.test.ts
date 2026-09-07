@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
-import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 describe('parseToolCall', () => {
   it('parses a create_subtask tool call', () => {

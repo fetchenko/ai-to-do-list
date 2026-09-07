@@ -24,9 +24,7 @@ export function TaskCheckbox({
       disabled={disabled}
       onCheckedChange={(value) => onCheckedChange(Boolean(value))}
       aria-label={
-        checked
-          ? `Mark "${label}" as not done`
-          : `Mark "${label}" as done`
+        checked ? `Mark "${label}" as not done` : `Mark "${label}" as done`
       }
       className={cn('mt-1', className)}
     />

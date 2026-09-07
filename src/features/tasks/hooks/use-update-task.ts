@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { updateTask } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { updateTaskInCache } from '@/features/tasks/utils/tasks-cache';
+import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 export function useUpdateTask() {
   const queryClient = useQueryClient();
@@ -31,8 +33,10 @@ export function useUpdateTask() {
       return { previous };
     },
 
-    onError: (_, __, context) => {
+    onError: (error, __, context) => {
       queryClient.setQueryData(taskKeys.all, context?.previous);
+
+      toast.info(getFriendlyErrorMessage(error));
     },
 
     onSettled: () => {

@@ -3,14 +3,12 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
+import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks-form';
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
-import type { AiTask, Task } from '@/features/tasks/types/tasks.types';
-import {
-  AiUnavailableError,
-  ValidationRequestError,
-} from '@/shared/errors/app-error';
+import type { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
+import { AiUnavailableError } from '@/shared/errors/ai-app-error';
+import { ValidationRequestError } from '@/shared/errors/app-error';
 
 vi.mock('@/features/tasks/hooks/use-subtask-drafts', () => ({
   useSubtaskDrafts: vi.fn(),
@@ -34,7 +32,7 @@ const mockCancel = vi.fn();
 const mockDiscard = vi.fn();
 const mockSaveSubtasks = vi.fn().mockResolvedValue([]);
 
-let onSubtask: ((draft: AiTask) => void) | undefined;
+let onSubtask: ((draft: AiGeneratedTask) => void) | undefined;
 
 function configureDraftHook(
   overrides: Partial<{
@@ -67,7 +65,7 @@ function renderComponent() {
   );
 }
 
-async function streamSubtask(draft: Partial<AiTask> = {}) {
+async function streamSubtask(draft: Partial<AiGeneratedTask> = {}) {
   await act(async () => {
     onSubtask?.({
       id: 'generated-1',

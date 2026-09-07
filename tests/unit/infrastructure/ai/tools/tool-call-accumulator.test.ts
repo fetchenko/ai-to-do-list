@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 describe('ToolCallAccumulator', () => {
   it('starts accumulating a tool call', () => {

@@ -3,7 +3,7 @@ import {
   ToolCallAccumulatorResult,
   ToolCallDelta,
 } from '@/infrastructure/ai/tools/tool-call.types';
-import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 /**
  * Temporary implementation.

@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { saveSubtasks } from '@/features/tasks/services/subtasks.service';
 import { TaskInsert } from '@/features/tasks/types/tasks.types';
-import { AppError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 
 export function useAddSubtasks(parentTaskId: string) {
@@ -17,11 +16,7 @@ export function useAddSubtasks(parentTaskId: string) {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
     },
     onError: (error) => {
-      const message =
-        error instanceof AppError
-          ? getFriendlyErrorMessage(error)
-          : 'Some subtasks could not be saved. Try again.';
-      toast.info(message);
+      toast.info(getFriendlyErrorMessage(error));
     },
   });
 

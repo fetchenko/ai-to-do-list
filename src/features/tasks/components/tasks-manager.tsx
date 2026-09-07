@@ -13,7 +13,8 @@ import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
 import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
-import { filterGroupsByQuery, groupTasksByStatus } from '@/features/tasks/utils/tasks.utils';
+import { filterGroupsByQuery } from '@/features/tasks/utils/filter-groups-by-query';
+import { groupTasksByStatus } from '@/features/tasks/utils/group-by-status';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { testIds } from '@/shared/testing/test-ids';
 
@@ -53,10 +54,7 @@ export default function TasksManager() {
     <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-4 sm:gap-6">
         <div data-testid={testIds.taskSection.new}>
-          <AddTaskForm
-            error={createTaskError}
-            onAddTask={createTask}
-          />
+          <AddTaskForm error={createTaskError} onAddTask={createTask} />
         </div>
 
         <SearchTasksInput value={query} onChange={setQuery} />
@@ -84,7 +82,9 @@ export default function TasksManager() {
                 <TaskList
                   loading={isPending}
                   groups={filteredByStatus[tab.value]}
-                  emptyLabel={query ? `No tasks match "${query}"` : tab.emptyLabel}
+                  emptyLabel={
+                    query ? `No tasks match "${query}"` : tab.emptyLabel
+                  }
                 />
               </TabsContent>
             ))}

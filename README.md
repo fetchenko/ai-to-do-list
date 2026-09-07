@@ -2,8 +2,8 @@
 
 A task manager where any task can be broken down into actionable subtasks by AI.
 Built to practice modern frontend/full-stack patterns: a pluggable AI provider
-layer, a layered repository/service architecture, optimistic UI updates, and
-per-user rate limiting — not just CRUD.
+layer, a layered repository/service architecture, optimistic UI updates, AI
+response streaming, and per-user rate limiting — not just CRUD.
 
 [![CI](https://github.com/fetchenko/ai-to-do-list/actions/workflows/ci.yml/badge.svg)](https://github.com/fetchenko/ai-to-do-list/actions/workflows/ci.yml)
 
@@ -15,24 +15,31 @@ per-user rate limiting — not just CRUD.
 
 Most to-do app clones only exercise CRUD. This one adds a real integration
 point — calling an external AI provider, validating its output, handling its
-failure modes, and controlling the cost/abuse surface that comes with letting
-users trigger paid API calls.
+failure modes, streaming partial results to the UI, and controlling the
+cost/abuse surface that comes with letting users trigger paid API calls.
 
 ## Features
 
+- **Streaming AI subtask generation** — subtasks arrive incrementally over an
+  NDJSON stream instead of waiting for the complete AI response, so the draft
+  UI can render results as they are generated.
 - **AI subtask generation** — describe a task, get back a structured list of
   actionable subtasks, reviewed as a draft before being saved.
 - **Pluggable AI provider layer** — DeepSeek (cloud) or Ollama (local model)
   behind one `AIProvider` interface, switched with a single env var. No
   business logic changes when swapping providers.
-- **Per-user concurrency lock** — a Postgres advisory lock RPC
-  (`try_acquire_user_ai_lock`) guards against a user firing overlapping AI
-  generation requests.
+- **Per-user concurrency lock** — an AI generation lock prevents a user from
+  firing overlapping AI generation requests and is held for the lifetime of
+  the stream.
 - **Per-user quota limiting** — caps successful AI generations per user to
   control cost.
 - **AI generation logging** — every request/response is logged with model,
   prompt version, duration, and token usage (including cache hit/miss and
-  reasoning tokens), independent of which provider served it.
+  reasoning tokens), independent of which provider served it. Streaming
+  generations are finalized, failed, or cancelled as the stream completes.
+- **Cancellation and timeout handling** — the stream reacts to client
+  disconnects and a 60-second timeout, releasing the generation lock and
+  recording the cancellation reason.
 - **Task status & metadata** — tasks carry status (`active` / `done`)
 - **Fractional-index task ordering** — positions are stored so reordering
   never requires re-indexing the whole list. The data model is ready for
@@ -53,7 +60,7 @@ users trigger paid API calls.
 **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS,
 shadcn/ui, Zustand
 **Data/server:** Supabase (Postgres + Auth), TanStack Query, Zod
-**AI:** DeepSeek API, Ollama (local), provider-abstracted
+**AI:** DeepSeek API, Ollama (local), provider-abstracted with streaming support
 **Testing:** Vitest, Testing Library, Playwright
 **Tooling:** ESLint, Prettier, GitHub Actions CI
 
@@ -71,53 +78,53 @@ proxy.ts                      # thin Next.js middleware entry point —
 
 src/
   app/                       # Next.js routes only — no business logic
-    api/subtasks/generate/   # POST /api/subtasks/generate
-    auth/                     # login, sign-up, password reset, email confirm
-    config/                   # route & API path constants
-    page.tsx                  # renders Hero (signed out) or UserTasks (signed in)
+    api/subtasks/generate/   # POST /api/subtasks/generate — non-streaming endpoint
+    api/subtasks/stream/     # POST /api/tasks/:taskId/subtasks/stream — NDJSON stream
+    auth/                    # login, sign-up, password reset, email confirm
+    config/                  # route & API path constants
+    page.tsx                 # renders Hero (signed out) or UserTasks (signed in)
 
-  features/                  # one folder per domain feature
+  features/                 # one folder per domain feature
     home/
-      components/             # hero.tsx (landing page), user-content.tsx
-                                # (server-side auth branch), content-skeleton.tsx
+      components/           # hero.tsx (landing page), user-content.tsx
+                               # (server-side auth branch), content-skeleton.tsx
     tasks/
-      components/             # task list, task item, draft-subtasks review
-      repository/              # raw Supabase data access (CRUD)
-      services/                 # business logic (e.g. position calc, AI fetch)
-      hooks/                    # TanStack Query hooks (optimistic updates)
+      components/            # task list, task item, draft-subtasks review
+      repository/            # raw Supabase data access (CRUD)
+      services/              # business logic (e.g. position calc, AI fetch)
+      hooks/                 # TanStack Query hooks (optimistic updates + stream)
       mappers/, types/, validation/, constants/, stores/
     auth/
-      components/, repository/  # auth.repository (client) vs
-                                 # auth.server.repository (server-only)
+      components/, repository/ # auth.repository (client) vs
+                                # auth.server.repository (server-only)
       types/, validation/
     theme/
 
-  infrastructure/             # technical concerns, not business domains
+  infrastructure/            # technical concerns, not business domains
     ai/
-      providers/                # deepseek/, ollama/ — implement AIProvider
-      services/                  # subtasks.service.ts (orchestrates the AI
-                                  # call) + ai-log.admin.service.ts (logging,
-                                  # quota check, lock check — all via the
-                                  # service-role client)
+      providers/              # deepseek/, ollama/ — implement AIProvider
+      generations/             # streaming generation resource, locks, logging
+      services/                # subtasks.service.ts (orchestrates generation),
+                                # quota + logging services
       helpers/, prompts/, validation/, types/
-    supabase/                  # client.ts, server.ts, admin.ts, and proxy.ts
-                                 # (the actual session-refresh logic the root
-                                 # proxy.ts delegates to)
+    supabase/                 # client.ts, server.ts, admin.ts, and proxy.ts
+                                # (the actual session-refresh logic the root
+                                # proxy.ts delegates to)
     react-query/
 
-  shared/                     # cross-cutting, no feature/domain knowledge
-    errors/                    # AppError, error codes, HTTP status map,
-                                 # Supabase error normalization
-    ui/                        # shadcn/ui primitives
-    types/                     # generated Supabase database types
+  shared/                    # cross-cutting, no feature/domain knowledge
+    errors/                   # AppError, error codes, HTTP status map,
+                                # Supabase error normalization
+    ui/                       # shadcn/ui primitives
+    types/                    # generated Supabase database types + stream events
     validation/, utils/
 
 supabase/
-  migrations/                 # SQL schema, RLS policies, RPC functions
+  migrations/                # SQL schema, RLS policies, RPC functions
 
-e2e/                          # Playwright end-to-end tests
+e2e/                         # Playwright end-to-end tests
 tests/
-  unit/                       # AI response normalization & validation
+  unit/                      # AI response normalization & validation
   fixtures/, mocks/
 ```
 
@@ -127,6 +134,12 @@ tests/
 nothing about business rules) → `service` (business logic, e.g. computing the
 next fractional-index position, or orchestrating an AI call + log) →
 `component`/`hook` (UI, calls services, never touches Supabase directly).
+
+AI generation is split into two layers: the service acquires the per-user
+lock and creates the generation log, while the generation resource owns the
+lifecycle of the stream. It converts provider events into client-safe NDJSON
+events and guarantees that completion, failure, timeout, and client
+cancellation release the lock and update the generation log.
 
 `infrastructure/` holds things that are technical, not domain-specific — the
 AI provider abstraction, Supabase clients, React Query setup — so a feature
@@ -154,9 +167,7 @@ npx supabase db push
 ```
 
 This creates the `tasks` and `ai_generations` tables, RLS policies, and the
-two RPC functions (`get_last_position`, `try_acquire_user_ai_lock`) exactly
-as used in this project — pulled directly from the live schema, not
-hand-written.
+RPC functions used by the application.
 
 ### 3. Configure environment variables
 
@@ -208,9 +219,10 @@ npm run test:e2e:ui               # interactive mode
 ```
 
 Covers task creation/completion, form validation, and the AI subtask
-generation flow (the AI call itself is mocked at the network layer so tests
-don't burn real API quota or flake on model non-determinism — they verify
-the app's handling of the response, not the model's output quality).
+generation flow. The AI stream is mocked at the network layer with NDJSON
+`subtask` and `done` events, so tests don't burn real API quota or flake on
+model non-determinism — they verify the application's stream handling rather
+than the model's output quality.
 
 All e2e tests share one authenticated session (saved once by
 `e2e/auth.setup.ts`), so they run on a single Playwright worker by design —
@@ -239,9 +251,7 @@ workers invalidate each other's session.
 - Send a task's existing subtasks as context when generating more, to avoid
   duplicate suggestions
 - Add a `retryable` flag on AI failures + a retry button in the UI
-- Stress-test `try_acquire_user_ai_lock` under real concurrent load to
-  confirm it actually blocks overlapping generations for the duration of a
-  request, not just at the instant it's called
+- Stress-test the AI generation lock under real concurrent load
 
 **Code quality**
 

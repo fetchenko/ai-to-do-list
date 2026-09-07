@@ -48,9 +48,6 @@ next-env.d.ts
 
 .agents
 
-settings.json
-launch.json
-
 /test-results/
 /playwright-report/
 /playwright/.auth/
@@ -64,5 +61,6 @@ playwright/.auth/
 playwright-report/
 test-results/
 
-dnd-sandbox/node_modules/
-dnd-sandbox/
+scripts/
+
+.vscode/

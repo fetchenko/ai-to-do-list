@@ -5,13 +5,12 @@ import { memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { AddTaskForm } from '@/features/tasks/components/forms/add-task-form';
 import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks';
+import SubtaskList from '@/features/tasks/components/subtask-list';
+import { TaskRow } from '@/features/tasks/components/task-row';
+import { useBaseTaskActions } from '@/features/tasks/hooks/use-base-task-actions';
 import { useCreateTask } from '@/features/tasks/hooks/use-create-task';
-import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { testIds } from '@/shared/testing/test-ids';
-import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
-import { TaskRow } from '@/features/tasks/components/task-row';
-import SubtaskList from '@/features/tasks/components/subtask-list';
 
 type TaskItemProps = {
   task: Task;
@@ -20,13 +19,11 @@ type TaskItemProps = {
 };
 
 function TaskItem({ task, subtasks, className }: TaskItemProps) {
-  const { mutateAsync: createTask, error: createTaskError } = useCreateTask(task.id);
+  const { mutateAsync: createTask, error: createTaskError } = useCreateTask(
+    task.id
+  );
 
-  const { drafts, error, isGenerating, generate, discard } = useSubtaskDrafts(task.id);
-
-  const actions = useTaskActions(task, generate);
-
-  const showDraftPanel = isGenerating || drafts !== null || error !== null;
+  const actions = useBaseTaskActions(task);
 
   return (
     <Card
@@ -38,20 +35,15 @@ function TaskItem({ task, subtasks, className }: TaskItemProps) {
         aria-labelledby={`task-title-${task.id}`}
         className="space-y-3 p-4"
       >
-        <TaskRow task={task} titleId={`task-title-${task.id}`} actions={actions} />
+        <TaskRow
+          task={task}
+          titleId={`task-title-${task.id}`}
+          actions={actions}
+        />
 
         <SubtaskList parentTitle={task.title} subtasks={subtasks} />
 
-        {showDraftPanel && (
-          <DraftSubtasks
-            loading={isGenerating}
-            task={task}
-            drafts={drafts ?? []}
-            onDiscard={discard}
-            onRetry={generate}
-            error={error}
-          />
-        )}
+        <DraftSubtasks task={task} />
         <AddTaskForm
           variant="subtask"
           error={createTaskError}

@@ -130,9 +130,8 @@ export class TasksPage {
   }
 
   async generateSubtasks(taskId: string) {
-    await this.openActionsMenu(taskId);
-    await this.page
-      .getByRole('menuitem', { name: 'Generate subtasks' })
+    await this.taskCard(taskId)
+      .getByRole('button', { name: 'Generate Subtask' })
       .click();
   }
 

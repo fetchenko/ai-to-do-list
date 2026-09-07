@@ -1,13 +1,13 @@
 import {
-  DbTask,
-  DbTaskInsert,
-  DbTaskUpdate,
-} from '@/features/tasks/types/database.types';
-import {
   Task,
   TaskInsert,
   TaskUpdate,
 } from '@/features/tasks/types/tasks.types';
+import {
+  DbTask,
+  DbTaskInsert,
+  DbTaskUpdate,
+} from '@/shared/types/database.types';
 
 export const taskKeyMap = {
   id: 'id',

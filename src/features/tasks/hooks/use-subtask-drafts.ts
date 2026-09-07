@@ -1,58 +1,84 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { generateSubtasks } from '@/features/tasks/services/subtasks.service';
+import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiTask } from '@/features/tasks/types/tasks.types';
-import { AppError, ValidationRequestError } from '@/shared/errors/app-error';
+import { ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { retryDelay, shouldRetry } from '@/shared/react-query/ai-retry';
+import { isAbortError } from '@/shared/errors/utils/is-abort-error';
+import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
 
-export function useSubtaskDrafts(taskId: string) {
-  const [drafts, setDrafts] = useState<AiTask[] | null>(null);
+export function useSubtaskDrafts(
+  taskId: string,
+  onSubtask: (draftSubtask: AiTask) => void
+) {
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: async () => {
+  const { error, isPending, mutate, reset } = useMutation({
+    mutationFn: async (signal: AbortSignal) => {
       if (!taskId) {
         throw new ValidationRequestError('Missing task id');
       }
-      return await generateSubtasks(taskId);
+
+      for await (const chunk of streamSubtasks(taskId, signal)) {
+        switch (chunk.type) {
+          case 'subtask':
+            onSubtask({ ...chunk.subtask, id: crypto.randomUUID() });
+            break;
+          case 'done':
+            break;
+          case 'cancelled':
+          case 'error':
+            throw parseApiEventError(chunk.error);
+        }
+      }
     },
-    retry: shouldRetry,
-    retryDelay,
-    onSuccess: (data: AiTask[]) => {
-      setDrafts(data);
-    },
+    retry: false,
     onError: (error: Error) => {
-      setDrafts(null);
+      if (isAbortError(error)) return;
 
-      const message =
-        error instanceof AppError
-          ? getFriendlyErrorMessage(error)
-          : 'Something went wrong generating subtasks. Try again.';
-
+      const message = getFriendlyErrorMessage(error);
       toast.info(message);
     },
   });
 
-  const discard = () => {
-    setDrafts(null);
-    mutation.reset();
-  };
+  const cancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+  }, []);
 
-  const generate = () => {
-    setDrafts(null);
+  const discard = useCallback(() => {
+    cancel();
+    reset();
+  }, [cancel, reset]);
 
-    mutation.reset();
-    mutation.mutate();
-  };
+  const generate = useCallback(() => {
+    cancel();
+    reset();
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    mutate(controller.signal);
+  }, [cancel, mutate, reset]);
+
+  const retry = useCallback(() => {
+    cancel();
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    mutate(controller.signal);
+  }, [cancel, mutate]);
+
+  useEffect(() => cancel, [cancel]);
 
   return {
-    drafts,
-    error: mutation.error,
-    isGenerating: mutation.isPending,
+    error,
+    isGenerating: isPending,
     generate,
+    retry,
+    cancel,
     discard,
   };
 }

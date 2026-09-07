@@ -12,17 +12,16 @@ import { DraftSubtaskRow } from '@/features/tasks/components/forms/draft-subtask
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
-import { DraftForm, draftSchema } from '@/features/tasks/schema/tasks';
-import { AiTask, Task } from '@/features/tasks/types/tasks.types';
-import { normalizeAiTask } from '@/features/tasks/utils/tasks.utils';
+import {
+  DraftSubtasksForm,
+  draftSubtasksSchema,
+} from '@/features/tasks/schema/tasks';
+import { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
+import { normalizeAiTask } from '@/features/tasks/utils/normalize-ai-tasks';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
-type DraftSubtasksProps = {
-  task: Task;
-};
-
-export function DraftSubtasks({ task }: DraftSubtasksProps) {
+export function DraftSubtasks({ task }: { task: Task }) {
   const { saveSubtasks, isSaving } = useAddSubtasks(task.id);
 
   const {
@@ -31,8 +30,8 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<DraftForm>({
-    resolver: zodResolver(draftSchema),
+  } = useForm<DraftSubtasksForm>({
+    resolver: zodResolver(draftSubtasksSchema),
     defaultValues: {
       drafts: [],
     },
@@ -44,7 +43,7 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
   });
 
   const handleSubtask = useCallback(
-    (draftSubtask: AiTask) => {
+    (draftSubtask: AiGeneratedTask) => {
       append(normalizeAiTask(draftSubtask), {
         shouldFocus: false,
       });
@@ -57,7 +56,7 @@ export function DraftSubtasks({ task }: DraftSubtasksProps) {
     handleSubtask
   );
 
-  const handleSubmitDrafts = async (values: DraftForm) => {
+  const handleSubmitDrafts = async (values: DraftSubtasksForm) => {
     await saveSubtasks(values.drafts);
     handleDiscard();
   };

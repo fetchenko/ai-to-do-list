@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  AiGenerationTimeout,
-  ValidationRequestError,
-} from '@/shared/errors/app-error';
+import { AiGenerationTimeout } from '@/shared/errors/ai-app-error';
+import { ValidationRequestError } from '@/shared/errors/app-error';
 import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
 
 describe('retryable error mapping', () => {

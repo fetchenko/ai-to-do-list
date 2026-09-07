@@ -7,8 +7,8 @@ import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
-import { AiInvalidResponseFormat } from '@/shared/errors/app-error';
+import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
+import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';

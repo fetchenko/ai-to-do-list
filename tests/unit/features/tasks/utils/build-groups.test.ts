@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildGroups } from '@/features/tasks/utils/tasks.utils';
+import { buildGroups } from '@/features/tasks/utils/build-groups';
 
 describe('buildGroups', () => {
   it('groups tasks by parentTaskId', () => {

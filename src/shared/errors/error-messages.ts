@@ -21,8 +21,6 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Lots of generations happening right now — try again in a moment.',
   [ErrorCode.AI_GENERATION_FAILED]:
     "We couldn't generate subtasks. AI generation failed",
-  [ErrorCode.AI_BAD_RESPONSE]:
-    "The AI returned something we couldn't use. Please try again.",
   [ErrorCode.AI_UNAVAILABLE]: 'Subtask generation is temporarily unavailable.',
   [ErrorCode.AI_INVALID_RESPONSE_FORMAT]:
     "We couldn't process the response. Please try again.",

@@ -2,7 +2,7 @@ import { createTask } from '@tests/factories/task.factory';
 import { describe, expect, it } from 'vitest';
 
 import { TaskGroup } from '@/features/tasks/types/tasks.types';
-import { filterGroupsByQuery } from '@/features/tasks/utils/tasks.utils';
+import { filterGroupsByQuery } from '@/features/tasks/utils/filter-groups-by-query';
 
 function group(
   parentOverrides: Parameters<typeof createTask>[0],
@@ -31,10 +31,7 @@ describe('filterGroupsByQuery', () => {
   });
 
   it('drops groups where neither the parent nor any subtask matches', () => {
-    const groups = [
-      group({ title: 'Buy milk' }),
-      group({ title: 'Walk dog' }),
-    ];
+    const groups = [group({ title: 'Buy milk' }), group({ title: 'Walk dog' })];
 
     const result = filterGroupsByQuery(groups, 'milk');
 

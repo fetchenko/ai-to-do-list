@@ -5,7 +5,7 @@ import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/olla
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 
 function createStream(chunks: unknown[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();

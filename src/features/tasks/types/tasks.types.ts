@@ -18,7 +18,8 @@ export type Task = {
 
 export type TaskInsert = Partial<Task> & Required<Pick<Task, 'title'>>;
 export type TaskUpdate = Partial<Omit<Task, 'subtasks'>>;
-export type AiTask = Partial<Task> & Required<Pick<Task, 'id' | 'title'>>;
+export type AiGeneratedTask = Partial<Task> &
+  Required<Pick<Task, 'id' | 'title'>>;
 
 export type TaskGroup = {
   parent: Task;

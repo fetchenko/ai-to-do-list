@@ -2,7 +2,7 @@ import { collect } from '@tests/utils/collect';
 import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
-import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream.utils';
+import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 
 describe('readSseStream', () => {
   it('yields data from SSE events', async () => {

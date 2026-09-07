@@ -4,18 +4,16 @@ import { Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils/cn';
 import { testIds } from '@/shared/testing/test-ids';
 
 interface SearchTasksInputProps {
   value: string;
   onChange: (value: string) => void;
-  className?: string;
 }
 
-export function SearchTasksInput({ value, onChange, className }: SearchTasksInputProps) {
+export function SearchTasksInput({ value, onChange }: SearchTasksInputProps) {
   return (
-    <div className={cn('relative', className)}>
+    <div className="relative">
       <Search
         className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
         aria-hidden="true"
@@ -27,7 +25,7 @@ export function SearchTasksInput({ value, onChange, className }: SearchTasksInpu
         placeholder="Search tasks"
         aria-label="Search tasks"
         data-testid={testIds.taskSection.search}
-        className="pl-9 pr-9 appearance-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+        className="appearance-none pr-9 pl-9 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
       />
       {value && (
         <Button

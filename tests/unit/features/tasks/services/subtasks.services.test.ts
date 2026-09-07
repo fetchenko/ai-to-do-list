@@ -2,7 +2,8 @@ import { collect } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
-import { AiEmptyResponseError, AppError } from '@/shared/errors/app-error';
+import { AiEmptyResponseError } from '@/shared/errors/ai-app-error';
+import { AppError } from '@/shared/errors/app-error';
 
 describe('streamSubtasks', () => {
   beforeEach(() => vi.restoreAllMocks());

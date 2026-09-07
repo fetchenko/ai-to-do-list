@@ -2,18 +2,19 @@ import { generateKeyBetween } from 'fractional-indexing';
 import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
-import { mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
+import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
-import { AiTask, TaskInsert } from '@/features/tasks/types/tasks.types';
+import {
+  AiGeneratedTask,
+  TaskInsert,
+} from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,
-  AppError,
-  ValidationRequestError,
-} from '@/shared/errors/app-error';
-import { ErrorCode } from '@/shared/errors/code';
+} from '@/shared/errors/ai-app-error';
+import { ValidationRequestError } from '@/shared/errors/app-error';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
@@ -42,19 +43,17 @@ export async function* streamSubtasks(
   yield* readJsonStream<SubtaskStreamEvent>(response.body);
 }
 
-export async function generateSubtasks(taskId: string): Promise<AiTask[]> {
+export async function generateSubtasks(
+  taskId: string
+): Promise<AiGeneratedTask[]> {
   const res = await fetch(API_ROUTES.generateSubtasks(taskId), {
     method: 'POST',
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new AppError(
-      body?.error?.code ?? ErrorCode.UNKNOWN,
-      res.status,
-      body?.error?.message ?? 'Failed to generate subtasks',
-      body?.error?.details
-    );
+
+    throw parseApiError(body?.error, res.status);
   }
 
   const { data } = await res.json();

@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
-import { AiRequestLimitError } from '@/shared/errors/app-error';
+import { AiRequestLimitError } from '@/shared/errors/ai-app-error';
 
 export async function checkAiQuotaLimit(userId: string, quotaLimit: number) {
   const { count } = await supabaseAdmin

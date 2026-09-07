@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
-import { AiLockRequestFailedError } from '@/shared/errors/app-error';
+import { AiLockRequestFailedError } from '@/shared/errors/ai-app-error';
 
 export async function tryAcquireLock(userId: string) {
   const { data: lockAcquired, error } = await supabaseAdmin.rpc(

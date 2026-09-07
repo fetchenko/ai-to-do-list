@@ -1,9 +1,9 @@
 import {
   AiGenerationError,
+  AiInvalidResponseFormat,
   AiRateLimitsError,
   AiUnavailableError,
-  ResponseFormatError,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
@@ -27,7 +27,7 @@ export async function parseResponseJson(response: Response): Promise<unknown> {
   try {
     body = await response.json();
   } catch (error) {
-    throw new ResponseFormatError(`Failed to parse response: ${error}`);
+    throw new AiInvalidResponseFormat(`Failed to parse response: ${error}`);
   }
 
   return body;

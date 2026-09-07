@@ -9,9 +9,8 @@ interface TaskListProps {
 }
 
 export function TaskList({ groups, emptyLabel, loading }: TaskListProps) {
-
   if (loading) {
-    return <TasksSkeleton />
+    return <TasksSkeleton />;
   }
 
   if (groups.length === 0) {

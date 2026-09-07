@@ -1,5 +1,5 @@
 import { Task } from '@/features/tasks/types/tasks.types';
-import { byPosition } from '@/features/tasks/utils/tasks.utils';
+import { byPosition } from '@/features/tasks/utils/sort-by-position';
 
 export function findTask(tasks: Task[], id: string): Task | undefined {
   return tasks.find((t) => t.id === id);

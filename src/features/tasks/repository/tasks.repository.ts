@@ -1,10 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
-  mapDbTask,
   mapTaskUpdateToDb,
   taskKeyMap,
-} from '@/features/tasks/mappers/tasks.mapper';
+} from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
@@ -16,6 +16,10 @@ import { DbTaskRow } from '@/shared/types/database.types';
 // default — it only ships once someone deliberately maps it here too.
 const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
 
+/**
+ * Accepts either a server or admin Supabase client, allowing the caller
+ * to determine the authentication/authorization context.
+ */
 export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('tasks')

@@ -15,7 +15,7 @@ export const taskSchema = z.object({
 
 export type TaskForm = z.infer<typeof taskSchema>;
 
-export const draftSchema = z.object({
+export const draftSubtasksSchema = z.object({
   drafts: z.array(
     z.object({
       id: z.string(),
@@ -25,4 +25,4 @@ export const draftSchema = z.object({
   ),
 });
 
-export type DraftForm = z.infer<typeof draftSchema>;
+export type DraftSubtasksForm = z.infer<typeof draftSubtasksSchema>;

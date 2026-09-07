@@ -9,7 +9,7 @@ import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
   AiInvalidResponseFormat,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 import { DbTaskForSubtaskGeneration } from '@/shared/types/database.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 

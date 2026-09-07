@@ -8,7 +8,7 @@ import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
-} from '@/shared/errors/app-error';
+} from '@/shared/errors/ai-app-error';
 import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 

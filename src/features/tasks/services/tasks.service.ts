@@ -1,6 +1,7 @@
 import { generateKeyBetween } from 'fractional-indexing';
 
-import { mapDbTask, mapTaskInsertToDb } from '@/features/tasks/mappers/tasks.mapper';
+import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
+import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';

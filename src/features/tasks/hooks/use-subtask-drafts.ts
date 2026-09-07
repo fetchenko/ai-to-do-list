@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
-import { AiTask } from '@/features/tasks/types/tasks.types';
+import { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
 import { ValidationRequestError } from '@/shared/errors/app-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { isAbortError } from '@/shared/errors/utils/is-abort-error';
@@ -12,7 +12,7 @@ import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error'
 
 export function useSubtaskDrafts(
   taskId: string,
-  onSubtask: (draftSubtask: AiTask) => void
+  onSubtask: (draftSubtask: AiGeneratedTask) => void
 ) {
   const abortControllerRef = useRef<AbortController | null>(null);
 

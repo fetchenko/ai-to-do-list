@@ -4,7 +4,7 @@ import {
   releaseRequestLock,
   tryAcquireLock,
 } from '@/infrastructure/ai/services/ai-lock.admin.service';
-import { AiLockRequestFailedError } from '@/shared/errors/app-error';
+import { AiLockRequestFailedError } from '@/shared/errors/ai-app-error';
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),

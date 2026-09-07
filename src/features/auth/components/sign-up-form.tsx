@@ -35,14 +35,14 @@ export function SignUpForm() {
     },
   });
 
-  const onSumbit = (data: SignupInput) => {
+  const onSubmit = (data: SignupInput) => {
     mutate(data);
   };
 
   return (
     <AuthCard title="Sign up" description="Create a new account">
       <form
-        onSubmit={handleSubmit(onSumbit)}
+        onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-5 sm:gap-6"
         noValidate
       >

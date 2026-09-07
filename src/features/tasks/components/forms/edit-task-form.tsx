@@ -62,7 +62,7 @@ export default function EditTaskForm({ task }: EditTaskProps) {
       >
         <FormError message={updateTask.error?.message} />
 
-        <div className="w-full min-w-0 max-w-full space-y-4">
+        <div className="w-full max-w-full min-w-0 space-y-4">
           <TitleField
             register={register}
             errors={errors}
@@ -79,7 +79,12 @@ export default function EditTaskForm({ task }: EditTaskProps) {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <Button variant="default" size="sm" type="submit" className="min-w-20 justify-center">
+          <Button
+            variant="default"
+            size="sm"
+            type="submit"
+            className="min-w-20 justify-center"
+          >
             {isSubmitting || updateTask.isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

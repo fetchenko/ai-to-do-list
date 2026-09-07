@@ -6,7 +6,10 @@ interface SubtaskListProps {
   parentTitle: string;
 }
 
-export default function SubtaskList({ parentTitle, subtasks }: SubtaskListProps) {
+export default function SubtaskList({
+  parentTitle,
+  subtasks,
+}: SubtaskListProps) {
   if (subtasks.length === 0) return null;
 
   return (
@@ -17,5 +20,5 @@ export default function SubtaskList({ parentTitle, subtasks }: SubtaskListProps)
         </li>
       ))}
     </ul>
-  )
+  );
 }

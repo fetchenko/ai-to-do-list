@@ -40,7 +40,6 @@ cost/abuse surface that comes with letting users trigger paid API calls.
 - **Cancellation and timeout handling** — the stream reacts to client
   disconnects and a 60-second timeout, releasing the generation lock and
   recording the cancellation reason.
-- **Task status & metadata** — tasks carry status (`active` / `done`)
 - **Fractional-index task ordering** — positions are stored so reordering
   never requires re-indexing the whole list. The data model is ready for
   drag-and-drop; the drag-and-drop UI itself is still on the roadmap below.
@@ -240,9 +239,6 @@ workers invalidate each other's session.
 
 - Drag-and-drop reordering (data model already supports it via fractional
   indexing; the UI interaction isn't built yet)
-- Audit responsive layout across breakpoints — not yet checked
-- Undo toast on task delete
-- Search bar for tasks
 - Infinite scroll / lazy loading for large task lists
 - Customize shadcn/ui components beyond the defaults
 
@@ -250,26 +246,7 @@ workers invalidate each other's session.
 
 - Send a task's existing subtasks as context when generating more, to avoid
   duplicate suggestions
-- Add a `retryable` flag on AI failures + a retry button in the UI
 - Stress-test the AI generation lock under real concurrent load
-
-**Code quality**
-
-- Split components into view (presentational) vs. controlled/container
-  components
-- Standardize custom hook usage into one consistent pattern across the app
-- Add `eslint-plugin-boundaries` to enforce the feature/infrastructure/shared
-  layering at lint time instead of by convention alone
-- Migrate from React Hook Form to native React 19 form actions
-
-**Testing & CI**
-
-- Increase unit test coverage beyond AI response normalization
-
-**Auth & growth**
-
-- Google OAuth sign-in
-- Basic analytics for site visitors
 
 ## License
 

@@ -28,10 +28,10 @@ export default function Hero() {
               stay focused on what matters most.
             </p>
 
-            <p className="text-sm text-muted-foreground mx-auto max-w-xl">
+            <p className="text-muted-foreground mx-auto max-w-xl text-sm">
               Note: This project was created as a portfolio piece to showcase my
-              skills (and areas I'm still learning). The live demo's
-              authentication may not work reliably — Vercel's free plan can
+              skills (and areas I&apos;m still learning). The live demo&apos;s
+              authentication may not work reliably — Vercel&apos;s free plan can
               suspend deployments that are inactive for 14 days.
             </p>
           </header>

@@ -29,10 +29,10 @@ export default function Hero() {
             </p>
 
             <p className="text-muted-foreground mx-auto max-w-xl text-sm">
-              Note: This project was created as a portfolio piece to showcase my
-              skills (and areas I&apos;m still learning). The live demo&apos;s
-              authentication may not work reliably — Vercel&apos;s free plan can
-              suspend deployments that are inactive for 14 days.
+              Portfolio project: I built this to show my skills and what I&apos;m
+              still learning. The demo&apos;s sign-in might be unavailable sometimes —
+              Supabase automatically pauses free projects after about 7 days of
+              inactivity.
             </p>
           </header>
 

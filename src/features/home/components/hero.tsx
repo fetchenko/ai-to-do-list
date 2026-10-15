@@ -27,6 +27,13 @@ export default function Hero() {
               Organize your tasks, generate AI-powered subtasks instantly, and
               stay focused on what matters most.
             </p>
+
+            <p className="text-sm text-muted-foreground mx-auto max-w-xl">
+              Note: This project was created as a portfolio piece to showcase my
+              skills (and areas I'm still learning). The live demo's
+              authentication may not work reliably — Vercel's free plan can
+              suspend deployments that are inactive for 14 days.
+            </p>
           </header>
 
           <nav

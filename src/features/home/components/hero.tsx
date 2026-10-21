@@ -27,6 +27,13 @@ export default function Hero() {
               Organize your tasks, generate AI-powered subtasks instantly, and
               stay focused on what matters most.
             </p>
+
+            <p className="text-muted-foreground mx-auto max-w-xl text-sm">
+              Portfolio project: I built this to show my skills and what I&apos;m
+              still learning. The demo&apos;s sign-in might be unavailable sometimes —
+              Supabase automatically pauses free projects after about 7 days of
+              inactivity.
+            </p>
           </header>
 
           <nav

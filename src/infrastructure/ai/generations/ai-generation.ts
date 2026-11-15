@@ -1,0 +1,136 @@
+import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
+import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
+import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamClientEvent } from '@/shared/types/stream-event.types';
+import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
+import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
+import {
+  AiGenerationServerShutdown,
+  AiGenerationTimeout,
+  AiInvalidResponseFormat,
+} from '@/shared/errors/ai-app-error';
+
+export type AiGeneration = { stream(): ReadableStream<Uint8Array> };
+
+const encoder = new TextEncoder();
+function encodeEvent(event: AiStreamClientEvent): Uint8Array {
+  return encoder.encode(`${JSON.stringify(event)}\n`);
+}
+function toClientEvent(event: AiStreamEvent): AiStreamClientEvent {
+  if (event.type === 'done') return { type: 'done' };
+  return event;
+}
+
+export class AiGenerationResource implements AiGeneration {
+  constructor(
+    private readonly options: {
+      generationLog: AiGenerationLog | null;
+      generationLock: AiRequestLock;
+      prompt: string;
+      provider: AIProvider;
+      tool: AiTool;
+      signal: AbortSignal;
+    }
+  ) {}
+
+  stream(): ReadableStream<Uint8Array> {
+    const abortController = new AbortController();
+    const signal = AbortSignal.any([this.options.signal, abortController.signal]);
+    let outputStreamCancelled = false;
+    return new ReadableStream<Uint8Array>({
+      start: (controller) => {
+        void this.run(controller, signal, () => outputStreamCancelled);
+      },
+      cancel: () => {
+        outputStreamCancelled = true;
+        abortController.abort(new DOMException('Client disconnected', 'AbortError'));
+      },
+    });
+  }
+
+  private async run(
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
+  ) {
+    if (signal.aborted) {
+      await this.handleAbort(controller, signal, isOutputStreamCancelled);
+      return;
+    }
+    try {
+      for await (const event of this.options.provider.stream(
+        this.options.prompt,
+        this.options.tool,
+        signal
+      )) {
+        if (signal.aborted) {
+          await this.handleAbort(controller, signal, isOutputStreamCancelled);
+          return;
+        }
+        switch (event.type) {
+          case 'event':
+            controller.enqueue(encodeEvent(toClientEvent(event)));
+            break;
+          case 'done':
+            await this.options.generationLog?.complete({ metadata: event.metadata });
+            await this.options.generationLock.release();
+            controller.enqueue(encodeEvent(toClientEvent(event)));
+            controller.close();
+            return;
+          case 'error':
+            await this.handleFailure(controller, event.error, signal, isOutputStreamCancelled);
+            return;
+        }
+      }
+      const error = normalizeApiEventError(new AiInvalidResponseFormat('AI stream ended unexpectedly'));
+      await this.options.generationLog?.fail({ code: error.code });
+      await this.options.generationLock.release();
+      controller.enqueue(encodeEvent({ type: 'error', error }));
+      controller.close();
+    } catch (error) {
+      await this.handleFailure(controller, error, signal, isOutputStreamCancelled);
+    }
+  }
+
+  private async handleAbort(
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
+  ) {
+    const reason = normalizeCancelReason(signal.reason);
+    await this.options.generationLog?.cancel(reason);
+    await this.options.generationLock.release();
+    switch (reason) {
+      case 'timeout':
+        controller.enqueue(encodeEvent({ type: 'cancelled', error: normalizeApiEventError(new AiGenerationTimeout()) }));
+        controller.close();
+        return;
+      case 'server_shutdown':
+        controller.enqueue(encodeEvent({ type: 'cancelled', error: normalizeApiEventError(new AiGenerationServerShutdown()) }));
+        controller.close();
+        return;
+      case 'client_disconnect':
+        if (!isOutputStreamCancelled()) controller.close();
+        return;
+    }
+  }
+
+  private async handleFailure(
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    error: unknown,
+    signal: AbortSignal,
+    isOutputStreamCancelled: () => boolean
+  ) {
+    if (signal.aborted) {
+      await this.handleAbort(controller, signal, isOutputStreamCancelled);
+      return;
+    }
+    const normalized = normalizeApiEventError(error);
+    await this.options.generationLog?.fail({ code: normalized.code });
+    await this.options.generationLock.release();
+    controller.enqueue(encodeEvent({ type: 'error', error: normalized }));
+    controller.close();
+  }
+}

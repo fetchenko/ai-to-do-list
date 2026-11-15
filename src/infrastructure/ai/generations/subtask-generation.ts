@@ -30,7 +30,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
       generationLog: AiGenerationLog | null;
       generationLock: AiRequestLock;
       task: DbTaskForSubtaskGeneration;
-      tool: AiTool;
+      tools: AiTool[];
       provider: AIProvider;
       signal: AbortSignal;
     }
@@ -70,7 +70,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
     const events = this.options.provider.stream(
       taskDecomposerStreamPrompt(this.options.task.title),
-      this.options.tool,
+      this.options.tools,
       signal
     );
 

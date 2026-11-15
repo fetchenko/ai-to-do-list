@@ -5,7 +5,10 @@ import {
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { AiTool, ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
+import {
+  AiTool,
+  ToolCallAccumulatorResult,
+} from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
@@ -79,7 +82,10 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall), tools);
+      const parsedToolCall = parseCompletedToolCall(
+        accumulator.add(toolCall),
+        tools
+      );
 
       if (!parsedToolCall) {
         continue;
@@ -93,7 +99,10 @@ export async function* normalizeDeepSeekStream(
     }
 
     if (finishReason === 'tool_calls') {
-      const parsedToolCall = parseCompletedToolCall(accumulator.finish(), tools);
+      const parsedToolCall = parseCompletedToolCall(
+        accumulator.finish(),
+        tools
+      );
 
       if (parsedToolCall) {
         if (parsedToolCall.type === 'subtask') {

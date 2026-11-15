@@ -1,7 +1,7 @@
 import DeepSeekProvider from '@/infrastructure/ai/providers/deepseek/deepseek.provider';
 import { OllamaProvider } from '@/infrastructure/ai/providers/ollama/ollama.provider';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { aiEnv } from '@/shared/env/ai-env';
 

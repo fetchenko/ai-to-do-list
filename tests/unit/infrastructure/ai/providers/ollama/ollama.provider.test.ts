@@ -63,7 +63,7 @@ describe('OllamaProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new OllamaProvider().stream('test', new AbortController().signal)
+        new OllamaProvider().stream('test', [createSubtaskTool], new AbortController().signal)
       )
     ).rejects.toThrow('AI response is empty');
   });

@@ -1,8 +1,8 @@
 import DeepSeekProvider from '@/infrastructure/ai/providers/deepseek/deepseek.provider';
 import { OllamaProvider } from '@/infrastructure/ai/providers/ollama/ollama.provider';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
-import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { aiEnv } from '@/shared/env/ai-env';
 
 /**
@@ -23,7 +23,11 @@ export interface AIProvider {
 
   generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse>;
 
-  stream(prompt: string, tools: AiTool[], signal: AbortSignal): AsyncIterable<AiStreamEvent>;
+  stream(
+    prompt: string,
+    tools: AiTool[],
+    signal: AbortSignal
+  ): AsyncIterable<AiStreamEvent>;
 }
 
 export function getAIProvider(): AIProvider {

@@ -4,7 +4,7 @@ import {
   ollamaStreamChunkSchema,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   AiGenerationError,

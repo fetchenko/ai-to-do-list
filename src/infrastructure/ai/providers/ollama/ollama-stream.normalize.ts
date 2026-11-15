@@ -27,7 +27,7 @@ function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
 
 export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>,
-  tool: AiTool
+  tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
   const generatedSubtasks: SubtaskResponse[] = [];
   let streamCompleted = false;
@@ -59,7 +59,7 @@ export async function* normalizeOllamaStream(
         id: toolCall.id ?? '',
         name: toolCall.function.name,
         arguments: JSON.stringify(toolCall.function.arguments),
-      }, tool);
+      }, tools);
 
       if (parsedToolCall.type === 'subtask') {
         generatedSubtasks.push(parsedToolCall.subtask);

@@ -35,7 +35,7 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
 
 function parseCompletedToolCall(
   result: ToolCallAccumulatorResult,
-  tool: AiTool
+  tools: AiTool[]
 ): AiStreamEvent | null {
   if (result.type !== 'completed') {
     return null;
@@ -46,7 +46,7 @@ function parseCompletedToolCall(
 
 export async function* normalizeDeepSeekStream(
   body: ReadableStream<Uint8Array>,
-  tool: AiTool
+  tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
   const generatedSubtasks: SubtaskResponse[] = [];
@@ -79,7 +79,7 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall), tool);
+      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall), tools);
 
       if (!parsedToolCall) {
         continue;
@@ -93,7 +93,7 @@ export async function* normalizeDeepSeekStream(
     }
 
     if (finishReason === 'tool_calls') {
-      const parsedToolCall = parseCompletedToolCall(accumulator.finish(), tool);
+      const parsedToolCall = parseCompletedToolCall(accumulator.finish(), tools);
 
       if (parsedToolCall) {
         if (parsedToolCall.type === 'subtask') {

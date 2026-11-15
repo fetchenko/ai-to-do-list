@@ -2,7 +2,8 @@ import { collect } from '@tests/utils/collect';
 import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
-import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
+import { normalizeDeepSeekStream as normalizeDeepSeekStreamWithTool } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 function deepSeekChunk(
@@ -25,6 +26,10 @@ function deepSeekChunk(
     ],
     ...overrides,
   })}\n\n`;
+}
+
+function normalizeDeepSeekStream(body: ReadableStream<Uint8Array>) {
+  return normalizeDeepSeekStreamWithTool(body, createSubtaskTool);
 }
 
 describe('normalizeDeepSeekStream', () => {

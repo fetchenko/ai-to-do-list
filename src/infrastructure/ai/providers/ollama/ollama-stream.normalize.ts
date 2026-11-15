@@ -5,6 +5,7 @@ import {
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
@@ -25,7 +26,8 @@ function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
 }
 
 export async function* normalizeOllamaStream(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  tool: AiTool
 ): AsyncIterable<AiStreamEvent> {
   const generatedSubtasks: SubtaskResponse[] = [];
   let streamCompleted = false;
@@ -57,7 +59,7 @@ export async function* normalizeOllamaStream(
         id: toolCall.id ?? '',
         name: toolCall.function.name,
         arguments: JSON.stringify(toolCall.function.arguments),
-      });
+      }, tool);
 
       if (parsedToolCall.type === 'subtask') {
         generatedSubtasks.push(parsedToolCall.subtask);

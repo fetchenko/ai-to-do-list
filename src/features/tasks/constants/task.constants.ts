@@ -1,4 +1,4 @@
-import { TaskStatus } from '@/shared/types/database.types';
+import { TaskStatus } from '@/features/tasks/types/tasks.types';
 
 export const taskStatus = {
   active: 'active',

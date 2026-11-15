@@ -64,7 +64,7 @@ describe('DeepSeekProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new DeepSeekProvider().stream('test', new AbortController().signal)
+        new DeepSeekProvider().stream('test', [createSubtaskTool], new AbortController().signal)
       )
     ).rejects.toThrow('AI response is empty');
   });

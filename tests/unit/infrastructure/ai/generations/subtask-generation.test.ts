@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
@@ -58,6 +59,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
         { type: 'done', metadata },
@@ -94,6 +96,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: new AbortController().signal,
     });
@@ -123,6 +126,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: controller.signal,
     });
@@ -143,6 +147,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -177,6 +182,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -218,6 +224,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: controller.signal,
     });
@@ -253,6 +260,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
       ]),
@@ -281,6 +289,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: new AbortController().signal,
     });
@@ -301,6 +310,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: new AbortController().signal,
     });
@@ -330,7 +340,7 @@ describe('SubtaskGenerationResource', () => {
     let providerSignal: AbortSignal | undefined;
     const provider: AIProvider = {
       generate: vi.fn(),
-      stream: async function* (_prompt, signal) {
+      stream: async function* (_prompt, _tool, signal) {
         providerSignal = signal;
         await new Promise<void>((resolve, reject) => {
           signal.addEventListener('abort', () => reject(signal.reason), {
@@ -345,6 +355,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider,
       signal: new AbortController().signal,
     });
@@ -370,6 +381,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
+      tool: createSubtaskTool,
       provider: createProvider([
         {
           type: 'done',

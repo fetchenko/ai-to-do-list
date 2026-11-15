@@ -1,30 +1,23 @@
 import {
-  PendingToolCall,
-  ToolCallAccumulatorResult,
-  ToolCallDelta,
-} from '@/infrastructure/ai/tools/tool-call.types';
+  AiToolCall,
+  AiToolCallAccumulatorResult,
+  AiToolCallDelta,
+} from '@/infrastructure/ai/types/ai-tool.types';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 /**
- * Temporary implementation.
+ * Accumulates streamed tool-call deltas.
  *
- * This accumulator intentionally supports only the subset of DeepSeek's
- * streaming tool-call behavior required by the current subtasks flow.
- *
- * It should not be treated as a general-purpose or provider-agnostic
- * tool-call abstraction.
- *
- * TODO(ai-tooling): Research the provider's streaming tool-call guarantees
- * and replace/refine this implementation
+ * This currently supports the sequential tool-call delta behavior used by
+ * DeepSeek's streaming API. Provider-specific guarantees should remain
+ * documented and tested in the corresponding adapter.
  */
-
 export class ToolCallAccumulator {
-  private current: PendingToolCall | null = null;
+  private current: AiToolCall | null = null;
 
-  add(delta: ToolCallDelta): ToolCallAccumulatorResult {
+  add(delta: AiToolCallDelta): AiToolCallAccumulatorResult {
     if (!this.current) {
       this.current = createToolCall(delta);
-
       return { type: 'accumulating' };
     }
 
@@ -34,37 +27,24 @@ export class ToolCallAccumulator {
 
     if (delta.index !== this.current.index) {
       const completedToolCall = this.current;
-
       this.current = createToolCall(delta);
-
-      return {
-        type: 'completed',
-        toolCall: completedToolCall,
-      };
+      return { type: 'completed', toolCall: completedToolCall };
     }
 
     this.current = appendToolCall(this.current, delta);
-
     return { type: 'accumulating' };
   }
 
-  finish(): ToolCallAccumulatorResult {
-    if (!this.current) {
-      return { type: 'accumulating' };
-    }
+  finish(): AiToolCallAccumulatorResult {
+    if (!this.current) return { type: 'accumulating' };
 
     const completedToolCall = this.current;
-
     this.current = null;
-
-    return {
-      type: 'completed',
-      toolCall: completedToolCall,
-    };
+    return { type: 'completed', toolCall: completedToolCall };
   }
 }
 
-function createToolCall(delta: ToolCallDelta): PendingToolCall {
+function createToolCall(delta: AiToolCallDelta): AiToolCall {
   return {
     index: delta.index,
     id: delta.id ?? '',
@@ -74,9 +54,9 @@ function createToolCall(delta: ToolCallDelta): PendingToolCall {
 }
 
 function appendToolCall(
-  current: PendingToolCall,
-  delta: ToolCallDelta
-): PendingToolCall {
+  current: AiToolCall,
+  delta: AiToolCallDelta
+): AiToolCall {
   return {
     ...current,
     id: delta.id ?? current.id,

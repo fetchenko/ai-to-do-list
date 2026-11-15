@@ -2,16 +2,15 @@ import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-loc
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
-import { AiClientStreamEvent, AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { AiStreamClientEvent } from '@/shared/types/stream-event.types';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
-import { createSubtaskGenerationPrompt } from '@/features/tasks/ai/subtask-generation';
 import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 
 export type SubtaskGeneration = {
   stream(): ReadableStream<Uint8Array>;
@@ -19,11 +18,11 @@ export type SubtaskGeneration = {
 
 const encoder = new TextEncoder();
 
-function encodeEvent(event: AiClientStreamEvent): Uint8Array {
+function encodeEvent(event: AiStreamClientEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-function toClientEvent(event: AiStreamEvent): AiClientStreamEvent {
+function toClientEvent(event: AiStreamEvent): AiStreamClientEvent {
   if (event.type === 'done') return { type: 'done' };
   return event;
 }
@@ -33,7 +32,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     private readonly options: {
       generationLog: AiGenerationLog | null;
       generationLock: AiRequestLock;
-      task: DbTaskForSubtaskGeneration;
+      prompt: string;
       provider: AIProvider;
       tool: AiTool;
       signal: AbortSignal;
@@ -66,11 +65,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
       return;
     }
 
-    const events = this.options.provider.stream(
-      createSubtaskGenerationPrompt(this.options.task.title),
-      this.options.tool,
-      signal
-    );
+    const events = this.options.provider.stream(this.options.prompt, this.options.tool, signal);
 
     try {
       for await (const event of events) {
@@ -95,9 +90,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         }
       }
 
-      const error = normalizeApiEventError(
-        new AiInvalidResponseFormat('AI stream ended unexpectedly')
-      );
+      const error = normalizeApiEventError(new AiInvalidResponseFormat('AI stream ended unexpectedly'));
       await this.options.generationLog?.fail({ code: error.code });
       await this.options.generationLock.release();
       controller.enqueue(encodeEvent({ type: 'error', error }));
@@ -118,17 +111,11 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
     switch (reason) {
       case 'timeout':
-        controller.enqueue(encodeEvent({
-          type: 'cancelled',
-          error: normalizeApiEventError(new AiGenerationTimeout()),
-        }));
+        controller.enqueue(encodeEvent({ type: 'cancelled', error: normalizeApiEventError(new AiGenerationTimeout()) }));
         controller.close();
         return;
       case 'server_shutdown':
-        controller.enqueue(encodeEvent({
-          type: 'cancelled',
-          error: normalizeApiEventError(new AiGenerationServerShutdown()),
-        }));
+        controller.enqueue(encodeEvent({ type: 'cancelled', error: normalizeApiEventError(new AiGenerationServerShutdown()) }));
         controller.close();
         return;
       case 'client_disconnect':

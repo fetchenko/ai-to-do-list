@@ -41,7 +41,7 @@ function parseCompletedToolCall(
     return null;
   }
 
-  return parseToolCall(result.toolCall, tool);
+  return parseToolCall(result.toolCall, tools);
 }
 
 export async function* normalizeDeepSeekStream(

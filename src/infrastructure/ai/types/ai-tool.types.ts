@@ -1,8 +1,6 @@
-export type AiTool = {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-};
+import { AiTool } from '@/shared/types/ai-generation.types';
+
+export type { AiTool };
 
 export type AiToolCall = {
   index: number;

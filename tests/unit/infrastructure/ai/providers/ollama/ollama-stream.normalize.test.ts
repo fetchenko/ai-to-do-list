@@ -34,7 +34,7 @@ function ollamaChunk(overrides: Record<string, unknown> = {}) {
 }
 
 function normalizeOllamaStream(body: ReadableStream<Uint8Array>) {
-  return normalizeOllamaStreamWithTool(body, createSubtaskTool);
+  return normalizeOllamaStreamWithTool(body, [createSubtaskTool]);
 }
 
 describe('normalizeOllamaStream', () => {

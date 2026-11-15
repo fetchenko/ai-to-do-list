@@ -2,6 +2,7 @@ import { collect as collectStream } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OllamaProvider } from '@/infrastructure/ai/providers/ollama/ollama.provider';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 
 function createResponse(chunks: unknown[]): Response {
   const encoder = new TextEncoder();
@@ -38,7 +39,7 @@ describe('OllamaProvider.stream', () => {
       .mockResolvedValue(createResponse([ollamaDoneChunk()]));
     const signal = new AbortController().signal;
 
-    await collectStream(new OllamaProvider().stream('Create subtasks', signal));
+    await collectStream(new OllamaProvider().stream('Create subtasks', createSubtaskTool, signal));
 
     expect(fetchMock.mock.calls[0][1]).toEqual(
       expect.objectContaining({ signal })
@@ -51,7 +52,7 @@ describe('OllamaProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new OllamaProvider().stream('test', new AbortController().signal)
+        new OllamaProvider().stream('test', createSubtaskTool, new AbortController().signal)
       )
     ).rejects.toThrow('AI unavailable');
   });

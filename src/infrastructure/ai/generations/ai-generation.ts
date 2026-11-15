@@ -1,7 +1,7 @@
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { AiStreamClientEvent } from '@/shared/types/stream-event.types';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';

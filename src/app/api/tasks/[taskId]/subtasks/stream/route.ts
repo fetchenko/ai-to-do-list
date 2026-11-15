@@ -5,7 +5,7 @@ import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.reposito
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
-import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import { streamSubtasksForTask } from '@/features/tasks/services/subtasks-generation.server.service';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { getHttpStatusCode } from '@/shared/errors/utils/get-http-status-code';

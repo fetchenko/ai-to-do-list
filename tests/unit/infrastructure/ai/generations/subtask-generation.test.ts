@@ -59,7 +59,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
         { type: 'done', metadata },
@@ -96,7 +96,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
     });
@@ -126,7 +126,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: controller.signal,
     });
@@ -147,7 +147,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -182,7 +182,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -224,7 +224,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: controller.signal,
     });
@@ -260,7 +260,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
       ]),
@@ -289,7 +289,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
     });
@@ -310,7 +310,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
     });
@@ -355,7 +355,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
     });
@@ -381,7 +381,7 @@ describe('SubtaskGenerationResource', () => {
       generationLog,
       generationLock,
       task,
-      tool: createSubtaskTool,
+      tools: [createSubtaskTool],
       provider: createProvider([
         {
           type: 'done',

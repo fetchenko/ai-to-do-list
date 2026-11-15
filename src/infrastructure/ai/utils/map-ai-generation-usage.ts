@@ -1,5 +1,5 @@
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
-import { DbAiGenerationUpdate } from '@/infrastructure/supabase/types/database.types';
+import { DbAiGenerationUpdate } from '@/infrastructure/supabase/types/database-ai.types';
 
 export function mapAiGenerationMetadataToUpdate(
   metadata: AiGenerationMetadata

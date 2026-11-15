@@ -9,7 +9,7 @@ import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import type { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
 import { AiUnavailableError } from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
-import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
+import type { AiStreamClientEvent } from '@/shared/types/stream-event.types';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({
   streamSubtasks: vi.fn(),
@@ -40,8 +40,8 @@ function createWrapper() {
 }
 
 function createStream(
-  chunks: SubtaskStreamEvent[]
-): AsyncGenerator<SubtaskStreamEvent> {
+  chunks: AiStreamClientEvent[]
+): AsyncGenerator<AiStreamClientEvent> {
   return (async function* () {
     for (const chunk of chunks) {
       yield chunk;
@@ -54,13 +54,12 @@ function createStreamSubtask(
     title?: string;
     description?: string;
   } = {}
-): SubtaskStreamEvent {
+): AiStreamClientEvent {
   return {
-    type: 'subtask',
-    subtask: {
-      title: 'Write tests',
-      description: 'Write unit tests',
-      ...overrides,
+    type: 'event',
+    data: {
+      data: overrides.title ?? 'Write tests',
+      description: overrides.description ?? 'Write unit tests',
     },
   };
 }

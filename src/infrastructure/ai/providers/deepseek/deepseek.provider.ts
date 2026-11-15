@@ -55,7 +55,7 @@ export default class DeepSeekProvider implements AIProvider {
 
   async *stream(
     prompt: string,
-    tool: AiTool,
+    tools: AiTool[],
     signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(DEEPSEEK_URL, {
@@ -76,7 +76,7 @@ export default class DeepSeekProvider implements AIProvider {
         stream_options: {
           include_usage: true,
         },
-        tools: [tool],
+        tools,
         tool_choice: 'auto',
       }),
       signal,
@@ -92,6 +92,6 @@ export default class DeepSeekProvider implements AIProvider {
       throw new AiEmptyResponseError('DeepSeek response has no body');
     }
 
-    yield* normalizeDeepSeekStream(response.body, tool);
+    yield* normalizeDeepSeekStream(response.body, tools);
   }
 }

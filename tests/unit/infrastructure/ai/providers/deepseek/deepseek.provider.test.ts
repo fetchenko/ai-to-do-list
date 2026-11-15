@@ -39,7 +39,7 @@ describe('DeepSeekProvider.stream', () => {
     const signal = new AbortController().signal;
 
     await collectStream(
-      new DeepSeekProvider().stream('Create subtasks', createSubtaskTool, signal)
+      new DeepSeekProvider().stream('Create subtasks', [createSubtaskTool], signal)
     );
 
     expect(fetchMock.mock.calls[0][1]).toEqual(
@@ -53,7 +53,7 @@ describe('DeepSeekProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new DeepSeekProvider().stream('test', createSubtaskTool, new AbortController().signal)
+        new DeepSeekProvider().stream('test', [createSubtaskTool], new AbortController().signal)
       )
     ).rejects.toThrow('AI unavailable');
   });

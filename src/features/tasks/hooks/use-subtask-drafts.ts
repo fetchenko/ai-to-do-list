@@ -15,18 +15,23 @@ export function useSubtaskDrafts(
   onSubtask: (draftSubtask: AiGeneratedTask) => void
 ) {
   const abortControllerRef = useRef<AbortController | null>(null);
-
   const { error, isPending, mutate, reset } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
-      if (!taskId) {
-        throw new ValidationRequestError('Missing task id');
-      }
-
+      if (!taskId) throw new ValidationRequestError('Missing task id');
       for await (const chunk of streamSubtasks(taskId, signal)) {
         switch (chunk.type) {
-          case 'subtask':
-            onSubtask({ ...chunk.subtask, id: crypto.randomUUID() });
+          case 'event': {
+            const { data, description } = chunk.data;
+            if (typeof data !== 'string' || typeof description !== 'string') {
+              throw new Error('AI returned an invalid generated item');
+            }
+            onSubtask({
+              id: crypto.randomUUID(),
+              title: data,
+              description,
+            });
             break;
+          }
           case 'done':
             break;
           case 'cancelled':
@@ -38,9 +43,7 @@ export function useSubtaskDrafts(
     retry: false,
     onError: (error: Error) => {
       if (isAbortError(error)) return;
-
-      const message = getFriendlyErrorMessage(error);
-      toast.info(message);
+      toast.info(getFriendlyErrorMessage(error));
     },
   });
 
@@ -48,37 +51,24 @@ export function useSubtaskDrafts(
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
   }, []);
-
   const discard = useCallback(() => {
     cancel();
     reset();
   }, [cancel, reset]);
-
   const generate = useCallback(() => {
     cancel();
     reset();
-
     const controller = new AbortController();
     abortControllerRef.current = controller;
     mutate(controller.signal);
   }, [cancel, mutate, reset]);
-
   const retry = useCallback(() => {
     cancel();
-
     const controller = new AbortController();
     abortControllerRef.current = controller;
     mutate(controller.signal);
   }, [cancel, mutate]);
-
   useEffect(() => cancel, [cancel]);
 
-  return {
-    error,
-    isGenerating: isPending,
-    generate,
-    retry,
-    cancel,
-    discard,
-  };
+  return { error, isGenerating: isPending, generate, retry, cancel, discard };
 }

@@ -1,11 +1,10 @@
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
 import { ApiEventError } from '@/shared/errors/api-error.schema';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 export type AiStreamEvent =
   | {
-      type: 'subtask';
-      subtask: SubtaskResponse;
+      type: 'event';
+      data: Record<string, unknown>;
     }
   | {
       type: 'done';
@@ -13,5 +12,18 @@ export type AiStreamEvent =
     }
   | {
       type: 'error';
+      error: ApiEventError;
+    };
+
+export type AiClientStreamEvent =
+  | {
+      type: 'event';
+      data: Record<string, unknown>;
+    }
+  | {
+      type: 'done';
+    }
+  | {
+      type: 'error' | 'cancelled';
       error: ApiEventError;
     };

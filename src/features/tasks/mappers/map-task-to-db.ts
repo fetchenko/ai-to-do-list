@@ -1,5 +1,5 @@
 import { TaskInsert, TaskUpdate } from '@/features/tasks/types/tasks.types';
-import { DbTaskInsert, DbTaskUpdate } from '@/infrastructure/supabase/types/database.types';
+import { DbTaskInsert, DbTaskUpdate } from '@/infrastructure/supabase/types/database-task.types';
 
 export const taskKeyMap = {
   id: 'id',

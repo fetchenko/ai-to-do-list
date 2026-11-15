@@ -1,7 +1,10 @@
-import { AiClientStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
+import { ApiEventError } from '@/shared/errors/api-error.schema';
 
 /**
  * Generic HTTP streaming protocol consumed by the frontend.
- * Feature-specific meaning is carried by the event data, not by event names.
+ * The event payload is intentionally independent of any feature model.
  */
-export type AiStreamClientEvent = AiClientStreamEvent;
+export type AiStreamClientEvent =
+  | { type: 'event'; data: Record<string, unknown> }
+  | { type: 'done' }
+  | { type: 'error' | 'cancelled'; error: ApiEventError };

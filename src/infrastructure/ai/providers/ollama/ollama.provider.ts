@@ -50,7 +50,7 @@ export class OllamaProvider implements AIProvider {
 
   async *stream(
     prompt: string,
-    tool: AiTool,
+    tools: AiTool[],
     signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
@@ -67,7 +67,7 @@ export class OllamaProvider implements AIProvider {
             content: prompt,
           },
         ],
-        tools: [tool],
+        tools,
         stream: true,
         think: false,
       }),
@@ -83,6 +83,6 @@ export class OllamaProvider implements AIProvider {
       throw new AiEmptyResponseError('Ollama response has no body');
     }
 
-    yield* normalizeOllamaStream(response.body, tool);
+    yield* normalizeOllamaStream(response.body, tools);
   }
 }

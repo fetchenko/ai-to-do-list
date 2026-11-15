@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 describe('parseToolCall', () => {
@@ -14,7 +15,7 @@ describe('parseToolCall', () => {
           title: 'Buy groceries',
           description: 'Go to the store',
         }),
-      })
+      }, [createSubtaskTool])
     ).toEqual({
       type: 'subtask',
       subtask: {
@@ -33,7 +34,7 @@ describe('parseToolCall', () => {
         arguments: JSON.stringify({
           title: 'Buy groceries',
         }),
-      })
+      }, [createSubtaskTool])
     ).toEqual({
       type: 'subtask',
       subtask: {
@@ -49,7 +50,7 @@ describe('parseToolCall', () => {
         id: 'call-1',
         name: 'delete_task',
         arguments: '{}',
-      })
+      }, [createSubtaskTool])
     ).toThrow(new AiInvalidResponseFormat('Unexpected AI tool: delete_task'));
   });
 
@@ -60,7 +61,7 @@ describe('parseToolCall', () => {
         id: 'call-1',
         name: 'create_subtask',
         arguments: '{"title":"Buy groceries"',
-      })
+      }, [createSubtaskTool])
     ).toThrow(
       new AiInvalidResponseFormat('AI returned invalid tool arguments')
     );
@@ -73,7 +74,7 @@ describe('parseToolCall', () => {
         id: 'call-1',
         name: 'create_subtask',
         arguments: JSON.stringify({ description: 'Missing title' }),
-      })
+      }, [createSubtaskTool])
     ).toThrow(new AiInvalidResponseFormat('AI returned an invalid subtask'));
   });
 });

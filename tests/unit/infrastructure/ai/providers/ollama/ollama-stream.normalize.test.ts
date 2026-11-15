@@ -1,7 +1,8 @@
 import { collect } from '@tests/utils/collect';
 import { describe, expect, it } from 'vitest';
 
-import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
+import { normalizeOllamaStream as normalizeOllamaStreamWithTool } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
@@ -30,6 +31,10 @@ function ollamaChunk(overrides: Record<string, unknown> = {}) {
     message: { role: 'assistant' },
     ...overrides,
   };
+}
+
+function normalizeOllamaStream(body: ReadableStream<Uint8Array>) {
+  return normalizeOllamaStreamWithTool(body, createSubtaskTool);
 }
 
 describe('normalizeOllamaStream', () => {

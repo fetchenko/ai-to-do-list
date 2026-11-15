@@ -1,6 +1,5 @@
 import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure/ai/generations/subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
@@ -51,33 +50,3 @@ export async function generateSubtasksForTask({
   }
 }
 
-export async function streamSubtasksForTask(input: {
-  userId: string;
-  task: DbTaskForSubtaskGeneration;
-  provider: AIProvider;
-  signal: AbortSignal;
-}) {
-  const generationLock = await acquireAiRequestLock(input.userId);
-  let generationLog = null;
-
-  try {
-    const generationId = await createAiGenerationLog({
-      userId: input.userId,
-      taskId: input.task.id,
-      feature: SUBTASK_GENERATION_FEATURE,
-    });
-    generationLog = generationId ? new AiGenerationLog(generationId) : null;
-  } catch (error) {
-    console.error('Failed to create AI generation log', error);
-  }
-
-  const generation = new SubtaskGeneration({
-    prompt: createSubtaskGenerationPrompt(input.task.title),
-    provider: input.provider,
-    signal: input.signal,
-    generationLog,
-    generationLock,
-    tool: subtaskGenerationTool,
-  });
-  return generation.stream();
-}

@@ -6,20 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
-export type DbTask = DbTaskRow;
-
-export type DbTaskInsert = Database['public']['Tables']['tasks']['Insert'];
-export type DbTaskUpdate = Database['public']['Tables']['tasks']['Update'];
-
-export type DbTaskForSubtaskGeneration = Pick<
-  DbTask,
-  'id' | 'user_id' | 'title'
->;
-
-export type DbAiGenerationUpdate =
-  Database['public']['Tables']['ai_generations']['Update'];
-
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)

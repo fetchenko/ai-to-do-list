@@ -1,0 +1,182 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
+export type DbTask = DbTaskRow;
+
+export type DbTaskInsert = Database['public']['Tables']['tasks']['Insert'];
+export type DbTaskUpdate = Database['public']['Tables']['tasks']['Update'];
+
+export type DbTaskForSubtaskGeneration = Pick<
+  DbTask,
+  'id' | 'user_id' | 'title'
+>;
+
+export type DbAiGenerationUpdate =
+  Database['public']['Tables']['ai_generations']['Update'];
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: '14.5';
+  };
+  public: {
+    Tables: {
+      ai_generations: {
+        Row: {
+          cache_hit_tokens: number | null;
+          cache_miss_tokens: number | null;
+          duration_ms: number | null;
+          error_code: string | null;
+          feature: string | null;
+          finish_reason: string | null;
+          finished_at: string | null;
+          id: string;
+          input_tokens: number | null;
+          model: string | null;
+          output_tokens: number | null;
+          prompt: string | null;
+          prompt_version: string | null;
+          provider_generation_id: string | null;
+          reasoning_tokens: number | null;
+          response: string | null;
+          started_at: string | null;
+          status: string | null;
+          task_id: string;
+          total_tokens: number | null;
+          user_id: string | null;
+        };
+        Insert: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
+          duration_ms?: number | null;
+          error_code?: string | null;
+          feature?: string | null;
+          finish_reason?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          model?: string | null;
+          prompt?: string | null;
+          prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
+          response?: string | null;
+          started_at?: string | null;
+          status?: string | null;
+          task_id: string;
+          total_tokens?: number | null;
+          user_id?: string | null;
+        };
+        Update: {
+          cache_hit_tokens?: number | null;
+          cache_miss_tokens?: number | null;
+          duration_ms?: number | null;
+          error_code?: string | null;
+          feature?: string | null;
+          finish_reason?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          prompt?: string | null;
+          prompt_version?: string | null;
+          provider_generation_id?: string | null;
+          reasoning_tokens?: number | null;
+          response?: string | null;
+          started_at?: string | null;
+          status?: string | null;
+          task_id?: string;
+          total_tokens?: number | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_generations_task_id_fkey';
+            columns: ['task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tasks: {
+        Row: {
+          completed_at: string | null;
+          created_at: string | null;
+          deleted_at: string | null;
+          description: string | null;
+          due_date: string | null;
+          id: string;
+          parent_task_id: string | null;
+          position: string;
+          priority: number | null;
+          status: string;
+          title: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string | null;
+          deleted_at?: string | null;
+          description?: string | null;
+          due_date?: string | null;
+          id?: string;
+          parent_task_id?: string | null;
+          position?: string;
+          priority?: number | null;
+          status?: string;
+          title: string;
+          user_id: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string | null;
+          deleted_at?: string | null;
+          description?: string | null;
+          due_date?: string | null;
+          id?: string;
+          parent_task_id?: string | null;
+          position?: string;
+          priority?: number | null;
+          status?: string;
+          title?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_parent_task_id_fkey';
+            columns: ['parent_task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      get_last_position: { Args: { p_parent_id?: string }; Returns: string };
+      try_acquire_user_ai_lock: { Args: { user_id: string }; Returns: boolean };
+    };
+    Enums: {
+      task_status: 'active' | 'done' | 'archived';
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};

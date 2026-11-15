@@ -2,6 +2,7 @@ import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-loc
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
 import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
@@ -29,6 +30,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
       generationLog: AiGenerationLog | null;
       generationLock: AiRequestLock;
       task: DbTaskForSubtaskGeneration;
+      tool: AiTool;
       provider: AIProvider;
       signal: AbortSignal;
     }
@@ -68,6 +70,7 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
 
     const events = this.options.provider.stream(
       taskDecomposerStreamPrompt(this.options.task.title),
+      this.options.tool,
       signal
     );
 

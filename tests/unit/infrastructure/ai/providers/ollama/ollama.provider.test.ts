@@ -44,6 +44,9 @@ describe('OllamaProvider.stream', () => {
     expect(fetchMock.mock.calls[0][1]).toEqual(
       expect.objectContaining({ signal })
     );
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).tools
+    ).toEqual([createSubtaskTool]);
   });
 
   it('throws when Ollama returns an error', async () => {

@@ -80,7 +80,7 @@ export async function streamSubtasksForTask(input: {
 
   const generation = new SubtaskGeneration({
     task: input.task,
-    tool: createSubtaskTool,
+    tools: [createSubtaskTool],
     provider: input.provider,
     signal: input.signal,
     generationLog,

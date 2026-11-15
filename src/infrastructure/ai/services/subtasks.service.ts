@@ -5,10 +5,6 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
-import {
-  createSubtaskGenerationPrompt,
-  subtaskGenerationTool,
-} from '@/features/tasks/ai/subtask-generation';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
 

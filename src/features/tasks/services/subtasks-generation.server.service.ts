@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { streamAiGeneration } from '@/infrastructure/ai/services/ai-generation.service';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import {

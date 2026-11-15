@@ -29,7 +29,7 @@ function deepSeekChunk(
 }
 
 function normalizeDeepSeekStream(body: ReadableStream<Uint8Array>) {
-  return normalizeDeepSeekStreamWithTool(body, createSubtaskTool);
+  return normalizeDeepSeekStreamWithTool(body, [createSubtaskTool]);
 }
 
 describe('normalizeDeepSeekStream', () => {

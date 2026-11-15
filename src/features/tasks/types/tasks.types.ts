@@ -1,4 +1,4 @@
-import { TaskStatus } from '@/shared/types/database.types';
+export type TaskStatus = 'active' | 'done' | 'archived';
 
 export type Task = {
   id: string;

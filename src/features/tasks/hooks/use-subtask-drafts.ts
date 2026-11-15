@@ -9,6 +9,26 @@ import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
 import { isAbortError } from '@/shared/errors/utils/is-abort-error';
 import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
 
+export async function* readGeneration(
+  taskId: string,
+  controller: AbortController
+) {
+  for await (const chunk of streamSubtasks(taskId, controller.signal)) {
+    if (controller.signal.aborted) return;
+
+    switch (chunk.type) {
+      case 'subtask':
+        yield { ...chunk.subtask, id: crypto.randomUUID() };
+        break;
+      case 'done':
+        break;
+      case 'cancelled':
+      case 'error':
+        throw parseApiEventError(chunk.error);
+    }
+  }
+}
+
 export function useSubtaskDrafts(
   taskId: string,
   onSubtask: (draftSubtask: AiGeneratedTask) => void

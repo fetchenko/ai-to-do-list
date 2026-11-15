@@ -1,12 +1,9 @@
-import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
-
 export type CombinedAiResponse = NormilizedAiResponse;
 
 export type AiGenerationUsage = {
   inputTokens: number | null;
   outputTokens: number | null;
   totalTokens: number | null;
-
   reasoningTokens?: number | null;
   cacheHitTokens?: number | null;
   cacheMissTokens?: number | null;
@@ -22,6 +19,6 @@ export type AiGenerationMetadata = {
 };
 
 export type NormilizedAiResponse = {
-  data: SubtasksResponse;
+  data: unknown;
   metadata: AiGenerationMetadata;
 };

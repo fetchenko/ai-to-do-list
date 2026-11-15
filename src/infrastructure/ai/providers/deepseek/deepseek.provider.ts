@@ -2,7 +2,7 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
-import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
+import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
@@ -20,10 +20,7 @@ const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
 export default class DeepSeekProvider implements AIProvider {
   quotaLimit = DEFAULT_DEEPSEEK_QUOTA_LIMIT;
 
-  async generate(
-    prompt: string,
-    signal?: AbortSignal
-  ): Promise<CombinedAiResponse> {
+  async generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse> {
     const response = await fetch(DEEPSEEK_URL, {
       method: 'POST',
       headers: {
@@ -39,22 +36,19 @@ export default class DeepSeekProvider implements AIProvider {
       }),
       signal,
     });
-
     const parsedResponse = await parseResponseJson(response);
-
     const result = deepSeekResponseSchema.safeParse(parsedResponse);
-
     if (!result.success) {
       throw new AiInvalidResponseFormat(
         `Invalid format of Deepseek response: ${result.error}`
       );
     }
-
     return normalizeDeepseekResponse(result.data);
   }
 
   async *stream(
     prompt: string,
+    tool: AiTool,
     signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(DEEPSEEK_URL, {
@@ -65,32 +59,23 @@ export default class DeepSeekProvider implements AIProvider {
       },
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        messages: [{ role: 'user', content: prompt }],
         stream: true,
-        stream_options: {
-          include_usage: true,
-        },
-        tools: [createSubtaskTool],
+        stream_options: { include_usage: true },
+        tools: [{
+          type: 'function',
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.parameters,
+          },
+        }],
         tool_choice: 'auto',
       }),
       signal,
     });
-
-    if (!response.ok) {
-      const body = await response.text();
-
-      throw new AiUnavailableError(body);
-    }
-
-    if (!response.body) {
-      throw new AiEmptyResponseError('DeepSeek response has no body');
-    }
-
-    yield* normalizeDeepSeekStream(response.body);
+    if (!response.ok) throw new AiUnavailableError(await response.text());
+    if (!response.body) throw new AiEmptyResponseError('DeepSeek response has no body');
+    yield* normalizeDeepSeekStream(response.body, tool);
   }
 }

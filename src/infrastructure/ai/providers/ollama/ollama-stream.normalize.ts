@@ -4,8 +4,8 @@ import {
   ollamaStreamChunkSchema,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
-import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
+import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
@@ -54,12 +54,15 @@ export async function* normalizeOllamaStream(
     }
 
     for (const toolCall of chunk.message?.tool_calls ?? []) {
-      const parsedToolCall = parseToolCall({
-        index: toolCall.function.index ?? 0,
-        id: toolCall.id ?? '',
-        name: toolCall.function.name,
-        arguments: JSON.stringify(toolCall.function.arguments),
-      }, tools);
+      const parsedToolCall = parseToolCall(
+        {
+          index: toolCall.function.index ?? 0,
+          id: toolCall.id ?? '',
+          name: toolCall.function.name,
+          arguments: JSON.stringify(toolCall.function.arguments),
+        },
+        tools
+      );
 
       if (parsedToolCall.type === 'subtask') {
         generatedSubtasks.push(parsedToolCall.subtask);

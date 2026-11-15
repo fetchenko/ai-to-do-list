@@ -5,6 +5,7 @@ import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decompose
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
+import { subtaskGenerationTool } from '@/features/tasks/ai/subtask-generation';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
@@ -21,7 +22,6 @@ export async function generateSubtasksForTask({
   provider: AIProvider;
 }) {
   const generationLock = await acquireAiRequestLock(userId);
-
   let aiGenerationLog = null;
 
   try {
@@ -30,7 +30,6 @@ export async function generateSubtasksForTask({
       taskId: task.id,
       feature: SUBTASK_GENERATION_FEATURE,
     });
-
     aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
   } catch (error) {
     console.error('Failed to create AI generation log', error);
@@ -39,18 +38,12 @@ export async function generateSubtasksForTask({
   try {
     const prompt = taskDecomposerPrompt(task.title);
     const { data, metadata } = await provider.generate(prompt, signal);
-
     await aiGenerationLog?.complete({ metadata });
     await generationLock.release();
-
     return { data };
   } catch (error) {
-    await aiGenerationLog?.fail({
-      code: normalizeApiError(error).code,
-    });
-
+    await aiGenerationLog?.fail({ code: normalizeApiError(error).code });
     await generationLock.release();
-
     throw error;
   }
 }
@@ -62,7 +55,6 @@ export async function streamSubtasksForTask(input: {
   signal: AbortSignal;
 }) {
   const generationLock = await acquireAiRequestLock(input.userId);
-
   let generationLog = null;
 
   try {
@@ -71,7 +63,6 @@ export async function streamSubtasksForTask(input: {
       taskId: input.task.id,
       feature: SUBTASK_GENERATION_FEATURE,
     });
-
     generationLog = generationId ? new AiGenerationLog(generationId) : null;
   } catch (error) {
     console.error('Failed to create AI generation log', error);
@@ -83,7 +74,7 @@ export async function streamSubtasksForTask(input: {
     signal: input.signal,
     generationLog,
     generationLock,
+    tool: subtaskGenerationTool,
   });
-
   return generation.stream();
 }

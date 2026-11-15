@@ -5,7 +5,7 @@ import {
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
+import { AiTool, ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
@@ -34,17 +34,19 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
 }
 
 function parseCompletedToolCall(
-  result: ToolCallAccumulatorResult
+  result: ToolCallAccumulatorResult,
+  tool: AiTool
 ): AiStreamEvent | null {
   if (result.type !== 'completed') {
     return null;
   }
 
-  return parseToolCall(result.toolCall);
+  return parseToolCall(result.toolCall, tool);
 }
 
 export async function* normalizeDeepSeekStream(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  tool: AiTool
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
   const generatedSubtasks: SubtaskResponse[] = [];
@@ -77,7 +79,7 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall));
+      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall), tool);
 
       if (!parsedToolCall) {
         continue;
@@ -91,7 +93,7 @@ export async function* normalizeDeepSeekStream(
     }
 
     if (finishReason === 'tool_calls') {
-      const parsedToolCall = parseCompletedToolCall(accumulator.finish());
+      const parsedToolCall = parseCompletedToolCall(accumulator.finish(), tool);
 
       if (parsedToolCall) {
         if (parsedToolCall.type === 'subtask') {

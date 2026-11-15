@@ -2,7 +2,7 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';

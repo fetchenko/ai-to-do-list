@@ -3,7 +3,7 @@ import { AiGenerationLogResource } from '@/infrastructure/ai/generations/ai-gene
 import { AiGenerationResource } from '@/infrastructure/ai/generations/ai-generation';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 
 export async function streamAiGeneration(input: {
   userId: string;

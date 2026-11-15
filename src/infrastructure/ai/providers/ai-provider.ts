@@ -23,7 +23,7 @@ export interface AIProvider {
 
   generate(prompt: string, signal?: AbortSignal): Promise<CombinedAiResponse>;
 
-  stream(prompt: string, tool: AiTool, signal: AbortSignal): AsyncIterable<AiStreamEvent>;
+  stream(prompt: string, tools: AiTool[], signal: AbortSignal): AsyncIterable<AiStreamEvent>;
 }
 
 export function getAIProvider(): AIProvider {

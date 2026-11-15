@@ -1,30 +1,7 @@
-import { ApiEventError } from '@/shared/errors/api-error.schema';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
+import { AiClientStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 
 /**
- * HTTP streaming protocol consumed by the frontend.
- *
- * `subtask` events contain incremental generated subtasks.
- * `done` indicates successful completion.
- * `error` indicates generation failure and is followed by
- * stream completion.
- * `cancelled` indicates abort error
- *
- * Provider-specific errors and metadata are never exposed.
+ * Generic HTTP streaming protocol consumed by the frontend.
+ * Feature-specific meaning is carried by the event data, not by event names.
  */
-export type SubtaskStreamEvent =
-  | {
-      type: 'subtask';
-      subtask: SubtaskResponse;
-    }
-  | {
-      type: 'done';
-    }
-  | {
-      type: 'error';
-      error: ApiEventError;
-    }
-  | {
-      type: 'cancelled';
-      error: ApiEventError;
-    };
+export type AiStreamClientEvent = AiClientStreamEvent;

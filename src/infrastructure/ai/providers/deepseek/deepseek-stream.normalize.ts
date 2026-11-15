@@ -5,50 +5,43 @@ import {
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
+import {
+  AiTool,
+  AiToolCallAccumulatorResult,
+} from '@/infrastructure/ai/types/ai-tool.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
 function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
   let parsed: unknown;
-
   try {
     parsed = JSON.parse(rawChunk);
   } catch {
     throw new AiInvalidResponseFormat('DeepSeek returned invalid JSON');
   }
-
   const result = deepSeekStreamChunkSchema.safeParse(parsed);
-
   if (!result.success) {
-    throw new AiInvalidResponseFormat(
-      'DeepSeek returned an invalid stream chunk'
-    );
+    throw new AiInvalidResponseFormat('DeepSeek returned an invalid stream chunk');
   }
-
   return result.data;
 }
 
 function parseCompletedToolCall(
-  result: ToolCallAccumulatorResult
+  result: AiToolCallAccumulatorResult,
+  tool: AiTool
 ): AiStreamEvent | null {
-  if (result.type !== 'completed') {
-    return null;
-  }
-
-  return parseToolCall(result.toolCall);
+  return result.type === 'completed' ? parseToolCall(result.toolCall, tool) : null;
 }
 
 export async function* normalizeDeepSeekStream(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  tool: AiTool
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks: SubtaskResponse[] = [];
-
+  const generatedItems: Record<string, unknown>[] = [];
   let streamCompleted = false;
 
   for await (const rawChunk of readSseStream(body)) {
@@ -56,16 +49,11 @@ export async function* normalizeDeepSeekStream(
       streamCompleted = true;
       break;
     }
-
     const chunk = parseDeepSeekStreamChunk(rawChunk);
     const choice = chunk.choices[0];
-
-    if (!choice) {
-      continue;
-    }
+    if (!choice) continue;
 
     const finishReason = choice.finish_reason;
-
     if (
       finishReason === 'length' ||
       finishReason === 'content_filter' ||
@@ -76,39 +64,27 @@ export async function* normalizeDeepSeekStream(
       );
     }
 
-    for (const toolCall of choice.delta.tool_calls ?? []) {
-      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall));
-
-      if (!parsedToolCall) {
-        continue;
+    for (const delta of choice.delta.tool_calls ?? []) {
+      const event = parseCompletedToolCall(accumulator.add(delta), tool);
+      if (event) {
+        if (event.type === 'event') generatedItems.push(event.data);
+        yield event;
       }
-
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
-      }
-
-      yield parsedToolCall;
     }
 
     if (finishReason === 'tool_calls') {
-      const parsedToolCall = parseCompletedToolCall(accumulator.finish());
-
-      if (parsedToolCall) {
-        if (parsedToolCall.type === 'subtask') {
-          generatedSubtasks.push(parsedToolCall.subtask);
-        }
-
-        yield parsedToolCall;
+      const event = parseCompletedToolCall(accumulator.finish(), tool);
+      if (event) {
+        if (event.type === 'event') generatedItems.push(event.data);
+        yield event;
       }
-
       streamCompleted = true;
-
       yield {
         type: 'done',
         metadata: {
           model: chunk.model,
-          response: JSON.stringify(generatedSubtasks),
-          finishReason: choice.finish_reason,
+          response: JSON.stringify(generatedItems),
+          finishReason,
           usage: normalizeDeepseekUsage(chunk.usage),
         },
       };

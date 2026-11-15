@@ -6,8 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type TaskStatus = Database['public']['Enums']['task_status'];
-
 export type DbTaskRow = Database['public']['Tables']['tasks']['Row'];
 export type DbTask = DbTaskRow;
 

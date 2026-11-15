@@ -6,7 +6,6 @@ import {
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
 import {
-  AiTool,
   AiToolCallAccumulatorResult,
 } from '@/infrastructure/ai/types/ai-tool.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';

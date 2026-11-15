@@ -1,4 +1,4 @@
-import { AiTool } from '@/infrastructure/ai/types/ai-tool.types';
+import { AiTool } from '@/shared/types/ai-generation.types';
 
 export const subtaskGenerationTool: AiTool = {
   name: 'generate_item',

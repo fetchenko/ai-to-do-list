@@ -2,7 +2,7 @@ import 'server-only';
 
 import { supabaseAdmin } from '@/infrastructure/supabase/admin';
 import { DatabaseError } from '@/shared/errors/app-error';
-import { DbTaskForSubtaskGeneration } from '@/shared/types/database.types';
+import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 
 export async function getTaskForUser(
   taskId: string,

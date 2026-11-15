@@ -10,7 +10,7 @@ import {
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database.types';
+import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
 export type SubtaskGeneration = {

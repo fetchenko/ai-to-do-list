@@ -5,8 +5,11 @@ import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decompose
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
-import { subtaskGenerationTool } from '@/features/tasks/ai/subtask-generation';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
+import {
+  createSubtaskGenerationPrompt,
+  subtaskGenerationTool,
+} from '@/features/tasks/ai/subtask-generation';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
 
@@ -69,7 +72,7 @@ export async function streamSubtasksForTask(input: {
   }
 
   const generation = new SubtaskGeneration({
-    task: input.task,
+    prompt: createSubtaskGenerationPrompt(input.task.title),
     provider: input.provider,
     signal: input.signal,
     generationLog,

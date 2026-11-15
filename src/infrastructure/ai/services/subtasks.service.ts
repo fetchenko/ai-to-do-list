@@ -3,6 +3,7 @@ import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/
 import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure/ai/generations/subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
@@ -79,6 +80,7 @@ export async function streamSubtasksForTask(input: {
 
   const generation = new SubtaskGeneration({
     task: input.task,
+    tool: createSubtaskTool,
     provider: input.provider,
     signal: input.signal,
     generationLog,

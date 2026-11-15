@@ -39,7 +39,7 @@ describe('OllamaProvider.stream', () => {
       .mockResolvedValue(createResponse([ollamaDoneChunk()]));
     const signal = new AbortController().signal;
 
-    await collectStream(new OllamaProvider().stream('Create subtasks', createSubtaskTool, signal));
+    await collectStream(new OllamaProvider().stream('Create subtasks', [createSubtaskTool], signal));
 
     expect(fetchMock.mock.calls[0][1]).toEqual(
       expect.objectContaining({ signal })
@@ -52,7 +52,7 @@ describe('OllamaProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new OllamaProvider().stream('test', createSubtaskTool, new AbortController().signal)
+        new OllamaProvider().stream('test', [createSubtaskTool], new AbortController().signal)
       )
     ).rejects.toThrow('AI unavailable');
   });

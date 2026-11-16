@@ -34,7 +34,7 @@ function ollamaDoneChunk() {
 describe('OllamaProvider.generate', () => {
   beforeEach(() => vi.restoreAllMocks());
 
-  it('passes the response format and cancellation signal to fetch', async () => {
+  it('passes the response schema and cancellation signal to fetch', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -47,7 +47,7 @@ describe('OllamaProvider.generate', () => {
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
     );
-    const format = {
+    const responseSchema = {
       type: 'object',
       properties: { subtasks: { type: 'array' } },
     };
@@ -55,7 +55,7 @@ describe('OllamaProvider.generate', () => {
 
     await new OllamaProvider().generate(
       'Create subtasks',
-      { format },
+      { responseSchema },
       signal
     );
 
@@ -64,7 +64,7 @@ describe('OllamaProvider.generate', () => {
     );
     expect(
       JSON.parse(fetchMock.mock.calls[0][1]?.body as string)
-    ).toEqual(expect.objectContaining({ format }));
+    ).toEqual(expect.objectContaining({ format: responseSchema }));
   });
 });
 

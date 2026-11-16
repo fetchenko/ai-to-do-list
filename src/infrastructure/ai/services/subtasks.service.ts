@@ -1,6 +1,6 @@
 import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { StreamGenerationResource as StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
+import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';

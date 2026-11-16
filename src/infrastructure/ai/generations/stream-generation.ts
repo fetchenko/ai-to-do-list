@@ -19,7 +19,7 @@ function encodeEvent(event: StreamEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-export class StreamGenerationResource {
+export class StreamGeneration {
   constructor(
     private readonly options: {
       generationLog: AiGenerationLog | null;

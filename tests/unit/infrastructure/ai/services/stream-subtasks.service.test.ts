@@ -31,7 +31,7 @@ vi.mock('@/infrastructure/ai/generations/ai-generation-log', () => ({
 }));
 
 vi.mock('@/infrastructure/ai/generations/stream-generation', () => ({
-  StreamGenerationResource: mocks.StreamGeneration,
+  StreamGeneration: mocks.StreamGeneration,
 }));
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };

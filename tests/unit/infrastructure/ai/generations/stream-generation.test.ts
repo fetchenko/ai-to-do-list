@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { StreamGenerationResource } from '@/infrastructure/ai/generations/stream-generation';
+import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
@@ -31,7 +31,7 @@ function createProvider(events: AiStreamEvent[]): AIProvider {
   };
 }
 
-async function collectStream(resource: StreamGenerationResource) {
+async function collectStream(resource: StreamGeneration) {
   const chunks = await collect(resource.stream());
   return chunks.flatMap((chunk) =>
     new TextDecoder()
@@ -43,7 +43,7 @@ async function collectStream(resource: StreamGenerationResource) {
   );
 }
 
-describe('StreamGenerationResource', () => {
+describe('StreamGeneration', () => {
   it('streams subtasks and completes on done', async () => {
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
@@ -54,7 +54,7 @@ describe('StreamGenerationResource', () => {
       finishReason: 'tool_calls',
       usage: { inputTokens: 1, outputTokens: 2, totalTokens: 3 },
     };
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -92,7 +92,7 @@ describe('StreamGenerationResource', () => {
       throw new Error('provider failed');
     });
 
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -123,7 +123,7 @@ describe('StreamGenerationResource', () => {
     };
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -145,7 +145,7 @@ describe('StreamGenerationResource', () => {
     const controller = new AbortController();
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -181,7 +181,7 @@ describe('StreamGenerationResource', () => {
     const controller = new AbortController();
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -224,7 +224,7 @@ describe('StreamGenerationResource', () => {
         throw new DOMException('The operation timed out.', 'TimeoutError');
       },
     };
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -261,7 +261,7 @@ describe('StreamGenerationResource', () => {
       code: 'AI_INVALID_RESPONSE_FORMAT',
       message: 'Invalid AI response format',
     };
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -291,7 +291,7 @@ describe('StreamGenerationResource', () => {
       { type: 'done', metadata: {} as never },
       { type: 'event', data: { title: 'Should not be emitted' } },
     ]);
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -313,7 +313,7 @@ describe('StreamGenerationResource', () => {
         throw new Error('provider failed');
       },
     };
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -359,7 +359,7 @@ describe('StreamGenerationResource', () => {
     };
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
@@ -386,7 +386,7 @@ describe('StreamGenerationResource', () => {
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
 
-    const resource = new StreamGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',

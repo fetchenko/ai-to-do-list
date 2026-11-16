@@ -22,8 +22,10 @@ export type AiGenerationMetadata = {
  * Providers translate supported options into their respective API parameters.
  */
 export type AiGenerationOptions = {
+  /** Ollama-specific JSON schema used to constrain the structure of generated output. */
   responseSchema?: Record<string, unknown>;
-  responseFormat?: 'json_object';
+  /** DeepSeek-specific response mode: JSON object output or unrestricted text output. */
+  responseFormat?: 'json_object' | 'text';
 };
 
 export type NormilizedAiResponse = {

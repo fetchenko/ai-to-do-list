@@ -5,7 +5,7 @@ import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-dec
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtask-response.schema';
+import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 
 const mocks = vi.hoisted(() => ({
   acquireAiRequestLock: vi.fn(),

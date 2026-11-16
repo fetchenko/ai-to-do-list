@@ -66,6 +66,27 @@ describe('OllamaProvider.generate', () => {
       JSON.parse(fetchMock.mock.calls[0][1]?.body as string)
     ).toEqual(expect.objectContaining({ format: responseSchema }));
   });
+  
+  it('omits format when no response schema is provided', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: 'qwen3:8b',
+          created_at: new Date().toISOString(),
+          response: '{"subtasks":[]}',
+          done: true,
+          done_reason: 'stop',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    await new OllamaProvider().generate('Create subtasks');
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+
+    expect(body).not.toHaveProperty('format');
+  });
 });
 
 describe('OllamaProvider.stream', () => {

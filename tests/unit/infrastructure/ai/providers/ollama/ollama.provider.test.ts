@@ -83,7 +83,8 @@ describe('OllamaProvider.generate', () => {
 
     await new OllamaProvider().generate('Create subtasks');
 
-    const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetchMock.mock.lastCall?.[1]?.body as string);
 
     expect(body).not.toHaveProperty('format');
   });
@@ -106,11 +107,12 @@ describe('OllamaProvider.stream', () => {
       )
     );
 
-    expect(fetchMock.mock.calls[0][1]).toEqual(
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.lastCall?.[1]).toEqual(
       expect.objectContaining({ signal })
     );
     expect(
-      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).tools
+      JSON.parse(fetchMock.mock.lastCall?.[1]?.body as string).tools
     ).toEqual([createSubtaskTool]);
   });
 

@@ -16,12 +16,12 @@ test.describe('AI subtask generation', () => {
         contentType: 'application/x-ndjson',
         body: [
           JSON.stringify({
-            type: 'subtask',
-            subtask: { title: 'Mocked subtask one' },
+            type: 'event',
+            data: { title: 'Mocked subtask one' },
           }),
           JSON.stringify({
-            type: 'subtask',
-            subtask: { title: 'Mocked subtask two' },
+            type: 'event',
+            data: { title: 'Mocked subtask two' },
           }),
           JSON.stringify({ type: 'done' }),
         ].join('\n'),
@@ -106,8 +106,8 @@ test.describe('AI subtask generation', () => {
         contentType: 'application/x-ndjson',
         body: [
           JSON.stringify({
-            type: 'subtask',
-            subtask: { title: 'Mocked subtask one' },
+            type: 'event',
+            data: { title: 'Mocked subtask one' },
           }),
           JSON.stringify({ type: 'done' }),
         ].join('\n'),

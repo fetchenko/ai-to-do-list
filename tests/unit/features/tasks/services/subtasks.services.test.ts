@@ -13,8 +13,8 @@ describe('streamSubtasks', () => {
       new Response(
         [
           JSON.stringify({
-            type: 'subtask',
-            subtask: {
+            type: 'event',
+            data: {
               title: 'Research phones',
               description: 'Compare available options',
             },
@@ -30,8 +30,8 @@ describe('streamSubtasks', () => {
 
     expect(await collect(streamSubtasks('task-1'))).toEqual([
       {
-        type: 'subtask',
-        subtask: {
+        type: 'event',
+        data: {
           title: 'Research phones',
           description: 'Compare available options',
         },

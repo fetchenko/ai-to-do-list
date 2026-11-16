@@ -20,7 +20,7 @@ describe('readJsonStream', () => {
   it('parses the final JSON object when it is not terminated by a newline', async () => {
     const response = new Response(
       createStream([
-        '{"type":"subtask","subtask":{"title":"First","description":"Do it"}}\n',
+        '{"type":"event","data":{"title":"First","description":"Do it"}}\n',
         '{"type":"done"}',
       ])
     );
@@ -29,8 +29,8 @@ describe('readJsonStream', () => {
 
     expect(chunks).toEqual([
       {
-        type: 'subtask',
-        subtask: {
+        type: 'event',
+        data: {
           title: 'First',
           description: 'Do it',
         },
@@ -45,7 +45,7 @@ describe('readJsonStream', () => {
     const response = new Response(
       createStream([
         '{"type":"su',
-        'btask","subtask":{"title":"First","description":"Do it"}}',
+        'vent","data":{"title":"First","description":"Do it"}}',
         '\n{"type":"do',
         'ne"}',
       ])
@@ -55,8 +55,8 @@ describe('readJsonStream', () => {
 
     expect(chunks).toEqual([
       {
-        type: 'subtask',
-        subtask: {
+        type: 'event',
+        data: {
           title: 'First',
           description: 'Do it',
         },

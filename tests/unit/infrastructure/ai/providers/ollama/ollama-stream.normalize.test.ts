@@ -65,8 +65,8 @@ describe('normalizeOllamaStream', () => {
 
     await expect(collect(normalizeOllamaStream(stream))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'First', description: 'Do first' },
+        type: 'event',
+        data: { title: 'First', description: 'Do first' },
       },
       {
         type: 'done',

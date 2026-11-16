@@ -7,7 +7,7 @@ import { StreamGenerationResource } from '@/infrastructure/ai/generations/stream
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
+import type { StreamEvent } from '@/shared/types/stream-event.types';
 
 function createGenerationLog() {
   return {
@@ -38,7 +38,7 @@ async function collectStream(resource: StreamGenerationResource) {
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => JSON.parse(line) as SubtaskStreamEvent)
+      .map((line) => JSON.parse(line) as StreamEvent)
   );
 }
 
@@ -59,14 +59,14 @@ describe('StreamGenerationResource', () => {
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([
-        { type: 'subtask', subtask: { title: 'Book hotel' } },
+        { type: 'event', data: { title: 'Book hotel' } },
         { type: 'done', metadata },
       ]),
       signal: new AbortController().signal,
     });
 
     await expect(collectStream(resource)).resolves.toEqual([
-      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'event', data: { title: 'Book hotel' } },
       { type: 'done' },
     ]);
     expect(generationLog.complete).toHaveBeenCalledWith({ metadata });
@@ -260,13 +260,13 @@ describe('StreamGenerationResource', () => {
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([
-        { type: 'subtask', subtask: { title: 'Book hotel' } },
+        { type: 'event', data: { title: 'Book hotel' } },
       ]),
       signal: new AbortController().signal,
     });
 
     await expect(collectStream(resource)).resolves.toEqual([
-      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'event', data: { title: 'Book hotel' } },
       { type: 'error', error },
     ]);
     expect(generationLog.fail).toHaveBeenCalledWith({ code: error.code });
@@ -281,7 +281,7 @@ describe('StreamGenerationResource', () => {
     const generationLock = createGenerationLock();
     const provider = createProvider([
       { type: 'done', metadata: {} as never },
-      { type: 'subtask', subtask: { title: 'Should not be emitted' } },
+      { type: 'event', data: { title: 'Should not be emitted' } },
     ]);
     const resource = new StreamGenerationResource({
       generationLog,

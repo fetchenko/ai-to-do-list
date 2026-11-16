@@ -17,8 +17,8 @@ describe('parseToolCall', () => {
         }),
       }, [createSubtaskTool])
     ).toEqual({
-      type: 'subtask',
-      subtask: {
+      type: 'event',
+      data: {
         title: 'Buy groceries',
         description: 'Go to the store',
       },
@@ -36,8 +36,8 @@ describe('parseToolCall', () => {
         }),
       }, [createSubtaskTool])
     ).toEqual({
-      type: 'subtask',
-      subtask: {
+      type: 'event',
+      data: {
         title: 'Buy groceries',
       },
     });

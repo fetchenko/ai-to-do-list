@@ -80,7 +80,7 @@ describe('generateSubtasksForTask', () => {
 
     expect(provider.generate).toHaveBeenCalledWith(
       expect.any(String),
-      { format: expect.objectContaining({ type: 'object' }) },
+      { responseSchema: expect.objectContaining({ type: 'object' }) },
       signal
     );
 

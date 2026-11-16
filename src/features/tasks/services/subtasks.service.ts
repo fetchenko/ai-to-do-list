@@ -5,6 +5,8 @@ import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
+import { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
+import { subtasksResponseSchema } from '@/features/tasks/types/subtasks.schema';
 import {
   AiGeneratedTask,
   TaskInsert,
@@ -17,9 +19,7 @@ import {
 import { ValidationRequestError } from '@/shared/errors/app-error';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
-import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
-import { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 
 export async function* streamSubtasks(
   taskId: string,

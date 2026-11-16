@@ -83,11 +83,11 @@ export class StreamGenerationResource {
 
             if (!result.success) {
               throw new AiInvalidResponseFormat(
-                `AI returned an invalid subtask: ${result.error}`
+                `AI returned an invalid event: ${result.error}`
               );
             }
 
-            controller.enqueue(encodeEvent(event));
+            controller.enqueue(encodeEvent({ ...event, data: result.data }));
             break;
 
           case 'done':

@@ -129,7 +129,7 @@ describe('generateSubtasksForTask', () => {
         signal,
         provider,
       })
-    ).rejects.toThrow('Invalid subtasks response');
+    ).rejects.toThrow('Invalid AI response format');
 
     expect(mocks.completeAiGenerationLog).not.toHaveBeenCalled();
     expect(mocks.failAiGenerationLog).toHaveBeenCalled();

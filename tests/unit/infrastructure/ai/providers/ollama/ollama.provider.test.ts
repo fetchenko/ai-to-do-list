@@ -30,6 +30,44 @@ function ollamaDoneChunk() {
   };
 }
 
+
+describe('OllamaProvider.generate', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('passes the response format and cancellation signal to fetch', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: 'qwen3:8b',
+          created_at: new Date().toISOString(),
+          response: '{"subtasks":[]}',
+          done: true,
+          done_reason: 'stop',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+    const format = {
+      type: 'object',
+      properties: { subtasks: { type: 'array' } },
+    };
+    const signal = new AbortController().signal;
+
+    await new OllamaProvider().generate(
+      'Create subtasks',
+      { format },
+      signal
+    );
+
+    expect(fetchMock.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ signal })
+    );
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string)
+    ).toEqual(expect.objectContaining({ format }));
+  });
+});
+
 describe('OllamaProvider.stream', () => {
   beforeEach(() => vi.restoreAllMocks());
 

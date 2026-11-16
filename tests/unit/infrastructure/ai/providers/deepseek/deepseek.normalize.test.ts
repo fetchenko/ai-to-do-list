@@ -4,15 +4,19 @@ import { describe, expect, it } from 'vitest';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 
 describe('normalizeDeepseekResponse', () => {
-  it('correctly normalizes deepseek response', () => {
+  it('parses response content without applying a feature schema', () => {
     const result = normalizeDeepseekResponse(deepseekResponse as any);
 
-    expect(result.data.task_summary).toBe(
-      'Prompt the user to enter input through a user interface'
-    );
-
-    expect(result.data.subtasks).toHaveLength(2);
-    expect(result.data.subtasks[0].title).toBe('Build input form UI');
+    expect(result.data).toEqual({
+      task_summary: 'Prompt the user to enter input through a user interface',
+      subtasks: [
+        {
+          title: 'Build input form UI',
+          description: expect.any(String),
+        },
+        expect.objectContaining({ title: expect.any(String) }),
+      ],
+    });
 
     expect(result.metadata.model).toBe('deepseek-v4-flash');
 
@@ -31,7 +35,7 @@ describe('normalizeDeepseekResponse', () => {
       choices: [
         {
           message: {
-            content: JSON.stringify({ subtasks: [] }),
+            content: JSON.stringify({ arbitrary: 'payload' }),
           },
         },
       ],
@@ -39,6 +43,7 @@ describe('normalizeDeepseekResponse', () => {
 
     const result = normalizeDeepseekResponse(input as any);
 
+    expect(result.data).toEqual({ arbitrary: 'payload' });
     expect(result.metadata.usage.inputTokens).toBe(null);
     expect(result.metadata.usage.outputTokens).toBe(null);
   });

@@ -25,7 +25,7 @@ export default class DeepSeekProvider implements AIProvider {
 
   async generate(
     prompt: string,
-    _options?: AiGenerationOptions,
+    options?: AiGenerationOptions,
     signal?: AbortSignal
   ): Promise<NormilizedAiResponse> {
     const response = await fetch(DEEPSEEK_URL, {
@@ -38,7 +38,9 @@ export default class DeepSeekProvider implements AIProvider {
         model: DEEPSEEK_MODEL,
         messages: [{ role: 'user', content: prompt }],
         stream: false,
-        response_format: { type: 'json_object' },
+        response_format: {
+          type: options?.responseFormat ?? 'json_object',
+        },
         temperature: 0.7,
       }),
       signal,

@@ -5,10 +5,12 @@ import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decompose
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
+import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
+import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
 
@@ -43,10 +45,18 @@ export async function generateSubtasksForTask({
     const prompt = taskDecomposerPrompt(task.title);
     const { data, metadata } = await provider.generate(prompt, signal);
 
+    const result = subtasksResponseSchema.safeParse(data);
+
+    if (!result.success) {
+      throw new AiInvalidResponseFormat(
+        `Invalid subtasks response: ${result.error}`
+      );
+    }
+
     await aiGenerationLog?.complete({ metadata });
     await generationLock.release();
 
-    return { data };
+    return { data: result.data };
   } catch (error) {
     await aiGenerationLog?.fail({
       code: normalizeApiError(error).code,

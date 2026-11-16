@@ -45,7 +45,7 @@ export async function generateSubtasksForTask({
     const prompt = taskDecomposerPrompt(task.title);
     const { data, metadata } = await provider.generate(
       prompt,
-      { format: subtasksResponseSchema.toJSONSchema() },
+      { responseSchema: subtasksResponseSchema.toJSONSchema() },
       signal
     );
 

@@ -47,7 +47,6 @@ export async function generateSubtasksForTask({
       prompt,
       {
         responseSchema: subtasksResponseSchema.toJSONSchema(),
-        responseFormat: 'json_object',
       },
       signal
     );

@@ -5,6 +5,7 @@ import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-dec
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
+import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
 
 const mocks = vi.hoisted(() => ({
   acquireAiRequestLock: vi.fn(),
@@ -80,6 +81,7 @@ describe('streamSubtasksForTask', () => {
     expect(mocks.StreamGeneration).toHaveBeenCalledWith({
       prompt: taskDecomposerStreamPrompt(task.title),
       tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: input.provider,
       signal,
       generationLog: expect.anything(),
@@ -99,6 +101,7 @@ describe('streamSubtasksForTask', () => {
     expect(mocks.StreamGeneration).toHaveBeenCalledWith({
       prompt: taskDecomposerStreamPrompt(task.title),
       tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: input.provider,
       signal,
       generationLog: null,
@@ -124,6 +127,7 @@ describe('streamSubtasksForTask', () => {
     expect(mocks.StreamGeneration).toHaveBeenCalledWith({
       prompt: taskDecomposerStreamPrompt(task.title),
       tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: input.provider,
       signal,
       generationLog: null,

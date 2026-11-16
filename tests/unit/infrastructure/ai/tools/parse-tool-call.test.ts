@@ -79,8 +79,8 @@ describe('parseToolCall', () => {
     );
   });
 
-  it('rejects invalid subtask arguments', () => {
-    expect(() =>
+  it('does not validate tool arguments against a domain schema', () => {
+    expect(
       parseToolCall(
         {
           index: 0,
@@ -90,6 +90,11 @@ describe('parseToolCall', () => {
         },
         [createSubtaskTool]
       )
-    ).toThrow(new AiInvalidResponseFormat('AI returned an invalid subtask'));
+    ).toEqual({
+      type: 'event',
+      data: {
+        description: 'Missing title',
+      },
+    });
   });
 });

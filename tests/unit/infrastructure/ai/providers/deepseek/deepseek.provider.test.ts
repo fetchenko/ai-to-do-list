@@ -63,6 +63,37 @@ describe('DeepSeekProvider.generate', () => {
     ).toEqual({ type: 'json_object' });
   });
 
+  it('uses text mode when requested', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'test-id',
+          model: 'deepseek-v4-flash',
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: 'Generated text' },
+            },
+          ],
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 2,
+            total_tokens: 3,
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    await new DeepSeekProvider().generate('Create subtasks', {
+      responseFormat: 'text',
+    });
+
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).response_format
+    ).toEqual({ type: 'text' });
+  });
+
   it('defaults to JSON mode when no response format is provided', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(

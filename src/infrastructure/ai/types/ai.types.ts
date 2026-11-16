@@ -1,7 +1,5 @@
 import { SubtasksResponse } from '@/infrastructure/ai/schema/subtasks.schema';
 
-export type CombinedAiResponse = NormilizedAiResponse;
-
 export type AiGenerationUsage = {
   inputTokens: number | null;
   outputTokens: number | null;

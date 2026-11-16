@@ -4,9 +4,9 @@ import { StreamGenerationResource as StreamGeneration } from '@/infrastructure/a
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { subtaskToolSchema } from '@/infrastructure/ai/types/subtask-tool.schema';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 

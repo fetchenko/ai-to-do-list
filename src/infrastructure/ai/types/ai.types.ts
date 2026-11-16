@@ -18,11 +18,12 @@ export type AiGenerationMetadata = {
 };
 
 /**
- * Optional generation constraints supplied by the caller.
- * Providers translate these into their respective API parameters.
+ * Optional output constraints requested by the caller.
+ * Providers translate supported options into their respective API parameters.
  */
 export type AiGenerationOptions = {
   responseSchema?: Record<string, unknown>;
+  responseFormat?: 'json_object';
 };
 
 export type NormilizedAiResponse = {

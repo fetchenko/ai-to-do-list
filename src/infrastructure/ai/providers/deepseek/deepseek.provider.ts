@@ -38,9 +38,9 @@ export default class DeepSeekProvider implements AIProvider {
         model: DEEPSEEK_MODEL,
         messages: [{ role: 'user', content: prompt }],
         stream: false,
-        response_format: {
-          type: options?.responseFormat ?? 'json_object',
-        },
+        ...(options?.responseFormat && {
+          response_format: { type: options.responseFormat },
+        }),
         temperature: 0.7,
       }),
       signal,

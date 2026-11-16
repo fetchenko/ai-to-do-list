@@ -78,6 +78,12 @@ describe('generateSubtasksForTask', () => {
       provider,
     });
 
+    expect(provider.generate).toHaveBeenCalledWith(
+      expect.any(String),
+      { format: expect.objectContaining({ type: 'object' }) },
+      signal
+    );
+
     expect(result).toEqual({
       data: {
         task_summary: 'Plan the trip',

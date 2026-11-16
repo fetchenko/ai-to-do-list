@@ -5,7 +5,7 @@ import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/o
 import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import { NormilizedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
 import {
   AiEmptyResponseError,
@@ -20,7 +20,7 @@ export class OllamaProvider implements AIProvider {
   async generate(
     prompt: string,
     signal?: AbortSignal
-  ): Promise<CombinedAiResponse> {
+  ): Promise<NormilizedAiResponse> {
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
       headers: {

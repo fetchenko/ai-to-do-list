@@ -4,10 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 
 describe('normalizeOllamaResponse', () => {
-  it('correctly normalizes ollama response', () => {
+  it('parses response content without applying a feature schema', () => {
     const result = normalizeOllamaResponse(mockOllamaResponse as any);
 
-    expect(result.data.subtasks).toHaveLength(3);
+    expect(result.data).toEqual(
+      JSON.parse(mockOllamaResponse.response)
+    );
     expect(result.metadata.model).toBe(mockOllamaResponse.model);
     expect(result.metadata.usage.totalTokens).toBe(
       mockOllamaResponse.prompt_eval_count + mockOllamaResponse.eval_count
@@ -22,17 +24,17 @@ describe('normalizeOllamaResponse', () => {
     expect(() => normalizeOllamaResponse(badInput as any)).toThrow();
   });
 
-  it('throws when schema validation fails', () => {
+  it('accepts valid JSON that does not match the subtasks schema', () => {
     const input = {
-      response: JSON.stringify({
-        invalid_field: true,
-      }),
+      response: JSON.stringify({ arbitrary: true }),
     };
 
-    expect(() => normalizeOllamaResponse(input as any)).toThrow();
+    expect(normalizeOllamaResponse(input as any).data).toEqual({
+      arbitrary: true,
+    });
   });
 
-  it('handles null response field', () => {
+  it('throws when response field is null', () => {
     const input = {
       response: null,
     };

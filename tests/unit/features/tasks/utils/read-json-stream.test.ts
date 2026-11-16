@@ -44,8 +44,8 @@ describe('readJsonStream', () => {
   it('handles JSON split across arbitrary network chunks', async () => {
     const response = new Response(
       createStream([
-        '{"type":"su',
-        'vent","data":{"title":"First","description":"Do it"}}',
+        '{"type":"ev',
+        'ent","data":{"title":"First","description":"Do it"}}',
         '\n{"type":"do',
         'ne"}',
       ])

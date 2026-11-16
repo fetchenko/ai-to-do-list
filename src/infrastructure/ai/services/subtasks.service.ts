@@ -4,8 +4,10 @@ import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generat
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
-import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtask-response.schema';
-import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
+import {
+  subtaskResponseSchema,
+  subtasksResponseSchema,
+} from '@/infrastructure/ai/schema/subtasks.schema';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';

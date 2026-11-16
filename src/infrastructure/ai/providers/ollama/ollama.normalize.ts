@@ -1,5 +1,4 @@
 import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
-import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import {
   AiGenerationMetadata,
   AiGenerationUsage,
@@ -12,7 +11,7 @@ export function normalizeOllamaResponse(
   response: OllamaResponse
 ): NormilizedAiResponse {
   return {
-    data: subtasksResponseSchema.parse(JSON.parse(response.response)),
+    data: JSON.parse(response.response),
     metadata: normalizeOllamaMetadata(response),
   };
 }

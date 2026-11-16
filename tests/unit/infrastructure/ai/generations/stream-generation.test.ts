@@ -6,7 +6,7 @@ import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-l
 import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtask-response.schema';
+import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { StreamEvent } from '@/shared/types/stream-event.types';
 

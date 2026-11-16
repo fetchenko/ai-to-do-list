@@ -1,5 +1,3 @@
-import { SubtasksResponse } from '@/infrastructure/ai/schema/subtasks.schema';
-
 export type AiGenerationUsage = {
   inputTokens: number | null;
   outputTokens: number | null;
@@ -20,6 +18,6 @@ export type AiGenerationMetadata = {
 };
 
 export type NormilizedAiResponse = {
-  data: SubtasksResponse;
+  data: unknown;
   metadata: AiGenerationMetadata;
 };

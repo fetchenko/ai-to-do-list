@@ -6,7 +6,7 @@ import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-l
 import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
-import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
+import { subtaskResponseSchema } from '@/infrastructure/ai/schema/subtask-response.schema';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { StreamEvent } from '@/shared/types/stream-event.types';
 
@@ -59,7 +59,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider: createProvider([
         { type: 'event', data: { title: 'Book hotel' } },
         { type: 'done', metadata },
@@ -97,7 +97,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -128,7 +128,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: controller.signal,
     });
@@ -150,7 +150,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -186,7 +186,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -229,7 +229,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: controller.signal,
     });
@@ -266,7 +266,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider: createProvider([
         { type: 'event', data: { title: 'Book hotel' } },
       ]),
@@ -296,7 +296,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -318,7 +318,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -364,7 +364,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -391,7 +391,7 @@ describe('StreamGeneration', () => {
       generationLock,
       prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
-      toolsEventSchema: subtaskToolSchema,
+      toolsEventSchema: subtaskResponseSchema,
       provider: createProvider([
         {
           type: 'done',

@@ -24,8 +24,8 @@ export function useSubtaskDrafts(
 
       for await (const chunk of streamSubtasks(taskId, signal)) {
         switch (chunk.type) {
-          case 'subtask':
-            onSubtask({ ...chunk.subtask, id: crypto.randomUUID() });
+          case 'event':
+            onSubtask({ ...chunk.data, id: crypto.randomUUID() });
             break;
           case 'done':
             break;

@@ -33,7 +33,7 @@ export function parseToolCall(
   }
 
   return {
-    type: 'subtask',
-    subtask: result.data,
+    type: 'event',
+    data: result.data,
   };
 }

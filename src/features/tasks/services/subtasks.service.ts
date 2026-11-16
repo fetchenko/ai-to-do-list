@@ -19,7 +19,7 @@ import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
-import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
+import { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 
 export async function* streamSubtasks(
   taskId: string,

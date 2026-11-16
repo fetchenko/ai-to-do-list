@@ -12,7 +12,6 @@ import {
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -52,7 +51,7 @@ export async function* normalizeDeepSeekStream(
   tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks: SubtaskResponse[] = [];
+  const generatedResults: unknown[] = [];
 
   let streamCompleted = false;
 
@@ -91,8 +90,8 @@ export async function* normalizeDeepSeekStream(
         continue;
       }
 
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
+      if (parsedToolCall.type === 'event') {
+        generatedResults.push(parsedToolCall.data);
       }
 
       yield parsedToolCall;
@@ -105,8 +104,8 @@ export async function* normalizeDeepSeekStream(
       );
 
       if (parsedToolCall) {
-        if (parsedToolCall.type === 'subtask') {
-          generatedSubtasks.push(parsedToolCall.subtask);
+        if (parsedToolCall.type === 'event') {
+          generatedResults.push(parsedToolCall.data);
         }
 
         yield parsedToolCall;
@@ -118,7 +117,7 @@ export async function* normalizeDeepSeekStream(
         type: 'done',
         metadata: {
           model: chunk.model,
-          response: JSON.stringify(generatedSubtasks),
+          response: JSON.stringify(generatedResults),
           finishReason: choice.finish_reason,
           usage: normalizeDeepseekUsage(chunk.usage),
         },

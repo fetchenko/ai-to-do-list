@@ -10,7 +10,6 @@ import {
   AiGenerationError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
@@ -29,7 +28,7 @@ export async function* normalizeOllamaStream(
   body: ReadableStream<Uint8Array>,
   tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
-  const generatedSubtasks: SubtaskResponse[] = [];
+  const generatedResults: unknown[] = [];
   let streamCompleted = false;
 
   for await (const rawChunk of readJsonStream(body)) {
@@ -46,7 +45,7 @@ export async function* normalizeOllamaStream(
         type: 'done',
         metadata: normalizeOllamaMetadata({
           ...chunk,
-          response: JSON.stringify(generatedSubtasks),
+          response: JSON.stringify(generatedResults),
         }),
       };
 
@@ -64,8 +63,8 @@ export async function* normalizeOllamaStream(
         tools
       );
 
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
+      if (parsedToolCall.type === 'event') {
+        generatedResults.push(parsedToolCall.data);
       }
 
       yield parsedToolCall;

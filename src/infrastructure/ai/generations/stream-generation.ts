@@ -10,7 +10,7 @@ import {
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
+import { StreamEvent } from '@/shared/types/stream-event.types';
 
 export type StreamGeneration = {
   stream(): ReadableStream<Uint8Array>;
@@ -18,7 +18,7 @@ export type StreamGeneration = {
 
 const encoder = new TextEncoder();
 
-function encodeEvent(event: SubtaskStreamEvent): Uint8Array {
+function encodeEvent(event: StreamEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
@@ -80,7 +80,7 @@ export class StreamGenerationResource implements StreamGeneration {
         }
 
         switch (event.type) {
-          case 'subtask':
+          case 'event':
             controller.enqueue(encodeEvent(toClientEvent(event)));
             break;
 

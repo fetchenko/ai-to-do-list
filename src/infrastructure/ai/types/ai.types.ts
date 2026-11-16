@@ -17,8 +17,12 @@ export type AiGenerationMetadata = {
   usage: AiGenerationUsage;
 };
 
+/**
+ * Optional generation constraints supplied by the caller.
+ * Providers translate these into their respective API parameters.
+ */
 export type AiGenerationOptions = {
-  format?: Record<string, unknown>;
+  responseSchema?: Record<string, unknown>;
 };
 
 export type NormilizedAiResponse = {

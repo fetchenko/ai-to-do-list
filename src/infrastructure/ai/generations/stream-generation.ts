@@ -13,17 +13,13 @@ import {
 } from '@/shared/errors/ai-app-error';
 import { StreamEvent } from '@/shared/types/stream-event.types';
 
-export type StreamGeneration = {
-  stream(): ReadableStream<Uint8Array>;
-};
-
 const encoder = new TextEncoder();
 
 function encodeEvent(event: StreamEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-export class StreamGenerationResource implements StreamGeneration {
+export class StreamGenerationResource {
   constructor(
     private readonly options: {
       generationLog: AiGenerationLog | null;

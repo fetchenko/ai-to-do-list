@@ -34,11 +34,11 @@ describe('normalizeOllamaResponse', () => {
     });
   });
 
-  it('throws when response field is null', () => {
+  it('returns null when response field is null', () => {
     const input = {
       response: null,
     };
 
-    expect(() => normalizeOllamaResponse(input as any)).toThrow();
+    expect(normalizeOllamaResponse(input as any).data).toBeNull();
   });
 });

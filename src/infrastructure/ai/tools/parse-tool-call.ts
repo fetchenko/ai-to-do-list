@@ -4,7 +4,6 @@ import {
 } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
-import { subtaskResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function parseToolCall(
   toolCall: PendingToolCall,
@@ -26,14 +25,8 @@ export function parseToolCall(
     throw new AiInvalidResponseFormat('AI returned invalid tool arguments');
   }
 
-  const result = subtaskResponseSchema.safeParse(argumentsObject);
-
-  if (!result.success) {
-    throw new AiInvalidResponseFormat('AI returned an invalid subtask');
-  }
-
   return {
     type: 'event',
-    data: result.data,
+    data: argumentsObject,
   };
 }

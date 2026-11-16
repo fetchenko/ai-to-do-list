@@ -1,10 +1,11 @@
+import z from 'zod';
+
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
-import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
@@ -29,6 +30,7 @@ export class StreamGenerationResource implements StreamGeneration {
       generationLock: AiRequestLock;
       prompt: string;
       tools: AiTool[];
+      toolsEventSchema: z.ZodType;
       provider: AIProvider;
       signal: AbortSignal;
     }
@@ -81,7 +83,15 @@ export class StreamGenerationResource implements StreamGeneration {
 
         switch (event.type) {
           case 'event':
-            controller.enqueue(encodeEvent(toClientEvent(event)));
+            const result = this.options.toolsEventSchema.safeParse(event.data);
+
+            if (!result.success) {
+              throw new AiInvalidResponseFormat(
+                `AI returned an invalid subtask: ${result.error}`
+              );
+            }
+
+            controller.enqueue(encodeEvent(event));
             break;
 
           case 'done':
@@ -90,7 +100,8 @@ export class StreamGenerationResource implements StreamGeneration {
             });
             await this.options.generationLock.release();
 
-            controller.enqueue(encodeEvent(toClientEvent(event)));
+            // clean up metadata for 'done' event
+            controller.enqueue(encodeEvent({ type: 'done' }));
             controller.close();
             return;
 

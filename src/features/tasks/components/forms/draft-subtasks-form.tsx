@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Sparkles } from 'lucide-react';
@@ -11,7 +11,10 @@ import { AiGenerationError } from '@/features/tasks/components/ai-generation-err
 import { DraftSubtaskRow } from '@/features/tasks/components/forms/draft-subtask-row';
 import TasksSkeleton from '@/features/tasks/components/tasks-skeleton';
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
-import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
+import {
+  readGeneration,
+  useSubtaskDrafts,
+} from '@/features/tasks/hooks/use-subtask-drafts';
 import {
   DraftSubtasksForm,
   draftSubtasksSchema,
@@ -19,10 +22,17 @@ import {
 import { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTask } from '@/features/tasks/utils/normalize-ai-tasks';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { isAbortError } from '@/shared/errors/utils/is-abort-error';
 import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
+
+type GenerationState =
+  'idle' | 'requested' | 'generating' | 'completed' | 'failed';
 
 export function DraftSubtasks({ task }: { task: Task }) {
   const { saveSubtasks, isSaving } = useAddSubtasks(task.id);
+
+  const [generationState, setGenerationState] =
+    useState<GenerationState>('idle');
 
   const {
     control,
@@ -51,6 +61,26 @@ export function DraftSubtasks({ task }: { task: Task }) {
     [append]
   );
 
+  useEffect(() => {
+    if (generationState === 'requested') {
+      (async () => {
+        const controller = new AbortController();
+        setGenerationState('generating');
+        try {
+          for await (const event of readGeneration(task.id, controller)) {
+            append(normalizeAiTask(event), {
+              shouldFocus: false,
+            });
+          }
+          setGenerationState('completed');
+        } catch (error) {
+          if (isAbortError(error) || controller.signal.aborted) return;
+          setGenerationState('failed');
+        }
+      })();
+    }
+  }, [generationState, append, task]);
+
   const { error, isGenerating, generate, retry, discard } = useSubtaskDrafts(
     task.id,
     handleSubtask
@@ -76,20 +106,21 @@ export function DraftSubtasks({ task }: { task: Task }) {
       aria-label={`AI-generated draft subtasks for ${task.title}`}
       className="space-y-2"
     >
-      {!isGenerating && fields.length === 0 && !error && (
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleGenerate}
-            disabled={isSaving}
-          >
-            <Sparkles className="size-4" aria-hidden="true" />
-            Generate Subtask
-          </Button>
-        </div>
-      )}
+      {/* {!isGenerating && fields.length === 0 && !error && ( */}
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setGenerationState('requested')}
+          disabled={isSaving}
+        >
+          <Sparkles className="size-4" aria-hidden="true" />
+          Generate Subtask
+        </Button>
+      </div>
+      <p>state: {generationState}</p>
+      {/* )} */}
 
       {isGenerating && (
         <div className="space-y-2" role="status" aria-live="polite">

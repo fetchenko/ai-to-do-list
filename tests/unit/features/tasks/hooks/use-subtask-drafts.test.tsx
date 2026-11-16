@@ -1,6 +1,3 @@
-import type { ReactNode } from 'react';
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -22,22 +19,6 @@ vi.mock('sonner', () => ({
 }));
 
 const mockedStreamSubtasks = vi.mocked(streamSubtasks);
-
-function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      mutations: {
-        retry: false,
-      },
-    },
-  });
-
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-  };
-}
 
 function createStream(
   chunks: SubtaskStreamEvent[]
@@ -79,8 +60,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {
@@ -117,8 +97,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {
@@ -156,8 +135,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn<(draft: AiGeneratedTask) => void>();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {
@@ -197,8 +175,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {
@@ -323,8 +300,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {
@@ -391,7 +367,7 @@ describe('useSubtaskDrafts', () => {
   });
 
   describe('discard', () => {
-    it('resets the mutation state on discard', async () => {
+    it('resets the local state on discard', async () => {
       const error = new AiUnavailableError('AI failed');
 
       mockedStreamSubtasks.mockImplementation(() =>
@@ -465,8 +441,7 @@ describe('useSubtaskDrafts', () => {
       const onSubtask = vi.fn();
 
       const { result } = renderHook(
-        () => useSubtaskDrafts('task-1', onSubtask),
-        { wrapper: createWrapper() }
+        () => useSubtaskDrafts('task-1', onSubtask)
       );
 
       act(() => {

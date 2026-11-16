@@ -34,7 +34,7 @@ export class OllamaProvider implements AIProvider {
         prompt,
         model: 'qwen2.5-coder:1.5b',
         stream: false,
-        format: options?.responseSchema,
+        ...(options?.responseSchema && { format: options.responseSchema }),
       }),
     });
 

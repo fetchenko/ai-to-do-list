@@ -1,3 +1,12 @@
+export type AiTool = {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+};
+
 export type ToolCallDelta = {
   index: number;
   id?: string;
@@ -15,10 +24,4 @@ export type PendingToolCall = {
 };
 
 export type ToolCallAccumulatorResult =
-  | {
-      type: 'accumulating';
-    }
-  | {
-      type: 'completed';
-      toolCall: PendingToolCall;
-    };
+  { type: 'accumulating' } | { type: 'completed'; toolCall: PendingToolCall };

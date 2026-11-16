@@ -1,10 +1,10 @@
 import { OllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.schema';
+import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import {
   AiGenerationMetadata,
   AiGenerationUsage,
   NormilizedAiResponse,
 } from '@/infrastructure/ai/types/ai.types';
-import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
 

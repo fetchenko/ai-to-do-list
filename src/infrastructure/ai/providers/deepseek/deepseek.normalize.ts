@@ -2,12 +2,12 @@ import {
   DeepSeekResponse,
   DeepSeekUsage,
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
+import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import {
   AiGenerationMetadata,
   AiGenerationUsage,
   NormilizedAiResponse,
 } from '@/infrastructure/ai/types/ai.types';
-import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 export function normalizeDeepseekUsage(
   usage?: DeepSeekUsage | null

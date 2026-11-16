@@ -2,7 +2,8 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
-import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
+import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
@@ -11,7 +12,6 @@ import {
   AiInvalidResponseFormat,
   AiUnavailableError,
 } from '@/shared/errors/ai-app-error';
-import { subtasksResponseSchema } from '@/shared/schema/subtasks.schema';
 
 const OLLAMA_URL = 'http://localhost:11434';
 const OLLAMA_MODEL = 'qwen3:8b';
@@ -50,6 +50,7 @@ export class OllamaProvider implements AIProvider {
 
   async *stream(
     prompt: string,
+    tools: AiTool[],
     signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
@@ -66,7 +67,7 @@ export class OllamaProvider implements AIProvider {
             content: prompt,
           },
         ],
-        tools: [createSubtaskTool],
+        tools,
         stream: true,
         think: false,
       }),
@@ -82,6 +83,6 @@ export class OllamaProvider implements AIProvider {
       throw new AiEmptyResponseError('Ollama response has no body');
     }
 
-    yield* normalizeOllamaStream(response.body);
+    yield* normalizeOllamaStream(response.body, tools);
   }
 }

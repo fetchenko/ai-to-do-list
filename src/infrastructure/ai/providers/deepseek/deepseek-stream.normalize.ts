@@ -5,11 +5,13 @@ import {
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
 import { ToolCallAccumulator } from '@/infrastructure/ai/tools/tool-call-accumulator';
-import { ToolCallAccumulatorResult } from '@/infrastructure/ai/tools/tool-call.types';
+import {
+  AiTool,
+  ToolCallAccumulatorResult,
+} from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { readSseStream } from '@/infrastructure/ai/utils/read-sse-stream';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 
 const DEEPSEEK_STREAM_FINISHED = '[DONE]';
 
@@ -34,20 +36,22 @@ function parseDeepSeekStreamChunk(rawChunk: string): DeepSeekStreamChunk {
 }
 
 function parseCompletedToolCall(
-  result: ToolCallAccumulatorResult
+  result: ToolCallAccumulatorResult,
+  tools: AiTool[]
 ): AiStreamEvent | null {
   if (result.type !== 'completed') {
     return null;
   }
 
-  return parseToolCall(result.toolCall);
+  return parseToolCall(result.toolCall, tools);
 }
 
 export async function* normalizeDeepSeekStream(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
   const accumulator = new ToolCallAccumulator();
-  const generatedSubtasks: SubtaskResponse[] = [];
+  const generatedResults: unknown[] = [];
 
   let streamCompleted = false;
 
@@ -77,25 +81,31 @@ export async function* normalizeDeepSeekStream(
     }
 
     for (const toolCall of choice.delta.tool_calls ?? []) {
-      const parsedToolCall = parseCompletedToolCall(accumulator.add(toolCall));
+      const parsedToolCall = parseCompletedToolCall(
+        accumulator.add(toolCall),
+        tools
+      );
 
       if (!parsedToolCall) {
         continue;
       }
 
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
+      if (parsedToolCall.type === 'event') {
+        generatedResults.push(parsedToolCall.data);
       }
 
       yield parsedToolCall;
     }
 
     if (finishReason === 'tool_calls') {
-      const parsedToolCall = parseCompletedToolCall(accumulator.finish());
+      const parsedToolCall = parseCompletedToolCall(
+        accumulator.finish(),
+        tools
+      );
 
       if (parsedToolCall) {
-        if (parsedToolCall.type === 'subtask') {
-          generatedSubtasks.push(parsedToolCall.subtask);
+        if (parsedToolCall.type === 'event') {
+          generatedResults.push(parsedToolCall.data);
         }
 
         yield parsedToolCall;
@@ -107,7 +117,7 @@ export async function* normalizeDeepSeekStream(
         type: 'done',
         metadata: {
           model: chunk.model,
-          response: JSON.stringify(generatedSubtasks),
+          response: JSON.stringify(generatedResults),
           finishReason: choice.finish_reason,
           usage: normalizeDeepseekUsage(chunk.usage),
         },

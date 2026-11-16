@@ -4,12 +4,12 @@ import {
   ollamaStreamChunkSchema,
 } from '@/infrastructure/ai/providers/ollama/ollama.schema';
 import { parseToolCall } from '@/infrastructure/ai/tools/parse-tool-call';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { SubtaskResponse } from '@/shared/schema/subtasks.schema';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
@@ -25,9 +25,10 @@ function parseOllamaStreamChunk(rawChunk: unknown): OllamaStreamChunk {
 }
 
 export async function* normalizeOllamaStream(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  tools: AiTool[]
 ): AsyncIterable<AiStreamEvent> {
-  const generatedSubtasks: SubtaskResponse[] = [];
+  const generatedResults: unknown[] = [];
   let streamCompleted = false;
 
   for await (const rawChunk of readJsonStream(body)) {
@@ -44,7 +45,7 @@ export async function* normalizeOllamaStream(
         type: 'done',
         metadata: normalizeOllamaMetadata({
           ...chunk,
-          response: JSON.stringify(generatedSubtasks),
+          response: JSON.stringify(generatedResults),
         }),
       };
 
@@ -52,15 +53,18 @@ export async function* normalizeOllamaStream(
     }
 
     for (const toolCall of chunk.message?.tool_calls ?? []) {
-      const parsedToolCall = parseToolCall({
-        index: toolCall.function.index ?? 0,
-        id: toolCall.id ?? '',
-        name: toolCall.function.name,
-        arguments: JSON.stringify(toolCall.function.arguments),
-      });
+      const parsedToolCall = parseToolCall(
+        {
+          index: toolCall.function.index ?? 0,
+          id: toolCall.id ?? '',
+          name: toolCall.function.name,
+          arguments: JSON.stringify(toolCall.function.arguments),
+        },
+        tools
+      );
 
-      if (parsedToolCall.type === 'subtask') {
-        generatedSubtasks.push(parsedToolCall.subtask);
+      if (parsedToolCall.type === 'event') {
+        generatedResults.push(parsedToolCall.data);
       }
 
       yield parsedToolCall;

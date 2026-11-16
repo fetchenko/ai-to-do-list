@@ -2,6 +2,7 @@ import { collect as collectStream } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DeepSeekProvider from '@/infrastructure/ai/providers/deepseek/deepseek.provider';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 
 function createResponse(body: string): Response {
   return new Response(body, {
@@ -38,12 +39,19 @@ describe('DeepSeekProvider.stream', () => {
     const signal = new AbortController().signal;
 
     await collectStream(
-      new DeepSeekProvider().stream('Create subtasks', signal)
+      new DeepSeekProvider().stream(
+        'Create subtasks',
+        [createSubtaskTool],
+        signal
+      )
     );
 
     expect(fetchMock.mock.calls[0][1]).toEqual(
       expect.objectContaining({ signal })
     );
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).tools
+    ).toEqual([createSubtaskTool]);
   });
 
   it('throws when DeepSeek returns an error', async () => {
@@ -52,7 +60,11 @@ describe('DeepSeekProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new DeepSeekProvider().stream('test', new AbortController().signal)
+        new DeepSeekProvider().stream(
+          'test',
+          [createSubtaskTool],
+          new AbortController().signal
+        )
       )
     ).rejects.toThrow('AI unavailable');
   });
@@ -63,7 +75,11 @@ describe('DeepSeekProvider.stream', () => {
     );
     await expect(
       collectStream(
-        new DeepSeekProvider().stream('test', new AbortController().signal)
+        new DeepSeekProvider().stream(
+          'test',
+          [createSubtaskTool],
+          new AbortController().signal
+        )
       )
     ).rejects.toThrow('AI response is empty');
   });

@@ -2,7 +2,8 @@ import { collect } from '@tests/utils/collect';
 import { createStream } from '@tests/utils/create-stream';
 import { describe, expect, it } from 'vitest';
 
-import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
+import { normalizeDeepSeekStream as normalizeDeepSeekStreamWithTool } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 function deepSeekChunk(
@@ -25,6 +26,10 @@ function deepSeekChunk(
     ],
     ...overrides,
   })}\n\n`;
+}
+
+function normalizeDeepSeekStream(body: ReadableStream<Uint8Array>) {
+  return normalizeDeepSeekStreamWithTool(body, [createSubtaskTool]);
 }
 
 describe('normalizeDeepSeekStream', () => {
@@ -60,8 +65,8 @@ describe('normalizeDeepSeekStream', () => {
 
     await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'First', description: 'Do first' },
+        type: 'event',
+        data: { title: 'First', description: 'Do first' },
       },
       {
         type: 'done',
@@ -109,8 +114,8 @@ describe('normalizeDeepSeekStream', () => {
 
     await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
+        type: 'event',
+        data: { title: 'Buy a phone', description: 'Choose a phone' },
       },
       {
         type: 'done',
@@ -164,12 +169,12 @@ describe('normalizeDeepSeekStream', () => {
 
     expect(result).toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'First', description: 'First description' },
+        type: 'event',
+        data: { title: 'First', description: 'First description' },
       },
       {
-        type: 'subtask',
-        subtask: { title: 'Second', description: 'Second description' },
+        type: 'event',
+        data: { title: 'Second', description: 'Second description' },
       },
       {
         type: 'done',
@@ -204,8 +209,8 @@ describe('normalizeDeepSeekStream', () => {
 
     await expect(collect(normalizeDeepSeekStream(stream))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'Buy a phone', description: 'Choose a phone' },
+        type: 'event',
+        data: { title: 'Buy a phone', description: 'Choose a phone' },
       },
       {
         type: 'done',

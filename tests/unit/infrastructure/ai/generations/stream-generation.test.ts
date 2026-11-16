@@ -3,12 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { SubtaskGenerationResource } from '@/infrastructure/ai/generations/subtask-generation';
+import { StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
+import { subtaskToolSchema } from '@/infrastructure/ai/schema/subtask-tool.schema';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
-
-const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
+import type { StreamEvent } from '@/shared/types/stream-event.types';
 
 function createGenerationLog() {
   return {
@@ -31,7 +31,7 @@ function createProvider(events: AiStreamEvent[]): AIProvider {
   };
 }
 
-async function collectStream(resource: SubtaskGenerationResource) {
+async function collectStream(resource: StreamGeneration) {
   const chunks = await collect(resource.stream());
   return chunks.flatMap((chunk) =>
     new TextDecoder()
@@ -39,11 +39,11 @@ async function collectStream(resource: SubtaskGenerationResource) {
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => JSON.parse(line) as SubtaskStreamEvent)
+      .map((line) => JSON.parse(line) as StreamEvent)
   );
 }
 
-describe('SubtaskGenerationResource', () => {
+describe('StreamGeneration', () => {
   it('streams subtasks and completes on done', async () => {
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
@@ -54,19 +54,21 @@ describe('SubtaskGenerationResource', () => {
       finishReason: 'tool_calls',
       usage: { inputTokens: 1, outputTokens: 2, totalTokens: 3 },
     };
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: createProvider([
-        { type: 'subtask', subtask: { title: 'Book hotel' } },
+        { type: 'event', data: { title: 'Book hotel' } },
         { type: 'done', metadata },
       ]),
       signal: new AbortController().signal,
     });
 
     await expect(collectStream(resource)).resolves.toEqual([
-      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'event', data: { title: 'Book hotel' } },
       { type: 'done' },
     ]);
     expect(generationLog.complete).toHaveBeenCalledWith({ metadata });
@@ -90,10 +92,12 @@ describe('SubtaskGenerationResource', () => {
       throw new Error('provider failed');
     });
 
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -119,10 +123,12 @@ describe('SubtaskGenerationResource', () => {
     };
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: controller.signal,
     });
@@ -139,10 +145,12 @@ describe('SubtaskGenerationResource', () => {
     const controller = new AbortController();
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -173,10 +181,12 @@ describe('SubtaskGenerationResource', () => {
     const controller = new AbortController();
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: createProvider([]),
       signal: controller.signal,
     });
@@ -214,10 +224,12 @@ describe('SubtaskGenerationResource', () => {
         throw new DOMException('The operation timed out.', 'TimeoutError');
       },
     };
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: controller.signal,
     });
@@ -249,18 +261,20 @@ describe('SubtaskGenerationResource', () => {
       code: 'AI_INVALID_RESPONSE_FORMAT',
       message: 'Invalid AI response format',
     };
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: createProvider([
-        { type: 'subtask', subtask: { title: 'Book hotel' } },
+        { type: 'event', data: { title: 'Book hotel' } },
       ]),
       signal: new AbortController().signal,
     });
 
     await expect(collectStream(resource)).resolves.toEqual([
-      { type: 'subtask', subtask: { title: 'Book hotel' } },
+      { type: 'event', data: { title: 'Book hotel' } },
       { type: 'error', error },
     ]);
     expect(generationLog.fail).toHaveBeenCalledWith({ code: error.code });
@@ -275,12 +289,14 @@ describe('SubtaskGenerationResource', () => {
     const generationLock = createGenerationLock();
     const provider = createProvider([
       { type: 'done', metadata: {} as never },
-      { type: 'subtask', subtask: { title: 'Should not be emitted' } },
+      { type: 'event', data: { title: 'Should not be emitted' } },
     ]);
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -297,10 +313,12 @@ describe('SubtaskGenerationResource', () => {
         throw new Error('provider failed');
       },
     };
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -330,7 +348,7 @@ describe('SubtaskGenerationResource', () => {
     let providerSignal: AbortSignal | undefined;
     const provider: AIProvider = {
       generate: vi.fn(),
-      stream: async function* (_prompt, signal) {
+      stream: async function* (_prompt, _tool, signal) {
         providerSignal = signal;
         await new Promise<void>((resolve, reject) => {
           signal.addEventListener('abort', () => reject(signal.reason), {
@@ -341,10 +359,12 @@ describe('SubtaskGenerationResource', () => {
     };
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider,
       signal: new AbortController().signal,
     });
@@ -366,10 +386,12 @@ describe('SubtaskGenerationResource', () => {
     const generationLog = createGenerationLog();
     const generationLock = createGenerationLock();
 
-    const resource = new SubtaskGenerationResource({
+    const resource = new StreamGeneration({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
+      tools: [createSubtaskTool],
+      toolsEventSchema: subtaskToolSchema,
       provider: createProvider([
         {
           type: 'done',

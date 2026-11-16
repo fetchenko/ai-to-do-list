@@ -1,7 +1,8 @@
 import { collect } from '@tests/utils/collect';
 import { describe, expect, it } from 'vitest';
 
-import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
+import { normalizeOllamaStream as normalizeOllamaStreamWithTool } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import {
   AiGenerationError,
   AiInvalidResponseFormat,
@@ -32,6 +33,10 @@ function ollamaChunk(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function normalizeOllamaStream(body: ReadableStream<Uint8Array>) {
+  return normalizeOllamaStreamWithTool(body, [createSubtaskTool]);
+}
+
 describe('normalizeOllamaStream', () => {
   it('normalizes a tool call and completion', async () => {
     const stream = createStream([
@@ -60,8 +65,8 @@ describe('normalizeOllamaStream', () => {
 
     await expect(collect(normalizeOllamaStream(stream))).resolves.toEqual([
       {
-        type: 'subtask',
-        subtask: { title: 'First', description: 'Do first' },
+        type: 'event',
+        data: { title: 'First', description: 'Do first' },
       },
       {
         type: 'done',

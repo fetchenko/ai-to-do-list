@@ -1,34 +1,32 @@
+import z from 'zod';
+
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { normalizeApiEventError } from '@/infrastructure/ai/utils/normalize-api-event-error';
 import { normalizeCancelReason } from '@/infrastructure/ai/utils/normalize-cancel-reason';
-import { toClientEvent } from '@/infrastructure/ai/utils/normalize-event';
 import {
   AiGenerationServerShutdown,
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
-import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
-import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
-
-export type SubtaskGeneration = {
-  stream(): ReadableStream<Uint8Array>;
-};
+import { StreamEvent } from '@/shared/types/stream-event.types';
 
 const encoder = new TextEncoder();
 
-function encodeEvent(event: SubtaskStreamEvent): Uint8Array {
+function encodeEvent(event: StreamEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-export class SubtaskGenerationResource implements SubtaskGeneration {
+export class StreamGeneration {
   constructor(
     private readonly options: {
       generationLog: AiGenerationLog | null;
       generationLock: AiRequestLock;
-      task: DbTaskForSubtaskGeneration;
+      prompt: string;
+      tools: AiTool[];
+      toolsEventSchema: z.ZodType;
       provider: AIProvider;
       signal: AbortSignal;
     }
@@ -67,7 +65,8 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
     }
 
     const events = this.options.provider.stream(
-      taskDecomposerStreamPrompt(this.options.task.title),
+      this.options.prompt,
+      this.options.tools,
       signal
     );
 
@@ -79,8 +78,16 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
         }
 
         switch (event.type) {
-          case 'subtask':
-            controller.enqueue(encodeEvent(toClientEvent(event)));
+          case 'event':
+            const result = this.options.toolsEventSchema.safeParse(event.data);
+
+            if (!result.success) {
+              throw new AiInvalidResponseFormat(
+                `AI returned an invalid event: ${result.error}`
+              );
+            }
+
+            controller.enqueue(encodeEvent({ ...event, data: result.data }));
             break;
 
           case 'done':
@@ -89,7 +96,8 @@ export class SubtaskGenerationResource implements SubtaskGeneration {
             });
             await this.options.generationLock.release();
 
-            controller.enqueue(encodeEvent(toClientEvent(event)));
+            // clean up metadata for 'done' event
+            controller.enqueue(encodeEvent({ type: 'done' }));
             controller.close();
             return;
 

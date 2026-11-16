@@ -1,4 +1,4 @@
-import { SubtasksResponse } from '@/shared/schema/subtasks.schema';
+import { SubtasksResponse } from '@/infrastructure/ai/schema/subtasks.schema';
 
 export type CombinedAiResponse = NormilizedAiResponse;
 

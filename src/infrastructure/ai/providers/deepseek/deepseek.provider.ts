@@ -2,7 +2,7 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeDeepSeekStream } from '@/infrastructure/ai/providers/deepseek/deepseek-stream.normalize';
 import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepseek/deepseek.normalize';
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
-import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
+import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
@@ -55,6 +55,7 @@ export default class DeepSeekProvider implements AIProvider {
 
   async *stream(
     prompt: string,
+    tools: AiTool[],
     signal: AbortSignal
   ): AsyncIterable<AiStreamEvent> {
     const response = await fetch(DEEPSEEK_URL, {
@@ -75,7 +76,7 @@ export default class DeepSeekProvider implements AIProvider {
         stream_options: {
           include_usage: true,
         },
-        tools: [createSubtaskTool],
+        tools,
         tool_choice: 'auto',
       }),
       signal,
@@ -91,6 +92,6 @@ export default class DeepSeekProvider implements AIProvider {
       throw new AiEmptyResponseError('DeepSeek response has no body');
     }
 
-    yield* normalizeDeepSeekStream(response.body);
+    yield* normalizeDeepSeekStream(response.body, tools);
   }
 }

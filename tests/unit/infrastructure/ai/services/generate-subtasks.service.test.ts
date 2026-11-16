@@ -82,7 +82,6 @@ describe('generateSubtasksForTask', () => {
       expect.any(String),
       {
         responseSchema: expect.objectContaining({ type: 'object' }),
-        responseFormat: 'json_object',
       },
       signal
     );

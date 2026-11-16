@@ -1,6 +1,6 @@
 import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
-import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure/ai/generations/subtask-generation';
+import { StreamGenerationResource as StreamGeneration } from '@/infrastructure/ai/generations/stream-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
 import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
@@ -81,7 +81,7 @@ export async function streamSubtasksForTask(input: {
 
   const prompt = taskDecomposerStreamPrompt(input.task.title);
 
-  const generation = new SubtaskGeneration({
+  const generation = new StreamGeneration({
     prompt,
     tools: [createSubtaskTool],
     provider: input.provider,

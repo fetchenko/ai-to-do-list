@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
+import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 
 const mocks = vi.hoisted(() => ({
   acquireAiRequestLock: vi.fn(),
   createAiGenerationLog: vi.fn(),
   AiGenerationLog: vi.fn(function AiGenerationLogMock() {}),
-  SubtaskGeneration: vi.fn(function SubtaskGenerationMock() {
+  StreamGeneration: vi.fn(function StreamGenerationMock() {
     return {
       stream: vi.fn(),
     };
@@ -27,8 +29,8 @@ vi.mock('@/infrastructure/ai/generations/ai-generation-log', () => ({
   AiGenerationLogResource: mocks.AiGenerationLog,
 }));
 
-vi.mock('@/infrastructure/ai/generations/subtask-generation', () => ({
-  SubtaskGenerationResource: mocks.SubtaskGeneration,
+vi.mock('@/infrastructure/ai/generations/stream-generation', () => ({
+  StreamGenerationResource: mocks.StreamGeneration,
 }));
 
 const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
@@ -55,8 +57,8 @@ describe('streamSubtasksForTask', () => {
 
     mocks.AiGenerationLog.mockImplementation(function AiGenerationLogMock() {});
 
-    mocks.SubtaskGeneration.mockImplementation(
-      function SubtaskGenerationMock() {
+    mocks.StreamGeneration.mockImplementation(
+      function StreamGenerationMock() {
         return {
           stream: vi.fn().mockReturnValue(stream),
         };
@@ -77,8 +79,9 @@ describe('streamSubtasksForTask', () => {
 
     expect(mocks.AiGenerationLog).toHaveBeenCalledWith('generation-1');
 
-    expect(mocks.SubtaskGeneration).toHaveBeenCalledWith({
-      task,
+    expect(mocks.StreamGeneration).toHaveBeenCalledWith({
+      prompt: taskDecomposerStreamPrompt(task.title),
+      tools: [createSubtaskTool],
       provider: input.provider,
       signal,
       generationLog: expect.anything(),
@@ -95,8 +98,9 @@ describe('streamSubtasksForTask', () => {
 
     expect(mocks.AiGenerationLog).not.toHaveBeenCalled();
 
-    expect(mocks.SubtaskGeneration).toHaveBeenCalledWith({
-      task,
+    expect(mocks.StreamGeneration).toHaveBeenCalledWith({
+      prompt: taskDecomposerStreamPrompt(task.title),
+      tools: [createSubtaskTool],
       provider: input.provider,
       signal,
       generationLog: null,
@@ -119,8 +123,9 @@ describe('streamSubtasksForTask', () => {
 
     expect(mocks.AiGenerationLog).not.toHaveBeenCalled();
 
-    expect(mocks.SubtaskGeneration).toHaveBeenCalledWith({
-      task,
+    expect(mocks.StreamGeneration).toHaveBeenCalledWith({
+      prompt: taskDecomposerStreamPrompt(task.title),
+      tools: [createSubtaskTool],
       provider: input.provider,
       signal,
       generationLog: null,
@@ -146,6 +151,6 @@ describe('streamSubtasksForTask', () => {
 
     expect(mocks.createAiGenerationLog).not.toHaveBeenCalled();
     expect(mocks.AiGenerationLog).not.toHaveBeenCalled();
-    expect(mocks.SubtaskGeneration).not.toHaveBeenCalled();
+    expect(mocks.StreamGeneration).not.toHaveBeenCalled();
   });
 });

@@ -12,7 +12,7 @@ import {
 } from '@/shared/errors/ai-app-error';
 import { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
-export type SubtaskGeneration = {
+export type StreamGeneration = {
   stream(): ReadableStream<Uint8Array>;
 };
 
@@ -22,7 +22,7 @@ function encodeEvent(event: SubtaskStreamEvent): Uint8Array {
   return encoder.encode(`${JSON.stringify(event)}\n`);
 }
 
-export class SubtaskGenerationResource implements SubtaskGeneration {
+export class StreamGenerationResource implements StreamGeneration {
   constructor(
     private readonly options: {
       generationLog: AiGenerationLog | null;

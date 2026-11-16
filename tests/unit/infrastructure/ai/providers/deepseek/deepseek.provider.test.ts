@@ -29,6 +29,70 @@ function deepSeekChunk(overrides: Record<string, unknown> = {}): string {
   })}\n\n`;
 }
 
+describe('DeepSeekProvider.generate', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('uses the requested response format', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'test-id',
+          model: 'deepseek-v4-flash',
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: '{"subtasks":[]}' },
+            },
+          ],
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 2,
+            total_tokens: 3,
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    await new DeepSeekProvider().generate('Create subtasks', {
+      responseFormat: 'json_object',
+    });
+
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).response_format
+    ).toEqual({ type: 'json_object' });
+  });
+
+  it('defaults to JSON mode when no response format is provided', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'test-id',
+          model: 'deepseek-v4-flash',
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: '{"subtasks":[]}' },
+            },
+          ],
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 2,
+            total_tokens: 3,
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    );
+
+    await new DeepSeekProvider().generate('Create subtasks');
+
+    expect(
+      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).response_format
+    ).toEqual({ type: 'json_object' });
+  });
+});
+
 describe('DeepSeekProvider.stream', () => {
   beforeEach(() => vi.restoreAllMocks());
 

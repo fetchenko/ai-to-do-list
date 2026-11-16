@@ -2,6 +2,7 @@ import { acquireAiRequestLock } from '@/infrastructure/ai/generations/ai-generat
 import { AiGenerationLogResource as AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { SubtaskGenerationResource as SubtaskGeneration } from '@/infrastructure/ai/generations/subtask-generation';
 import { taskDecomposerPrompt } from '@/infrastructure/ai/prompts/task-decomposer';
+import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
@@ -78,8 +79,10 @@ export async function streamSubtasksForTask(input: {
     console.error('Failed to create AI generation log', error);
   }
 
+  const prompt = taskDecomposerStreamPrompt(input.task.title);
+
   const generation = new SubtaskGeneration({
-    task: input.task,
+    prompt,
     tools: [createSubtaskTool],
     provider: input.provider,
     signal: input.signal,

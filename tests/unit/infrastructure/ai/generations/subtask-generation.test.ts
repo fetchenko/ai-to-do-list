@@ -9,8 +9,6 @@ import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { SubtaskStreamEvent } from '@/shared/types/stream-event.types';
 
-const task = { user_id: 'user-id', id: 'task-1', title: 'Plan a trip' };
-
 function createGenerationLog() {
   return {
     id: null,
@@ -58,7 +56,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
@@ -95,7 +93,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
@@ -125,7 +123,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: controller.signal,
@@ -146,7 +144,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([]),
       signal: controller.signal,
@@ -181,7 +179,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([]),
       signal: controller.signal,
@@ -223,7 +221,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: controller.signal,
@@ -259,7 +257,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([
         { type: 'subtask', subtask: { title: 'Book hotel' } },
@@ -288,7 +286,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
@@ -309,7 +307,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
@@ -354,7 +352,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider,
       signal: new AbortController().signal,
@@ -380,7 +378,7 @@ describe('SubtaskGenerationResource', () => {
     const resource = new SubtaskGenerationResource({
       generationLog,
       generationLock,
-      task,
+      prompt: 'Generate actionable subtasks for a trip.',
       tools: [createSubtaskTool],
       provider: createProvider([
         {

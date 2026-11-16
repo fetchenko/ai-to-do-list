@@ -94,7 +94,7 @@ describe('DeepSeekProvider.generate', () => {
     ).toEqual({ type: 'text' });
   });
 
-  it('defaults to JSON mode when no response format is provided', async () => {
+  it('omits response_format when no response format is provided', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -103,7 +103,7 @@ describe('DeepSeekProvider.generate', () => {
           choices: [
             {
               finish_reason: 'stop',
-              message: { content: '{"subtasks":[]}' },
+              message: { content: '{"message":"Generated text"}' },
             },
           ],
           usage: {
@@ -118,9 +118,9 @@ describe('DeepSeekProvider.generate', () => {
 
     await new DeepSeekProvider().generate('Create subtasks');
 
-    expect(
-      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).response_format
-    ).toEqual({ type: 'json_object' });
+    const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+
+    expect(body).not.toHaveProperty('response_format');
   });
 });
 

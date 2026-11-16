@@ -17,6 +17,10 @@ export type AiGenerationMetadata = {
   usage: AiGenerationUsage;
 };
 
+export type AiGenerationOptions = {
+  format?: Record<string, unknown>;
+};
+
 export type NormilizedAiResponse = {
   data: unknown;
   metadata: AiGenerationMetadata;

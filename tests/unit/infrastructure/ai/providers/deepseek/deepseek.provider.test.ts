@@ -72,7 +72,7 @@ describe('DeepSeekProvider.generate', () => {
           choices: [
             {
               finish_reason: 'stop',
-              message: { content: 'Generated text' },
+              message: { content: '{"message":"Generated text"}' },
             },
           ],
           usage: {
@@ -141,11 +141,12 @@ describe('DeepSeekProvider.stream', () => {
       )
     );
 
-    expect(fetchMock.mock.calls[0][1]).toEqual(
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.lastCall?.[1]).toEqual(
       expect.objectContaining({ signal })
     );
     expect(
-      JSON.parse(fetchMock.mock.calls[0][1]?.body as string).tools
+      JSON.parse(fetchMock.mock.lastCall?.[1]?.body as string).tools
     ).toEqual([createSubtaskTool]);
   });
 

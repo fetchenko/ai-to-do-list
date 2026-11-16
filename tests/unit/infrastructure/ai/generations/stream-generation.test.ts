@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
 import { AiGenerationLog } from '@/infrastructure/ai/generations/ai-generation-log';
 import { StreamGenerationResource } from '@/infrastructure/ai/generations/stream-generation';
-import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
+import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import type { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
 import type { StreamEvent } from '@/shared/types/stream-event.types';
 

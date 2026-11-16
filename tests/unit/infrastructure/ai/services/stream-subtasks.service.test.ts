@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AiRequestLock } from '@/infrastructure/ai/generations/ai-generation-lock';
+import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import type { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { streamSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
-import { taskDecomposerStreamPrompt } from '@/infrastructure/ai/prompts/task-decomposer-stream';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 
 const mocks = vi.hoisted(() => ({
@@ -57,13 +57,11 @@ describe('streamSubtasksForTask', () => {
 
     mocks.AiGenerationLog.mockImplementation(function AiGenerationLogMock() {});
 
-    mocks.StreamGeneration.mockImplementation(
-      function StreamGenerationMock() {
-        return {
-          stream: vi.fn().mockReturnValue(stream),
-        };
-      }
-    );
+    mocks.StreamGeneration.mockImplementation(function StreamGenerationMock() {
+      return {
+        stream: vi.fn().mockReturnValue(stream),
+      };
+    });
   });
 
   it('creates the generation and returns its stream', async () => {

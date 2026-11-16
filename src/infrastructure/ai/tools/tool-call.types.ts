@@ -24,5 +24,4 @@ export type PendingToolCall = {
 };
 
 export type ToolCallAccumulatorResult =
-  | { type: 'accumulating' }
-  | { type: 'completed'; toolCall: PendingToolCall };
+  { type: 'accumulating' } | { type: 'completed'; toolCall: PendingToolCall };

@@ -6,10 +6,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
+import type { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 import type { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
 import { AiUnavailableError } from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
-import type { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({
   streamSubtasks: vi.fn(),

@@ -4,6 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DeepSeekProvider from '@/infrastructure/ai/providers/deepseek/deepseek.provider';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 
+const fetchMock = vi.mocked(globalThis.fetch);
+
+beforeEach(() => {
+  fetchMock.mockReset();
+});
+
 function createResponse(body: string): Response {
   return new Response(body, {
     status: 200,
@@ -30,10 +36,9 @@ function deepSeekChunk(overrides: Record<string, unknown> = {}): string {
 }
 
 describe('DeepSeekProvider.generate', () => {
-  beforeEach(() => vi.restoreAllMocks());
 
   it('uses the requested response format', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 'test-id',
@@ -125,12 +130,11 @@ describe('DeepSeekProvider.generate', () => {
 });
 
 describe('DeepSeekProvider.stream', () => {
-  beforeEach(() => vi.restoreAllMocks());
 
   it('passes the cancellation signal to fetch', async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(createResponse(`${deepSeekChunk()}data: [DONE]\n\n`));
+    fetchMock.mockResolvedValue(
+      createResponse(`${deepSeekChunk()}data: [DONE]\n\n`)
+    );
     const signal = new AbortController().signal;
 
     await collectStream(
@@ -151,7 +155,7 @@ describe('DeepSeekProvider.stream', () => {
   });
 
   it('throws when DeepSeek returns an error', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    fetchMock.mockResolvedValue(
       new Response('DeepSeek unavailable', { status: 500 })
     );
     await expect(

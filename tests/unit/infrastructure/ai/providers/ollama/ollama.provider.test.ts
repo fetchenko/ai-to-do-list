@@ -37,7 +37,6 @@ function ollamaDoneChunk() {
 }
 
 describe('OllamaProvider.generate', () => {
-
   it('passes the response schema and cancellation signal to fetch', async () => {
     fetchMock.mockResolvedValue(
       new Response(
@@ -95,7 +94,6 @@ describe('OllamaProvider.generate', () => {
 });
 
 describe('OllamaProvider.stream', () => {
-
   it('passes the cancellation signal to fetch', async () => {
     fetchMock.mockResolvedValue(createResponse([ollamaDoneChunk()]));
     const signal = new AbortController().signal;

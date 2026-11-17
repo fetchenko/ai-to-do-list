@@ -1,7 +1,3 @@
-import { SubtasksResponse } from '@/infrastructure/ai/schema/subtasks.schema';
-
-export type CombinedAiResponse = NormilizedAiResponse;
-
 export type AiGenerationUsage = {
   inputTokens: number | null;
   outputTokens: number | null;
@@ -21,7 +17,18 @@ export type AiGenerationMetadata = {
   usage: AiGenerationUsage;
 };
 
+/**
+ * Optional output constraints requested by the caller.
+ * Providers translate supported options into their respective API parameters.
+ */
+export type AiGenerationOptions = {
+  /** Ollama-specific JSON schema used to constrain the structure of generated output. */
+  responseSchema?: Record<string, unknown>;
+  /** DeepSeek-specific response mode: JSON object output or unrestricted text output. */
+  responseFormat?: 'json_object' | 'text';
+};
+
 export type NormilizedAiResponse = {
-  data: SubtasksResponse;
+  data: unknown;
   metadata: AiGenerationMetadata;
 };

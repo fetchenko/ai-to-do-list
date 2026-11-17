@@ -9,6 +9,3 @@ export const subtasksResponseSchema = z.object({
   task_summary: z.string().optional(),
   subtasks: z.array(subtaskResponseSchema),
 });
-
-export type SubtasksResponse = z.infer<typeof subtasksResponseSchema>;
-export type SubtaskResponse = z.infer<typeof subtaskResponseSchema>;

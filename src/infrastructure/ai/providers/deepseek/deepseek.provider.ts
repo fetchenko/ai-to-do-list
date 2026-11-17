@@ -4,7 +4,10 @@ import { normalizeDeepseekResponse } from '@/infrastructure/ai/providers/deepsee
 import { deepSeekResponseSchema } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
 import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import {
+  AiGenerationOptions,
+  NormilizedAiResponse,
+} from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
 import { aiEnv } from '@/shared/env/ai-env';
 import {
@@ -22,8 +25,9 @@ export default class DeepSeekProvider implements AIProvider {
 
   async generate(
     prompt: string,
+    options?: AiGenerationOptions,
     signal?: AbortSignal
-  ): Promise<CombinedAiResponse> {
+  ): Promise<NormilizedAiResponse> {
     const response = await fetch(DEEPSEEK_URL, {
       method: 'POST',
       headers: {
@@ -34,7 +38,9 @@ export default class DeepSeekProvider implements AIProvider {
         model: DEEPSEEK_MODEL,
         messages: [{ role: 'user', content: prompt }],
         stream: false,
-        response_format: { type: 'json_object' },
+        ...(options?.responseFormat && {
+          response_format: { type: options.responseFormat },
+        }),
         temperature: 0.7,
       }),
       signal,

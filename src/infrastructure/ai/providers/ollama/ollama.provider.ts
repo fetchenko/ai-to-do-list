@@ -2,10 +2,12 @@ import { AIProvider } from '@/infrastructure/ai/providers/ai-provider';
 import { normalizeOllamaStream } from '@/infrastructure/ai/providers/ollama/ollama-stream.normalize';
 import { normalizeOllamaResponse } from '@/infrastructure/ai/providers/ollama/ollama.normalize';
 import { ollamaChatResponseSchema } from '@/infrastructure/ai/providers/ollama/ollama.schema';
-import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import { AiTool } from '@/infrastructure/ai/tools/tool-call.types';
 import { AiStreamEvent } from '@/infrastructure/ai/types/ai-stream.types';
-import { CombinedAiResponse } from '@/infrastructure/ai/types/ai.types';
+import {
+  AiGenerationOptions,
+  NormilizedAiResponse,
+} from '@/infrastructure/ai/types/ai.types';
 import { parseResponseJson } from '@/infrastructure/ai/utils/parse-response-json';
 import {
   AiEmptyResponseError,
@@ -19,8 +21,9 @@ const OLLAMA_MODEL = 'qwen3:8b';
 export class OllamaProvider implements AIProvider {
   async generate(
     prompt: string,
+    options?: AiGenerationOptions,
     signal?: AbortSignal
-  ): Promise<CombinedAiResponse> {
+  ): Promise<NormilizedAiResponse> {
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
       headers: {
@@ -31,7 +34,7 @@ export class OllamaProvider implements AIProvider {
         prompt,
         model: 'qwen2.5-coder:1.5b',
         stream: false,
-        format: subtasksResponseSchema.toJSONSchema(),
+        ...(options?.responseSchema && { format: options.responseSchema }),
       }),
     });
 

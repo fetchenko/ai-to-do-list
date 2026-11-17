@@ -2,7 +2,6 @@ import {
   DeepSeekResponse,
   DeepSeekUsage,
 } from '@/infrastructure/ai/providers/deepseek/deepseek.schema';
-import { subtasksResponseSchema } from '@/infrastructure/ai/schema/subtasks.schema';
 import {
   AiGenerationMetadata,
   AiGenerationUsage,
@@ -46,8 +45,7 @@ export function normalizeDeepseekResponse(
   const choice = response.choices?.[0];
 
   return {
-    data: subtasksResponseSchema.parse(JSON.parse(choice.message.content)),
-
+    data: JSON.parse(choice.message.content),
     metadata: normalizeDeepseekMetadata(response),
   };
 }

@@ -65,7 +65,8 @@ describe('generateSubtasksForTask', () => {
 
     provider.generate.mockResolvedValue({
       data: {
-        subtasks: [{ id: 'subtask-1', title: 'Book hotel' }],
+        task_summary: 'Plan the trip',
+        subtasks: [{ title: 'Book hotel' }],
       },
       metadata,
     });
@@ -77,9 +78,18 @@ describe('generateSubtasksForTask', () => {
       provider,
     });
 
+    expect(provider.generate).toHaveBeenCalledWith(
+      expect.any(String),
+      {
+        responseSchema: expect.objectContaining({ type: 'object' }),
+      },
+      signal
+    );
+
     expect(result).toEqual({
       data: {
-        subtasks: [{ id: 'subtask-1', title: 'Book hotel' }],
+        task_summary: 'Plan the trip',
+        subtasks: [{ title: 'Book hotel' }],
       },
     });
 
@@ -95,6 +105,34 @@ describe('generateSubtasksForTask', () => {
     });
 
     expect(mocks.failAiGenerationLog).not.toHaveBeenCalled();
+    expect(lock.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects provider data that does not match the subtasks schema', async () => {
+    provider.generate.mockResolvedValue({
+      data: { unexpected: true },
+      metadata: {
+        model: 'test',
+        response: '{"unexpected":true}',
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          totalTokens: 2,
+        },
+      },
+    });
+
+    await expect(
+      generateSubtasksForTask({
+        task,
+        userId: 'user-1',
+        signal,
+        provider,
+      })
+    ).rejects.toThrow('Invalid AI response format');
+
+    expect(mocks.completeAiGenerationLog).not.toHaveBeenCalled();
+    expect(mocks.failAiGenerationLog).toHaveBeenCalled();
     expect(lock.release).toHaveBeenCalledTimes(1);
   });
 

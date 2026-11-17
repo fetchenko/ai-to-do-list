@@ -10,5 +10,4 @@ export const subtasksResponseSchema = z.object({
   subtasks: z.array(subtaskResponseSchema),
 });
 
-export type SubtasksResponse = z.infer<typeof subtasksResponseSchema>;
 export type SubtaskResponse = z.infer<typeof subtaskResponseSchema>;

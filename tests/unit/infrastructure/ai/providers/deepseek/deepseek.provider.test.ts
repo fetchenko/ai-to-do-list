@@ -69,7 +69,7 @@ describe('DeepSeekProvider.generate', () => {
   });
 
   it('uses text mode when requested', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 'test-id',
@@ -100,7 +100,7 @@ describe('DeepSeekProvider.generate', () => {
   });
 
   it('omits response_format when no response format is provided', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 'test-id',
@@ -170,7 +170,7 @@ describe('DeepSeekProvider.stream', () => {
   });
 
   it('throws when DeepSeek returns no response body', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    fetchMock.mockResolvedValue(
       new Response(null, { status: 200 })
     );
     await expect(

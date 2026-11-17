@@ -36,7 +36,6 @@ function deepSeekChunk(overrides: Record<string, unknown> = {}): string {
 }
 
 describe('DeepSeekProvider.generate', () => {
-
   it('uses the requested response format', async () => {
     fetchMock.mockResolvedValue(
       new Response(
@@ -130,7 +129,6 @@ describe('DeepSeekProvider.generate', () => {
 });
 
 describe('DeepSeekProvider.stream', () => {
-
   it('passes the cancellation signal to fetch', async () => {
     fetchMock.mockResolvedValue(
       createResponse(`${deepSeekChunk()}data: [DONE]\n\n`)

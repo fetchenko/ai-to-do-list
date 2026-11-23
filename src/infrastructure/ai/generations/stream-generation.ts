@@ -11,6 +11,7 @@ import {
   AiGenerationTimeout,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
+import { logError } from '@/shared/logging/log-error';
 import { StreamEvent } from '@/shared/types/stream-event.types';
 
 const encoder = new TextEncoder();
@@ -112,9 +113,17 @@ export class StreamGeneration {
         }
       }
 
-      const error = normalizeApiEventError(
-        new AiInvalidResponseFormat('AI stream ended unexpectedly')
+      const streamError = new AiInvalidResponseFormat(
+        'AI stream ended unexpectedly'
       );
+
+      logError(streamError, {
+        source: 'ai',
+        operation: 'stream-subtasks',
+        provider: this.options.provider.constructor.name,
+      });
+
+      const error = normalizeApiEventError(streamError);
 
       await this.options.generationLog?.fail({
         code: error.code,
@@ -188,6 +197,12 @@ export class StreamGeneration {
       await this.handleAbort(controller, signal, isOutputStreamCancelled);
       return;
     }
+
+    logError(error, {
+      source: 'ai',
+      operation: 'stream-subtasks',
+      provider: this.options.provider.constructor.name,
+    });
 
     const normalized = normalizeApiEventError(error);
 

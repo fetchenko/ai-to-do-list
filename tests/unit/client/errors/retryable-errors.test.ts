@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { ClientError } from '@/client/errors/client-error';
-import { ErrorCode } from '@/shared/errors/code';
 import { isRetryableError } from '@/client/errors/retryable-errors';
+import { ErrorCode } from '@/shared/errors/code';
 
 describe('retryable error mapping', () => {
   it('marks AI timeout errors as retryable', () => {

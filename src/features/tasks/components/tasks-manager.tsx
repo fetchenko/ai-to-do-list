@@ -15,7 +15,7 @@ import { fetchTasksClient } from '@/features/tasks/repository/tasks.repository';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { filterGroupsByQuery } from '@/features/tasks/utils/filter-groups-by-query';
 import { groupTasksByStatus } from '@/features/tasks/utils/group-by-status';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
 import { testIds } from '@/shared/testing/test-ids';
 
 const TABS = [

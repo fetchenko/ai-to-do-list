@@ -3,12 +3,13 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { ClientError } from '@/client/errors/client-error';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
+import { parseApiError } from '@/client/errors/parse-api-error';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
-import { ValidationRequestError } from '@/shared/errors/app-error';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { ErrorCode } from '@/shared/errors/code';
 import { isAbortError } from '@/shared/errors/utils/is-abort-error';
-import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
 
 export function useSubtaskDrafts(
   taskId: string,
@@ -19,7 +20,7 @@ export function useSubtaskDrafts(
   const { error, isPending, mutate, reset } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
       if (!taskId) {
-        throw new ValidationRequestError('Missing task id');
+        throw new ClientError(ErrorCode.INVALID_REQUEST);
       }
 
       for await (const chunk of streamSubtasks(taskId, signal)) {
@@ -31,7 +32,7 @@ export function useSubtaskDrafts(
             break;
           case 'cancelled':
           case 'error':
-            throw parseApiEventError(chunk.error);
+            throw parseApiError(chunk.error);
         }
       }
     },

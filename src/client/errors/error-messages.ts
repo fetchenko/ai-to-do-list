@@ -1,7 +1,8 @@
-import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 
-const ERROR_MESSAGES: Record<string, string> = {
+import { ClientError } from './client-error';
+
+const ERROR_MESSAGES: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.INVALID_REQUEST]:
     "That request wasn't valid. Please check your input.",
   [ErrorCode.AUTHORIZATION_ERROR]: "You're not authorized to do that.",
@@ -20,7 +21,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.AI_RATE_LIMIT]:
     'Lots of generations happening right now — try again in a moment.',
   [ErrorCode.AI_GENERATION_FAILED]:
-    "We couldn't generate subtasks. AI generation failed",
+    "We couldn't generate subtasks. Please try again.",
+  [ErrorCode.AI_REQUEST_ERROR]:
+    "We couldn't complete the AI request. Please try again.",
+  [ErrorCode.AI_GENERATION_SERVER_SHUTDOWN]:
+    'Generation was interrupted. Please try again.',
+  [ErrorCode.AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT]:
+    'Generation ended unexpectedly. Please try again.',
   [ErrorCode.AI_UNAVAILABLE]: 'Subtask generation is temporarily unavailable.',
   [ErrorCode.AI_INVALID_RESPONSE_FORMAT]:
     "We couldn't process the response. Please try again.",
@@ -35,11 +42,13 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function getFriendlyErrorMessage(error: unknown): string {
-  if (error instanceof AppError) {
+  if (error instanceof ClientError) {
     return ERROR_MESSAGES[error.code] ?? ERROR_MESSAGES[ErrorCode.UNKNOWN];
   }
+
   if (error instanceof TypeError) {
     return ERROR_MESSAGES[ErrorCode.NETWORK_ERROR];
   }
+
   return ERROR_MESSAGES[ErrorCode.UNKNOWN];
 }

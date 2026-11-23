@@ -1,9 +1,9 @@
 import { collect } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ClientError } from '@/client/errors/client-error';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
-import { AiEmptyResponseError } from '@/shared/errors/ai-app-error';
-import { AppError } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
 
 describe('streamSubtasks', () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -66,9 +66,7 @@ describe('streamSubtasks', () => {
     );
 
     await expect(collect(streamSubtasks('task-1'))).rejects.toEqual(
-      new AppError('AI_UNAVAILABLE', 503, 'AI unavailable', {
-        provider: 'deepseek',
-      })
+      new ClientError(ErrorCode.AI_UNAVAILABLE)
     );
   });
 
@@ -78,7 +76,7 @@ describe('streamSubtasks', () => {
       vi.fn().mockResolvedValue(new Response(null, { status: 200 }))
     );
     await expect(collect(streamSubtasks('task-1'))).rejects.toEqual(
-      new AiEmptyResponseError('Response body is missing')
+      new ClientError(ErrorCode.AI_EMPTY_RESPONSE)
     );
   });
 });

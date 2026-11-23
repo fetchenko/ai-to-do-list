@@ -5,7 +5,7 @@ import { taskKeys } from '@/features/tasks/constants/query-keys';
 import { updateTask } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { updateTaskInCache } from '@/features/tasks/utils/tasks-cache';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
 
 export function useUpdateTask() {
   const queryClient = useQueryClient();

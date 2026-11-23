@@ -18,8 +18,8 @@ import {
 } from '@/features/tasks/schema/tasks';
 import { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
 import { normalizeAiTask } from '@/features/tasks/utils/normalize-ai-tasks';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
-import { isRetryableError } from '@/shared/errors/utils/retryable-errors';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
+import { isRetryableError } from '@/client/errors/retryable-errors';
 
 export function DraftSubtasks({ task }: { task: Task }) {
   const { saveSubtasks, isSaving } = useAddSubtasks(task.id);

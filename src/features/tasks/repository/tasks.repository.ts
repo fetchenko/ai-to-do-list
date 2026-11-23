@@ -1,5 +1,6 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
+import { fromSupabaseError } from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
@@ -7,7 +8,6 @@ import {
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out
@@ -28,7 +28,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
     .is('deleted_at', null);
 
   if (error) {
-    throw fromSupabaseError(error);
+    throw error;
   }
 
   return data.map(mapDbTask);
@@ -37,7 +37,15 @@ export async function fetchTasks(supabase: SupabaseClient) {
 export async function fetchTasksClient() {
   const supabase = createClient();
 
-  return fetchTasks(supabase);
+  try {
+    return await fetchTasks(supabase);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error) {
+      throw fromSupabaseError(error as PostgrestError);
+    }
+
+    throw error;
+  }
 }
 
 export async function updateTask(id: string, newTask: TaskUpdate) {

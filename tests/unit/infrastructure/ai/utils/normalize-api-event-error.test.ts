@@ -9,7 +9,7 @@ describe('normalizeApiEventError', () => {
   it('normalizes an AppError and derives its HTTP status', () => {
     expect(
       normalizeApiEventError(
-        new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'Provider unavailable', {
+        new AppError(ErrorCode.AI_UNAVAILABLE, 'Provider unavailable', {
           provider: 'deepseek',
         })
       )
@@ -45,7 +45,7 @@ describe('normalizeApiEventError', () => {
   it('does not trust an AppError HTTP status when creating an API event', () => {
     expect(
       normalizeApiEventError(
-        new AppError(ErrorCode.AI_REQUEST_LIMIT, 500, 'Too many requests')
+        new AppError(ErrorCode.AI_REQUEST_LIMIT, 'Too many requests')
       )
     ).toEqual({
       success: false,

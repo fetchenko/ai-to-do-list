@@ -6,7 +6,7 @@ import { TaskForm } from '@/features/tasks/schema/tasks';
 import { addTask } from '@/features/tasks/services/tasks.service';
 import { Task } from '@/features/tasks/types/tasks.types';
 import { appendToCache } from '@/features/tasks/utils/tasks-cache';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
 
 export function useCreateTask(parentTaskId?: string) {
   const queryClient = useQueryClient();

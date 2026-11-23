@@ -42,9 +42,14 @@ const eslintConfig = defineConfig([
         {
           patterns: [
             {
-              group: ['@/infrastructure', '@/infrastructure/**'],
+              group: ['./*', '../*'],
               message:
-                'Feature modules must not depend on infrastructure. Move the dependency behind a feature-owned interface or shared abstraction.',
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
+            },
+            {
+              regex: ['^@/infrastructure(?:$|(?!/supabase(?:/|$)).*)'],
+              message:
+                'Feature modules may only import from @/infrastructure/supabase/. All other infrastructure dependencies must be accessed through a feature-owned interface or shared abstraction.',
             },
           ],
         },

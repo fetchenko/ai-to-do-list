@@ -4,14 +4,30 @@ import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('ClientError', () => {
-  it('stores a frontend-facing error code without transport or backend details', () => {
+  it('stores a frontend-facing error code without backend details', () => {
     const error = new ClientError(ErrorCode.AI_UNAVAILABLE);
 
     expect(error).toBeInstanceOf(Error);
     expect(error.name).toBe('ClientError');
     expect(error.code).toBe(ErrorCode.AI_UNAVAILABLE);
     expect(error.message).toBe('Client operation failed');
-    expect('status' in error).toBe(false);
+    expect(error.status).toBeUndefined();
     expect('details' in error).toBe(false);
+  });
+
+  it('can preserve the HTTP status separately from the error code', () => {
+    const error = new ClientError(ErrorCode.AI_UNAVAILABLE, {
+      status: 503,
+    });
+
+    expect(error.code).toBe(ErrorCode.AI_UNAVAILABLE);
+    expect(error.status).toBe(503);
+  });
+
+  it('preserves the standard Error cause option', () => {
+    const cause = new Error('Underlying failure');
+    const error = new ClientError(ErrorCode.UNKNOWN, { cause });
+
+    expect(error.cause).toBe(cause);
   });
 });

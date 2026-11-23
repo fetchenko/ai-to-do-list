@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { ClientError } from '@/client/errors/client-error';
 import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
-import { parseApiEventError } from '@/client/errors/parse-api-event-error';
+import { parseApiError } from '@/client/errors/parse-api-error';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
 import { ErrorCode } from '@/shared/errors/code';
@@ -32,7 +32,7 @@ export function useSubtaskDrafts(
             break;
           case 'cancelled':
           case 'error':
-            throw parseApiEventError(chunk.error);
+            throw parseApiError(chunk.error);
         }
       }
     },

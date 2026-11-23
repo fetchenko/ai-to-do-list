@@ -35,6 +35,23 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/infrastructure', '@/infrastructure/**'],
+              message:
+                'Feature modules must not depend on infrastructure. Move the dependency behind a feature-owned interface or shared abstraction.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['tests/**/*.ts', '**/*.mock.ts', 'e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

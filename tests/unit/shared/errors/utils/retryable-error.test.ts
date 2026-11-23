@@ -12,6 +12,8 @@ describe('retryable error mapping', () => {
   });
 
   it('marks validation errors as non-retryable', () => {
-    expect(isRetryableError(new ClientError(ErrorCode.INVALID_REQUEST))).toBe(false);
+    expect(
+      isRetryableError(new ClientError(ErrorCode.INVALID_REQUEST))
+    ).toBe(false);
   });
 });

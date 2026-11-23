@@ -75,7 +75,7 @@ export async function getLastPosition(parentTaskId?: string | null) {
   });
 
   if (error) {
-    throw fromSupabaseError(error);
+    throw fromClientSupabaseError(error);
   }
 
   return data;

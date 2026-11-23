@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
@@ -23,7 +23,7 @@ const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
  */
 export async function fetchTasks(
   supabase: SupabaseClient,
-  mapError: typeof fromServerSupabaseError = fromServerSupabaseError
+  mapError: (error: PostgrestError) => Error = fromServerSupabaseError
 ) {
   const { data, error } = await supabase
     .from('tasks')

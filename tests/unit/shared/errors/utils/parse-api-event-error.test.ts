@@ -5,7 +5,7 @@ import { ErrorCode } from '@/shared/errors/code';
 import { parseApiEventError } from '@/client/errors/parse-api-event-error';
 
 describe('parseApiEventError', () => {
-  it('parses a valid event error and preserves details', () => {
+  it('maps a valid event error without exposing API details', () => {
     expect(
       parseApiEventError({
         success: false,
@@ -15,7 +15,7 @@ describe('parseApiEventError', () => {
         details: { provider: 'deepseek' },
       })
     ).toEqual(
-      new ClientError(ErrorCode.AI_UNAVAILABLE, 503)
+      new ClientError(ErrorCode.AI_UNAVAILABLE)
     );
   });
 

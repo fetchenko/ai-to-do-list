@@ -35,6 +35,24 @@ const eslintConfig = defineConfig([
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/infrastructure/ai/**/*'],
+    rules: {
+      'no-restricted-imports': [
+        'warn',
+        {
+          patterns: [
+            {
+              group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
+              message:
+                'Avoid importing the AI infrastructure module outside src/infrastructure/ai. This dependency should be moved behind an appropriate abstraction.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['tests/**/*.ts', '**/*.mock.ts', 'e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

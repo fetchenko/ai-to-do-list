@@ -14,9 +14,7 @@ describe('parseApiEventError', () => {
         message: 'AI unavailable',
         details: { provider: 'deepseek' },
       })
-    ).toEqual(
-      new ClientError(ErrorCode.AI_UNAVAILABLE)
-    );
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 
   it('returns UNKNOWN for invalid event errors', () => {
@@ -27,9 +25,7 @@ describe('parseApiEventError', () => {
         status: 503,
         message: 'AI unavailable',
       })
-    ).toEqual(
-      new ClientError(ErrorCode.UNKNOWN)
-    );
+    ).toEqual(new ClientError(ErrorCode.UNKNOWN));
   });
 
   it.each([

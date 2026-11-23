@@ -17,6 +17,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
+  let providerName: string | undefined;
+
   const signal = AbortSignal.any([
     request.signal,
     AbortSignal.timeout(AI_STREAM_TIMEOUT_MS),
@@ -25,6 +27,7 @@ export async function POST(
   try {
     const { user } = await getCurrentUser();
     const provider = getAIProvider();
+    providerName = provider.constructor.name;
 
     if (provider.quotaLimit !== undefined) {
       await checkAiQuotaLimit(user.id, provider.quotaLimit);
@@ -50,6 +53,7 @@ export async function POST(
     logError(err, {
       source: 'api',
       operation: 'stream-subtasks',
+      ...(providerName ? { provider: providerName } : {}),
     });
 
     const error = normalizeApiError(err);

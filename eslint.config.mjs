@@ -47,7 +47,7 @@ const eslintConfig = defineConfig([
                 'Relative imports are not allowed. Please use absolute paths or aliases instead.',
             },
             {
-              regex: ['^@/infrastructure(?:$|(?!/supabase(?:/|$)).*)'],
+              regex: '^@/infrastructure(?:$|(?!/supabase(?:/|$)).*)',
               message:
                 'Feature modules may only import from @/infrastructure/supabase/. All other infrastructure dependencies must be accessed through a feature-owned interface or shared abstraction.',
             },

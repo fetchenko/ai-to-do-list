@@ -92,7 +92,6 @@ export default class DeepSeekProvider implements AIProvider {
       const body = await response.text();
 
       throw new AiUnavailableError({
-        provider: 'deepseek',
         upstreamStatus: response.status,
         responseBody: body,
       });

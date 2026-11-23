@@ -29,7 +29,7 @@ export async function* streamSubtasks(
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    throw parseApiError(body?.error);
+    throw parseApiError(body?.error, response.status);
   }
 
   if (!response.body) {
@@ -49,7 +49,7 @@ export async function generateSubtasks(
   if (!res.ok) {
     const body = await res.json().catch(() => null);
 
-    throw parseApiError(body?.error);
+    throw parseApiError(body?.error, res.status);
   }
 
   const { data } = await res.json();

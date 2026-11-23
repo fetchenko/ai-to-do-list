@@ -9,7 +9,6 @@ import {
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
-import { fromSupabaseError as fromServerSupabaseError } from '@/shared/errors/from-supabase-error';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out
 // of sync with what mapDbTask actually reads. Explicit over '*' so a future

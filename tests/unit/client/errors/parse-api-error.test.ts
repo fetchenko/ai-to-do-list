@@ -5,38 +5,29 @@ import { parseApiError } from '@/client/errors/parse-api-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('parseApiError', () => {
-  it('maps a valid API error and preserves the HTTP response status', () => {
+  it('maps a valid API error code to a ClientError', () => {
     expect(
-      parseApiError(
-        {
-          code: ErrorCode.AI_UNAVAILABLE,
-          message: 'AI unavailable',
-        },
-        503
-      )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, { status: 503 }));
+      parseApiError({
+        code: ErrorCode.AI_UNAVAILABLE,
+        message: 'AI unavailable',
+      })
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 
-  it('does not read transport status from the API error body', () => {
+  it('ignores transport metadata in the API error payload', () => {
     expect(
-      parseApiError(
-        {
-          code: ErrorCode.AI_UNAVAILABLE,
-          status: 500,
-          message: 'AI unavailable',
-        },
-        503
-      )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, { status: 503 }));
+      parseApiError({
+        code: ErrorCode.AI_UNAVAILABLE,
+        status: 503,
+        message: 'AI unavailable',
+      })
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 
-  it('returns UNKNOWN and preserves HTTP status for an invalid payload', () => {
+  it('returns UNKNOWN for an invalid error code', () => {
     expect(
-      parseApiError(
-        { code: 'INVALID_CODE', message: 'AI unavailable' },
-        503
-      )
-    ).toEqual(new ClientError(ErrorCode.UNKNOWN, { status: 503 }));
+      parseApiError({ code: 'INVALID_CODE', message: 'AI unavailable' })
+    ).toEqual(new ClientError(ErrorCode.UNKNOWN));
   });
 
   it.each([
@@ -45,8 +36,6 @@ describe('parseApiError', () => {
     'AI unavailable',
     { code: ErrorCode.AI_UNAVAILABLE },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
-    expect(parseApiError(input, 500)).toEqual(
-      new ClientError(ErrorCode.UNKNOWN, { status: 500 })
-    );
+    expect(parseApiError(input)).toEqual(new ClientError(ErrorCode.UNKNOWN));
   });
 });

@@ -8,8 +8,8 @@ import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import type { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 import type { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
-import { AiUnavailableError } from '@/shared/errors/ai-app-error';
-import { ValidationRequestError } from '@/shared/errors/app-error';
+import { ClientError } from '@/client/errors/client-error';
+import { ErrorCode } from '@/shared/errors/code';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({
   streamSubtasks: vi.fn(),
@@ -225,7 +225,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('errors', () => {
     it('handles thrown stream errors', async () => {
-      const error = new AiUnavailableError('AI failed');
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
 
       mockedStreamSubtasks.mockImplementation(() =>
         (async function* () {
@@ -248,7 +248,7 @@ describe('useSubtaskDrafts', () => {
       expect(result.current.isGenerating).toBe(false);
     });
 
-    it('converts an error event to AppError', async () => {
+    it('converts an error event to ClientError', async () => {
       mockedStreamSubtasks.mockReturnValue(
         createStream([
           {
@@ -274,7 +274,7 @@ describe('useSubtaskDrafts', () => {
 
       await waitFor(() => {
         expect(result.current.error).toEqual(
-          new AiUnavailableError('AI unavailable')
+          new ClientError(ErrorCode.AI_UNAVAILABLE, 503)
         );
       });
     });
@@ -292,7 +292,7 @@ describe('useSubtaskDrafts', () => {
 
       await waitFor(() => {
         expect(result.current.error).toEqual(
-          new ValidationRequestError('Missing task id')
+          new ClientError(ErrorCode.INVALID_REQUEST)
         );
       });
 
@@ -303,7 +303,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('retry', () => {
     it('retries after an error and receives new drafts', async () => {
-      const error = new AiUnavailableError('AI failed');
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
 
       mockedStreamSubtasks
         .mockImplementationOnce(() =>
@@ -352,7 +352,7 @@ describe('useSubtaskDrafts', () => {
     });
 
     it('clears error immediately when retry starts', async () => {
-      const error = new AiUnavailableError('Initial failure');
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
 
       mockedStreamSubtasks
         .mockImplementationOnce(() =>
@@ -392,7 +392,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('discard', () => {
     it('resets the mutation state on discard', async () => {
-      const error = new AiUnavailableError('AI failed');
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
 
       mockedStreamSubtasks.mockImplementation(() =>
         (async function* () {

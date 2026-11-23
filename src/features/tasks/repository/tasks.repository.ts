@@ -7,7 +7,6 @@ import {
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError as fromServerSupabaseError } from '@/shared/errors/from-supabase-error';
 import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
@@ -23,7 +22,7 @@ const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
  */
 export async function fetchTasks(
   supabase: SupabaseClient,
-  mapError: (error: PostgrestError) => Error = fromServerSupabaseError
+  mapError: (error: PostgrestError) => Error
 ) {
   const { data, error } = await supabase
     .from('tasks')

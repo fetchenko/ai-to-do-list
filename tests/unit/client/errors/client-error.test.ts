@@ -11,17 +11,8 @@ describe('ClientError', () => {
     expect(error.name).toBe('ClientError');
     expect(error.code).toBe(ErrorCode.AI_UNAVAILABLE);
     expect(error.message).toBe('Client operation failed');
-    expect(error.status).toBeUndefined();
+    expect('status' in error).toBe(false);
     expect('details' in error).toBe(false);
-  });
-
-  it('can preserve the HTTP status separately from the error code', () => {
-    const error = new ClientError(ErrorCode.AI_UNAVAILABLE, {
-      status: 503,
-    });
-
-    expect(error.code).toBe(ErrorCode.AI_UNAVAILABLE);
-    expect(error.status).toBe(503);
   });
 
   it('preserves the standard Error cause option', () => {

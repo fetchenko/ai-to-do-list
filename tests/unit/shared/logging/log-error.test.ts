@@ -34,7 +34,7 @@ describe('logError', () => {
 
     expect(logger).toHaveBeenCalledOnce();
 
-    const entry = logger.mock.calls[0][0] as {
+    const entry = JSON.parse(logger.mock.calls[0][0] as string) as {
       errorCode: string;
       upstreamStatus: number;
       source: string;
@@ -75,14 +75,14 @@ describe('logError', () => {
       operation: 'generate-subtasks',
     });
 
-    expect(logger).toHaveBeenCalledWith(
-      expect.objectContaining({
-        error: {
-          name: 'NonErrorThrown',
-          message: 'A non-Error value was thrown',
-        },
-      })
-    );
-    expect(JSON.stringify(logger.mock.calls[0])).not.toContain('secret-token');
+    const entry = JSON.parse(logger.mock.calls[0][0] as string);
+
+    expect(entry).toMatchObject({
+      error: {
+        name: 'NonErrorThrown',
+        message: 'A non-Error value was thrown',
+      },
+    });
+    expect(JSON.stringify(entry)).not.toContain('secret-token');
   });
 });

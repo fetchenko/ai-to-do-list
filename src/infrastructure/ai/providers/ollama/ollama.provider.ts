@@ -79,7 +79,11 @@ export class OllamaProvider implements AIProvider {
     if (!response.ok) {
       const body = await response.text();
 
-      throw new AiUnavailableError(body);
+      throw new AiUnavailableError({
+        provider: 'ollama',
+        upstreamStatus: response.status,
+        responseBody: body,
+      });
     }
 
     if (!response.body) {

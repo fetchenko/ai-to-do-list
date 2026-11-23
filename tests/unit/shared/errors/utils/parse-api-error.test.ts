@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { AppError } from '@/shared/errors/app-error';
+import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 
 describe('parseApiError', () => {
-  it('parses a valid API error into an AppError', () => {
+  it('parses a valid API error into a ClientError', () => {
     expect(
       parseApiError(
         {
@@ -17,9 +17,7 @@ describe('parseApiError', () => {
         503
       )
     ).toEqual(
-      new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable', {
-        provider: 'deepseek',
-      })
+      new ClientError(ErrorCode.AI_UNAVAILABLE, 503)
     );
   });
 
@@ -33,7 +31,7 @@ describe('parseApiError', () => {
         },
         503
       )
-    ).toEqual(new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable'));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, 503));
   });
 
   it('parses an API error without details', () => {
@@ -47,7 +45,7 @@ describe('parseApiError', () => {
         504
       )
     ).toEqual(
-      new AppError(ErrorCode.AI_GENERATION_TIMEOUT, 504, 'AI request timed out')
+      new ClientError(ErrorCode.AI_GENERATION_TIMEOUT, 504)
     );
   });
 
@@ -57,7 +55,7 @@ describe('parseApiError', () => {
         { code: 'INVALID_CODE', status: 503, message: 'AI unavailable' },
         503
       )
-    ).toEqual(new AppError(ErrorCode.UNKNOWN, 503, 'Something went wrong.'));
+    ).toEqual(new ClientError(ErrorCode.UNKNOWN, 503));
   });
 
   it.each([
@@ -67,7 +65,7 @@ describe('parseApiError', () => {
     { code: ErrorCode.AI_UNAVAILABLE },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
     expect(parseApiError(input, 503)).toEqual(
-      new AppError(ErrorCode.UNKNOWN, 503, 'Something went wrong.')
+      new ClientError(ErrorCode.UNKNOWN, 503)
     );
   });
 
@@ -81,6 +79,6 @@ describe('parseApiError', () => {
         },
         503
       )
-    ).toEqual(new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable'));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, 503));
   });
 });

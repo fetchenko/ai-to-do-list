@@ -4,6 +4,13 @@ import { ErrorCode } from '@/shared/errors/code';
 
 import { ClientError } from './client-error';
 
+/**
+ * Maps errors returned by Supabase's PostgREST API to frontend errors.
+ *
+ * These errors originate from database operations performed through the
+ * Supabase client. Database messages and details are intentionally not exposed
+ * to the UI; only a safe, application-level error code is propagated.
+ */
 export function fromSupabaseError(error: PostgrestError): ClientError {
   switch (error.code) {
     case '23505':

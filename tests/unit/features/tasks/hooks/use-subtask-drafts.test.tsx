@@ -225,7 +225,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('errors', () => {
     it('handles thrown stream errors', async () => {
-      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE);
 
       mockedStreamSubtasks.mockImplementation(() =>
         (async function* () {
@@ -274,7 +274,7 @@ describe('useSubtaskDrafts', () => {
 
       await waitFor(() => {
         expect(result.current.error).toEqual(
-          new ClientError(ErrorCode.AI_UNAVAILABLE, 503)
+          new ClientError(ErrorCode.AI_UNAVAILABLE)
         );
       });
     });
@@ -303,7 +303,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('retry', () => {
     it('retries after an error and receives new drafts', async () => {
-      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE);
 
       mockedStreamSubtasks
         .mockImplementationOnce(() =>
@@ -352,7 +352,7 @@ describe('useSubtaskDrafts', () => {
     });
 
     it('clears error immediately when retry starts', async () => {
-      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE);
 
       mockedStreamSubtasks
         .mockImplementationOnce(() =>
@@ -392,7 +392,7 @@ describe('useSubtaskDrafts', () => {
 
   describe('discard', () => {
     it('resets the mutation state on discard', async () => {
-      const error = new ClientError(ErrorCode.AI_UNAVAILABLE, 503);
+      const error = new ClientError(ErrorCode.AI_UNAVAILABLE);
 
       mockedStreamSubtasks.mockImplementation(() =>
         (async function* () {

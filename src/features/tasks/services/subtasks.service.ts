@@ -1,4 +1,5 @@
 import { generateKeyBetween } from 'fractional-indexing';
+
 import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
@@ -9,10 +10,10 @@ import {
   AiGeneratedTask,
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase/client';
 import { ClientError } from '@/client/errors/client-error';
 import { fromSupabaseError } from '@/client/errors/from-supabase-error';
 import { parseApiError } from '@/client/errors/parse-api-error';
+import { createClient } from '@/infrastructure/supabase/client';
 import { ErrorCode } from '@/shared/errors/code';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 

@@ -5,49 +5,38 @@ import { parseApiError } from '@/client/errors/parse-api-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('parseApiError', () => {
-  it('maps a valid API error to a ClientError', () => {
+  it('maps a valid API error and preserves the HTTP response status', () => {
     expect(
       parseApiError(
         {
           code: ErrorCode.AI_UNAVAILABLE,
-          status: 503,
           message: 'AI unavailable',
-          details: { provider: 'deepseek' },
-        }
+        },
+        503
       )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, { status: 503 }));
   });
 
-  it('ignores transport status from the API error body', () => {
+  it('does not read transport status from the API error body', () => {
     expect(
       parseApiError(
         {
           code: ErrorCode.AI_UNAVAILABLE,
           status: 500,
           message: 'AI unavailable',
-        }
+        },
+        503
       )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, { status: 503 }));
   });
 
-  it('parses an API error without details', () => {
+  it('returns UNKNOWN and preserves HTTP status for an invalid payload', () => {
     expect(
       parseApiError(
-        {
-          code: ErrorCode.AI_GENERATION_TIMEOUT,
-          status: 504,
-          message: 'AI request timed out',
-        }
+        { code: 'INVALID_CODE', message: 'AI unavailable' },
+        503
       )
-    ).toEqual(new ClientError(ErrorCode.AI_GENERATION_TIMEOUT));
-  });
-
-  it('returns UNKNOWN for invalid API error codes', () => {
-    expect(
-      parseApiError(
-        { code: 'INVALID_CODE', status: 503, message: 'AI unavailable' }
-      )
-    ).toEqual(new ClientError(ErrorCode.UNKNOWN));
+    ).toEqual(new ClientError(ErrorCode.UNKNOWN, { status: 503 }));
   });
 
   it.each([
@@ -56,20 +45,8 @@ describe('parseApiError', () => {
     'AI unavailable',
     { code: ErrorCode.AI_UNAVAILABLE },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
-    expect(parseApiError(input)).toEqual(
-      new ClientError(ErrorCode.UNKNOWN)
+    expect(parseApiError(input, 500)).toEqual(
+      new ClientError(ErrorCode.UNKNOWN, { status: 500 })
     );
-  });
-
-  it('ignores status metadata when mapping an API error', () => {
-    expect(
-      parseApiError(
-        {
-          code: ErrorCode.AI_UNAVAILABLE,
-          status: '503',
-          message: 'AI unavailable',
-        }
-      )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 });

@@ -7,8 +7,8 @@ import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks-
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import type { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
-import { AiUnavailableError } from '@/shared/errors/ai-app-error';
-import { ValidationRequestError } from '@/shared/errors/app-error';
+import { ClientError } from '@/client/errors/client-error';
+import { ErrorCode } from '@/shared/errors/code';
 
 vi.mock('@/features/tasks/hooks/use-subtask-drafts', () => ({
   useSubtaskDrafts: vi.fn(),
@@ -363,7 +363,7 @@ describe('DraftSubtasks', () => {
   describe('errors', () => {
     it('renders a generation error', () => {
       configureDraftHook({
-        error: new AiUnavailableError('AI unavailable'),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
       });
 
       renderComponent();
@@ -376,7 +376,7 @@ describe('DraftSubtasks', () => {
 
     it('shows Retry for a retryable error', () => {
       configureDraftHook({
-        error: new AiUnavailableError('AI unavailable'),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
       });
 
       renderComponent();
@@ -386,7 +386,7 @@ describe('DraftSubtasks', () => {
 
     it('calls retry when Retry is clicked', async () => {
       configureDraftHook({
-        error: new AiUnavailableError('AI unavailable'),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
       });
 
       renderComponent();
@@ -400,7 +400,7 @@ describe('DraftSubtasks', () => {
 
     it('hides Retry for a non-retryable error', () => {
       configureDraftHook({
-        error: new ValidationRequestError({}),
+        error: new ClientError(ErrorCode.INVALID_REQUEST, 400),
       });
 
       renderComponent();
@@ -412,7 +412,7 @@ describe('DraftSubtasks', () => {
 
     it('dismisses the error', async () => {
       configureDraftHook({
-        error: new AiUnavailableError('AI unavailable'),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
       });
 
       renderComponent();
@@ -426,7 +426,7 @@ describe('DraftSubtasks', () => {
 
     it('keeps streamed drafts when an error occurs', async () => {
       configureDraftHook({
-        error: new AiUnavailableError('AI unavailable'),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
       });
 
       renderComponent();

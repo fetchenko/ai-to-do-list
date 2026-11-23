@@ -1,5 +1,6 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
+import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
@@ -7,8 +8,8 @@ import {
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
+import { fromSupabaseError as fromServerSupabaseError } from '@/shared/errors/from-supabase-error';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out
 // of sync with what mapDbTask actually reads. Explicit over '*' so a future

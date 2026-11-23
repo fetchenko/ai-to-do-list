@@ -1,4 +1,4 @@
-import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
@@ -20,10 +20,7 @@ const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
  * Accepts either a server or admin Supabase client, allowing the caller
  * to determine the authentication/authorization context.
  */
-export async function fetchTasks(
-  supabase: SupabaseClient,
-  mapError: (error: PostgrestError) => Error
-) {
+export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('tasks')
     .select<typeof TASK_COLUMNS, DbTaskRow>(TASK_COLUMNS)
@@ -31,7 +28,7 @@ export async function fetchTasks(
     .is('deleted_at', null);
 
   if (error) {
-    throw mapError(error);
+    throw error;
   }
 
   return data.map(mapDbTask);
@@ -40,7 +37,15 @@ export async function fetchTasks(
 export async function fetchTasksClient() {
   const supabase = createClient();
 
-  return fetchTasks(supabase, fromClientSupabaseError);
+  try {
+    return await fetchTasks(supabase);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error) {
+      throw fromClientSupabaseError(error as Parameters<typeof fromClientSupabaseError>[0]);
+    }
+
+    throw error;
+  }
 }
 
 export async function updateTask(id: string, newTask: TaskUpdate) {

@@ -10,5 +10,5 @@ export function parseApiEventError(error: unknown): ClientError {
     return new ClientError(ErrorCode.UNKNOWN);
   }
 
-  return new ClientError(result.data.code, result.data.status);
+  return new ClientError(result.data.code);
 }

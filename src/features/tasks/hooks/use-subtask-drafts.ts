@@ -5,10 +5,11 @@ import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
-import { ValidationRequestError } from '@/shared/errors/app-error';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { ClientError } from '@/client/errors/client-error';
+import { ErrorCode } from '@/shared/errors/code';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
 import { isAbortError } from '@/shared/errors/utils/is-abort-error';
-import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
+import { parseApiEventError } from '@/client/errors/parse-api-event-error';
 
 export function useSubtaskDrafts(
   taskId: string,
@@ -19,7 +20,7 @@ export function useSubtaskDrafts(
   const { error, isPending, mutate, reset } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
       if (!taskId) {
-        throw new ValidationRequestError('Missing task id');
+        throw new ClientError(ErrorCode.INVALID_REQUEST);
       }
 
       for await (const chunk of streamSubtasks(taskId, signal)) {

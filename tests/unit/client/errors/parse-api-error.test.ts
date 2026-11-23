@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { ClientError } from '@/client/errors/client-error';
-import { ErrorCode } from '@/shared/errors/code';
 import { parseApiError } from '@/client/errors/parse-api-error';
+import { ErrorCode } from '@/shared/errors/code';
 
 describe('parseApiError', () => {
   it('maps a valid API error to a ClientError', () => {
@@ -61,7 +61,7 @@ describe('parseApiError', () => {
     );
   });
 
-  it('accepts a valid error body even when its status is represented as a string', () => {
+  it('ignores status metadata when mapping an API error', () => {
     expect(
       parseApiError(
         {

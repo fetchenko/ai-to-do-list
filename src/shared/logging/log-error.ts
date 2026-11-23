@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { AppError } from '@/shared/errors/app-error';
 
 type ErrorLogContext = {

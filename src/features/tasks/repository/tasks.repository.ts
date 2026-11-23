@@ -1,6 +1,6 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
-import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
+import { fromSupabaseError } from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
@@ -41,7 +41,7 @@ export async function fetchTasksClient() {
     return await fetchTasks(supabase);
   } catch (error) {
     if (error instanceof Error && 'code' in error) {
-      throw fromClientSupabaseError(error as PostgrestError);
+      throw fromSupabaseError(error as PostgrestError);
     }
 
     throw error;
@@ -57,7 +57,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .eq('id', id);
 
   if (error) {
-    throw fromClientSupabaseError(error);
+    throw fromSupabaseError(error);
   }
 
   return data;
@@ -79,7 +79,7 @@ export async function getLastPosition(parentTaskId?: string | null) {
   });
 
   if (error) {
-    throw fromClientSupabaseError(error);
+    throw fromSupabaseError(error);
   }
 
   return data;

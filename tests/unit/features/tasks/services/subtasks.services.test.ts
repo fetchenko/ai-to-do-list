@@ -66,7 +66,7 @@ describe('streamSubtasks', () => {
     );
 
     await expect(collect(streamSubtasks('task-1'))).rejects.toEqual(
-      new AppError('AI_UNAVAILABLE', 503, 'AI unavailable', {
+      new AppError('AI_UNAVAILABLE', 'AI unavailable', {
         provider: 'deepseek',
       })
     );

@@ -16,6 +16,21 @@ type SerializedError = {
 
 function serializeError(error: unknown, depth = 0): SerializedError {
   if (!(error instanceof Error)) {
+    if (
+      error !== null &&
+      typeof error === 'object' &&
+      'code' in error &&
+      typeof error.code === 'string'
+    ) {
+      return {
+        name: 'ApiError',
+        message:
+          'message' in error && typeof error.message === 'string'
+            ? error.message
+            : 'API operation failed',
+      };
+    }
+
     return {
       name: 'NonErrorThrown',
       message: 'A non-Error value was thrown',
@@ -62,7 +77,10 @@ function getSafeDiagnosticFields(error: unknown): {
 
 export function logError(error: unknown, context: ErrorLogContext): void {
   const errorCode =
-    error instanceof Error && 'code' in error && typeof error.code === 'string'
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string'
       ? error.code
       : undefined;
 

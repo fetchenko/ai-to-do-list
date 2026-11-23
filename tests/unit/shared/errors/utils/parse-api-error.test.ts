@@ -5,7 +5,7 @@ import { ErrorCode } from '@/shared/errors/code';
 import { parseApiError } from '@/client/errors/parse-api-error';
 
 describe('parseApiError', () => {
-  it('parses a valid API error into a ClientError', () => {
+  it('maps a valid API error to a ClientError', () => {
     expect(
       parseApiError(
         {
@@ -13,23 +13,21 @@ describe('parseApiError', () => {
           status: 503,
           message: 'AI unavailable',
           details: { provider: 'deepseek' },
-        },
-        503
+        }
       )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, 503));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 
-  it('uses the HTTP response status instead of the status in the error body', () => {
+  it('ignores transport status from the API error body', () => {
     expect(
       parseApiError(
         {
           code: ErrorCode.AI_UNAVAILABLE,
           status: 500,
           message: 'AI unavailable',
-        },
-        503
+        }
       )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, 503));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 
   it('parses an API error without details', () => {
@@ -39,10 +37,9 @@ describe('parseApiError', () => {
           code: ErrorCode.AI_GENERATION_TIMEOUT,
           status: 504,
           message: 'AI request timed out',
-        },
-        504
+        }
       )
-    ).toEqual(new ClientError(ErrorCode.AI_GENERATION_TIMEOUT, 504));
+    ).toEqual(new ClientError(ErrorCode.AI_GENERATION_TIMEOUT));
   });
 
   it('returns UNKNOWN for invalid API error codes', () => {
@@ -51,7 +48,7 @@ describe('parseApiError', () => {
         { code: 'INVALID_CODE', status: 503, message: 'AI unavailable' },
         503
       )
-    ).toEqual(new ClientError(ErrorCode.UNKNOWN, 503));
+    ).toEqual(new ClientError(ErrorCode.UNKNOWN));
   });
 
   it.each([
@@ -61,7 +58,7 @@ describe('parseApiError', () => {
     { code: ErrorCode.AI_UNAVAILABLE },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
     expect(parseApiError(input, 503)).toEqual(
-      new ClientError(ErrorCode.UNKNOWN, 503)
+      new ClientError(ErrorCode.UNKNOWN)
     );
   });
 
@@ -72,9 +69,8 @@ describe('parseApiError', () => {
           code: ErrorCode.AI_UNAVAILABLE,
           status: '503',
           message: 'AI unavailable',
-        },
-        503
+        }
       )
-    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE, 503));
+    ).toEqual(new ClientError(ErrorCode.AI_UNAVAILABLE));
   });
 });

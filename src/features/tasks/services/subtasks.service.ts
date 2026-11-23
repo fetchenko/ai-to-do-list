@@ -12,13 +12,10 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import {
-  AiEmptyResponseError,
-  AiInvalidResponseFormat,
-} from '@/shared/errors/ai-app-error';
-import { ValidationRequestError } from '@/shared/errors/app-error';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
-import { parseApiError } from '@/shared/errors/utils/parse-api-error';
+import { ClientError } from '@/client/errors/client-error';
+import { fromSupabaseError } from '@/client/errors/from-supabase-error';
+import { parseApiError } from '@/client/errors/parse-api-error';
+import { ErrorCode } from '@/shared/errors/code';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 export async function* streamSubtasks(
@@ -37,7 +34,7 @@ export async function* streamSubtasks(
   }
 
   if (!response.body) {
-    throw new AiEmptyResponseError('Response body is missing');
+    throw new ClientError(ErrorCode.AI_EMPTY_RESPONSE);
   }
 
   yield* readJsonStream<SubtaskStreamEvent>(response.body);
@@ -59,11 +56,9 @@ export async function generateSubtasks(
   const { data } = await res.json();
   const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
 
-  if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
+  if (!success) throw new ClientError(ErrorCode.AI_INVALID_RESPONSE_FORMAT);
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
-      'No meaningful subtasks could be generated.'
-    );
+    throw new ClientError(ErrorCode.AI_EMPTY_RESPONSE);
   }
 
   return parsed.subtasks.map((subtask) => ({
@@ -83,7 +78,7 @@ export async function saveSubtasks(
   const rows = subtasks.map(({ id, ...subtask }) => {
     const result = taskSchema.safeParse(subtask);
     if (!result.success) {
-      throw new ValidationRequestError(z.treeifyError(result.error));
+      throw new ClientError(ErrorCode.INVALID_REQUEST);
     }
 
     const next = generateKeyBetween(prev, null);

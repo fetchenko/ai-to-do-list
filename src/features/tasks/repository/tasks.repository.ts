@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
@@ -40,8 +40,8 @@ export async function fetchTasksClient() {
   try {
     return await fetchTasks(supabase);
   } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error) {
-      throw fromClientSupabaseError(error as Parameters<typeof fromClientSupabaseError>[0]);
+    if (error instanceof Error && 'code' in error) {
+      throw fromClientSupabaseError(error as PostgrestError);
     }
 
     throw error;

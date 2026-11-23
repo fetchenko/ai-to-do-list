@@ -35,21 +35,17 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ['src/features/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/infrastructure/ai/**/*'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['./*', '../*'],
+              group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
               message:
-                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
-            },
-            {
-              regex: '^@/infrastructure(?:$|(?!/supabase(?:/|$)).*)',
-              message:
-                'Feature modules may only import from @/infrastructure/supabase/. All other infrastructure dependencies must be accessed through a feature-owned interface or shared abstraction.',
+                'The AI infrastructure module is private. Import it only from within src/infrastructure/ai.',
             },
           ],
         },

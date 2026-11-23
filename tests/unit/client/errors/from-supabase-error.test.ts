@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { fromSupabaseError } from '@/client/errors/from-supabase-error';
 import { ClientError } from '@/client/errors/client-error';
+import { fromSupabaseError } from '@/client/errors/from-supabase-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('fromSupabaseError (client)', () => {

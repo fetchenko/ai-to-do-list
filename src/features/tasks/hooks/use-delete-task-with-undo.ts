@@ -11,7 +11,7 @@ import {
   removeFromCache,
   restoreToCache,
 } from '@/features/tasks/utils/tasks-cache';
-import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { getFriendlyErrorMessage } from '@/client/errors/error-messages';
 
 const TOAST_DURATION_MS = 8000;
 

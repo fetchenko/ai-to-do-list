@@ -86,11 +86,14 @@ export function logError(error: unknown, context: ErrorLogContext): void {
       ? error.code
       : undefined;
 
-  console.error({
-    level: 'error',
-    ...context,
-    ...(errorCode ? { errorCode } : {}),
-    ...getSafeDiagnosticFields(error),
-    error: serializeError(error),
-  });
+  console.error(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      ...context,
+      ...(errorCode ? { errorCode } : {}),
+      ...getSafeDiagnosticFields(error),
+      error: serializeError(error),
+    })
+  );
 }

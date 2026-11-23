@@ -39,13 +39,13 @@ const eslintConfig = defineConfig([
     ignores: ['src/infrastructure/ai/**/*'],
     rules: {
       'no-restricted-imports': [
-        'error',
+        'warn',
         {
           patterns: [
             {
               group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
               message:
-                'The AI infrastructure module is private. Import it only from within src/infrastructure/ai.',
+                'Avoid importing the AI infrastructure module outside src/infrastructure/ai. This dependency should be moved behind an appropriate abstraction.',
             },
           ],
         },

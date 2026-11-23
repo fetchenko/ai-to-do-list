@@ -16,7 +16,7 @@ describe('normalizeApiEventError', () => {
     ).toEqual({
       success: false,
       code: ErrorCode.AI_UNAVAILABLE,
-      message: 'Provider unavailable',
+      message: 'Subtask generation is temporarily unavailable.',
       status: 503,
     });
   });
@@ -50,7 +50,7 @@ describe('normalizeApiEventError', () => {
     ).toEqual({
       success: false,
       code: ErrorCode.AI_REQUEST_LIMIT,
-      message: 'Too many requests',
+      message: "You've reached your AI request limit for now.",
       status: ErrorHttpStatus[ErrorCode.AI_REQUEST_LIMIT],
     });
   });

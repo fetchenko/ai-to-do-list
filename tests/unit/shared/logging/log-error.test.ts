@@ -16,7 +16,11 @@ describe('logError', () => {
       ErrorCode.AI_UNAVAILABLE,
       503,
       'AI provider unavailable',
-      { authorization: 'Bearer secret-token' },
+      {
+        authorization: 'Bearer secret-token',
+        upstreamStatus: 503,
+        responseBody: 'provider response containing private data',
+      },
       cause
     );
 
@@ -30,6 +34,7 @@ describe('logError', () => {
 
     const entry = logger.mock.calls[0][0] as {
       errorCode: string;
+      upstreamStatus: number;
       source: string;
       operation: string;
       provider: string;
@@ -42,6 +47,7 @@ describe('logError', () => {
 
     expect(entry).toMatchObject({
       errorCode: ErrorCode.AI_UNAVAILABLE,
+      upstreamStatus: 503,
       source: 'ai',
       operation: 'generate-subtasks',
       provider: 'DeepSeekProvider',
@@ -56,6 +62,7 @@ describe('logError', () => {
     });
 
     expect(JSON.stringify(entry)).not.toContain('secret-token');
+    expect(JSON.stringify(entry)).not.toContain('private data');
   });
 
   it('logs non-Error thrown values without serializing their contents', () => {

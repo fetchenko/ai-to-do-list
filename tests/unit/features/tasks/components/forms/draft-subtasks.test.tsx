@@ -363,7 +363,7 @@ describe('DraftSubtasks', () => {
   describe('errors', () => {
     it('renders a generation error', () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE),
       });
 
       renderComponent();
@@ -376,7 +376,7 @@ describe('DraftSubtasks', () => {
 
     it('shows Retry for a retryable error', () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE),
       });
 
       renderComponent();
@@ -386,7 +386,7 @@ describe('DraftSubtasks', () => {
 
     it('calls retry when Retry is clicked', async () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE),
       });
 
       renderComponent();
@@ -400,7 +400,7 @@ describe('DraftSubtasks', () => {
 
     it('hides Retry for a non-retryable error', () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.INVALID_REQUEST, 400),
+        error: new ClientError(ErrorCode.INVALID_REQUEST),
       });
 
       renderComponent();
@@ -412,7 +412,7 @@ describe('DraftSubtasks', () => {
 
     it('dismisses the error', async () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE),
       });
 
       renderComponent();
@@ -426,7 +426,7 @@ describe('DraftSubtasks', () => {
 
     it('keeps streamed drafts when an error occurs', async () => {
       configureDraftHook({
-        error: new ClientError(ErrorCode.AI_UNAVAILABLE, 503),
+        error: new ClientError(ErrorCode.AI_UNAVAILABLE),
       });
 
       renderComponent();

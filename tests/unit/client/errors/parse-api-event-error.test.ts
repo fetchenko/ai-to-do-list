@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { ClientError } from '@/client/errors/client-error';
-import { ErrorCode } from '@/shared/errors/code';
 import { parseApiEventError } from '@/client/errors/parse-api-event-error';
+import { ErrorCode } from '@/shared/errors/code';
 
 describe('parseApiEventError', () => {
   it('maps a valid event error without exposing API details', () => {

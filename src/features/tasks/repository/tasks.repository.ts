@@ -7,7 +7,8 @@ import {
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
+import { fromSupabaseError as fromServerSupabaseError } from '@/shared/errors/from-supabase-error';
+import { fromSupabaseError as fromClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out
@@ -20,7 +21,10 @@ const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
  * Accepts either a server or admin Supabase client, allowing the caller
  * to determine the authentication/authorization context.
  */
-export async function fetchTasks(supabase: SupabaseClient) {
+export async function fetchTasks(
+  supabase: SupabaseClient,
+  mapError: typeof fromServerSupabaseError = fromServerSupabaseError
+) {
   const { data, error } = await supabase
     .from('tasks')
     .select<typeof TASK_COLUMNS, DbTaskRow>(TASK_COLUMNS)
@@ -28,7 +32,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
     .is('deleted_at', null);
 
   if (error) {
-    throw fromSupabaseError(error);
+    throw mapError(error);
   }
 
   return data.map(mapDbTask);
@@ -37,7 +41,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
 export async function fetchTasksClient() {
   const supabase = createClient();
 
-  return fetchTasks(supabase);
+  return fetchTasks(supabase, fromClientSupabaseError);
 }
 
 export async function updateTask(id: string, newTask: TaskUpdate) {
@@ -49,7 +53,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .eq('id', id);
 
   if (error) {
-    throw fromSupabaseError(error);
+    throw fromClientSupabaseError(error);
   }
 
   return data;

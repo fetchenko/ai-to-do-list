@@ -1,8 +1,8 @@
 import { collect } from '@tests/utils/collect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { ClientError } from '@/client/errors/client-error';
+import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('streamSubtasks', () => {

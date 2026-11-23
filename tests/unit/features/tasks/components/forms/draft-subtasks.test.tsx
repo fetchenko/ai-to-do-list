@@ -3,11 +3,11 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ClientError } from '@/client/errors/client-error';
 import { DraftSubtasks } from '@/features/tasks/components/forms/draft-subtasks-form';
 import { useAddSubtasks } from '@/features/tasks/hooks/use-add-subtasks';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import type { AiGeneratedTask, Task } from '@/features/tasks/types/tasks.types';
-import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 vi.mock('@/features/tasks/hooks/use-subtask-drafts', () => ({

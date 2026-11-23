@@ -1,6 +1,4 @@
 import { generateKeyBetween } from 'fractional-indexing';
-import z from 'zod';
-
 import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';

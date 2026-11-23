@@ -4,11 +4,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ClientError } from '@/client/errors/client-error';
 import { useSubtaskDrafts } from '@/features/tasks/hooks/use-subtask-drafts';
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import type { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
 import type { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
-import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 vi.mock('@/features/tasks/services/subtasks.service', () => ({

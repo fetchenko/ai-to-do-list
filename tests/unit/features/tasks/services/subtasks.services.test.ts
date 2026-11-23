@@ -66,7 +66,7 @@ describe('streamSubtasks', () => {
     );
 
     await expect(collect(streamSubtasks('task-1'))).rejects.toEqual(
-      new ClientError(ErrorCode.AI_UNAVAILABLE, 503)
+      new ClientError(ErrorCode.AI_UNAVAILABLE)
     );
   });
 

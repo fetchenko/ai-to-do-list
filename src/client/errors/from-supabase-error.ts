@@ -13,9 +13,9 @@ import { ClientError } from './client-error';
  */
 export function fromSupabaseError(error: PostgrestError): ClientError {
   switch (error.code) {
-    case '23505':
+    case '23505': // unique_violation: a value violates a unique constraint.
       return new ClientError(ErrorCode.INVALID_REQUEST);
-    case '42501':
+    case '42501': // insufficient_privilege: the operation is not permitted.
       return new ClientError(ErrorCode.FORBIDDEN);
     default:
       return new ClientError(ErrorCode.DATABASE_ERROR);

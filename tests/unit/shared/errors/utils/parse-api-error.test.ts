@@ -45,8 +45,7 @@ describe('parseApiError', () => {
   it('returns UNKNOWN for invalid API error codes', () => {
     expect(
       parseApiError(
-        { code: 'INVALID_CODE', status: 503, message: 'AI unavailable' },
-        503
+        { code: 'INVALID_CODE', status: 503, message: 'AI unavailable' }
       )
     ).toEqual(new ClientError(ErrorCode.UNKNOWN));
   });
@@ -57,7 +56,7 @@ describe('parseApiError', () => {
     'AI unavailable',
     { code: ErrorCode.AI_UNAVAILABLE },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
-    expect(parseApiError(input, 503)).toEqual(
+    expect(parseApiError(input)).toEqual(
       new ClientError(ErrorCode.UNKNOWN)
     );
   });

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { ErrorCode } from '@/shared/errors/code';
 
 export const ErrorHttpStatus: Record<ErrorCode, number> = {

@@ -19,7 +19,7 @@ export default async function HomeContent() {
 
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery({
+  await queryClient.fetchQuery({
     queryKey: taskKeys.all,
     queryFn: fetchTasksServer,
   });

@@ -5,7 +5,7 @@ import {
   AiUnavailableError,
 } from '@/shared/errors/ai-app-error';
 import { ErrorCode } from '@/shared/errors/code';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
+import { ErrorHttpStatus } from '@/infrastructure/http/error-http-status';
 
 export async function parseResponseJson(response: Response): Promise<unknown> {
   if (!response.ok) {

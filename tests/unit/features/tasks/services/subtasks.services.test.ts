@@ -19,9 +19,7 @@ describe('streamSubtasks', () => {
               description: 'Compare available options',
             },
           }),
-          JSON.stringify({
-            type: 'done',
-          }),
+          JSON.stringify({ type: 'done' }),
         ].join('\n'),
         { headers: { 'Content-Type': 'application/x-ndjson' } }
       )
@@ -38,13 +36,10 @@ describe('streamSubtasks', () => {
       },
       { type: 'done' },
     ]);
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/tasks/task-1/subtasks/stream',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    expect(fetchMock).toHaveBeenCalledWith('/api/tasks/task-1/subtasks/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
   });
 
   it('throws the API error returned by the stream endpoint', async () => {
@@ -55,9 +50,7 @@ describe('streamSubtasks', () => {
           JSON.stringify({
             error: {
               code: 'AI_UNAVAILABLE',
-              status: 503,
               message: 'AI unavailable',
-              details: { provider: 'deepseek' },
             },
           }),
           { status: 503 }
@@ -66,9 +59,7 @@ describe('streamSubtasks', () => {
     );
 
     await expect(collect(streamSubtasks('task-1'))).rejects.toEqual(
-      new AppError('AI_UNAVAILABLE', 503, 'AI unavailable', {
-        provider: 'deepseek',
-      })
+      new AppError('AI_UNAVAILABLE', 'AI unavailable')
     );
   });
 

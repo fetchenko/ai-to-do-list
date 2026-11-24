@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { AppError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
 
 describe('parseApiEventError', () => {
@@ -16,7 +15,7 @@ describe('parseApiEventError', () => {
         details: { provider: 'deepseek' },
       })
     ).toEqual(
-      new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable', {
+      new AppError(ErrorCode.AI_UNAVAILABLE, 'AI unavailable', {
         provider: 'deepseek',
       })
     );
@@ -30,13 +29,7 @@ describe('parseApiEventError', () => {
         status: 503,
         message: 'AI unavailable',
       })
-    ).toEqual(
-      new AppError(
-        ErrorCode.UNKNOWN,
-        ErrorHttpStatus[ErrorCode.UNKNOWN],
-        'Something went wrong.'
-      )
-    );
+    ).toEqual(new AppError(ErrorCode.UNKNOWN, 'Something went wrong.'));
   });
 
   it.each([
@@ -44,19 +37,10 @@ describe('parseApiEventError', () => {
     undefined,
     {},
     { success: false, code: ErrorCode.AI_UNAVAILABLE },
-    {
-      success: false,
-      code: ErrorCode.AI_UNAVAILABLE,
-      status: '503',
-      message: 'x',
-    },
+    { success: false, code: ErrorCode.AI_UNAVAILABLE, status: '503', message: 'x' },
   ])('returns UNKNOWN for invalid input: %s', (input) => {
     expect(parseApiEventError(input)).toEqual(
-      new AppError(
-        ErrorCode.UNKNOWN,
-        ErrorHttpStatus[ErrorCode.UNKNOWN],
-        'Something went wrong.'
-      )
+      new AppError(ErrorCode.UNKNOWN, 'Something went wrong.')
     );
   });
 });

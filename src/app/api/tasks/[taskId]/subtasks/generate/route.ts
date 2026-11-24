@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { apiErrorResponse } from '@/app/api/_lib/api-error-response';
 import { getCurrentUser } from '@/features/auth/repository/auth.server.repository';
 import { getTaskForUser } from '@/features/tasks/repository/tasks.admin.repository';
 import { getAIProvider } from '@/infrastructure/ai/providers/ai-provider';
@@ -7,8 +8,6 @@ import { RequestGenSubtasks } from '@/infrastructure/ai/schema/ai-request';
 import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.admin.service';
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
-import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
-import { getHttpStatusCode } from '@/shared/errors/utils/get-http-status-code';
 
 const AI_TIMEOUT_MS = 60_000;
 
@@ -36,23 +35,15 @@ export async function POST(
     const result = await generateSubtasksForTask({
       task,
       userId: user.id,
-      signal: signal,
+      signal,
       provider,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: { subtasks: result.data.subtasks },
-      },
-      {
-        status: 200,
-      }
-    );
-  } catch (err: unknown) {
-    const error = normalizeApiError(err);
-    const status = getHttpStatusCode(error.code);
-
-    return NextResponse.json({ error }, { status });
+    return NextResponse.json({
+      success: true,
+      data: { subtasks: result.data.subtasks },
+    });
+  } catch (error: unknown) {
+    return apiErrorResponse(error);
   }
 }

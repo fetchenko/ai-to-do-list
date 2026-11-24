@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 
-import { FallbackPage } from '@/components/blocks/fallback-page';
 import { Button } from '@/components/ui/button';
 
 export default function Error({
@@ -17,14 +16,11 @@ export default function Error({
   }, [error]);
 
   return (
-    <FallbackPage
-      title="Something went wrong"
-      description="An unexpected error occurred while loading this page. Please try again."
-      action={
-        <Button onClick={reset} type="button">
-          Try again
-        </Button>
-      }
-    />
+    <main>
+      <h1>Something went wrong</h1>
+      <Button onClick={reset} type="button">
+        Try again
+      </Button>
+    </main>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 
-import { FallbackPage } from '@/components/blocks/fallback-page';
 import { Button } from '@/components/ui/button';
 
 export default function GlobalError({
@@ -18,16 +17,13 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-background text-foreground">
-        <FallbackPage
-          title="Something went wrong"
-          description="The application encountered an unexpected error. Please try again."
-          action={
-            <Button onClick={reset} type="button">
-              Try again
-            </Button>
-          }
-        />
+      <body>
+        <main>
+          <h1>Something went wrong</h1>
+          <Button onClick={reset} type="button">
+            Try again
+          </Button>
+        </main>
       </body>
     </html>
   );

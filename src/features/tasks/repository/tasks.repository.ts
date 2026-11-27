@@ -1,6 +1,9 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
-import { toClientSupabaseError } from '@/client/errors/from-supabase-error';
+import {
+  runClientSupabaseQuery,
+  toClientSupabaseError,
+} from '@/client/errors/from-supabase-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
@@ -44,17 +47,12 @@ export async function fetchTasksClient() {
 export async function updateTask(id: string, newTask: TaskUpdate) {
   const supabase = createClient();
 
-  try {
-    const { data, error } = await supabase
+  return runClientSupabaseQuery(
+    supabase
       .from('tasks')
       .update(mapTaskUpdateToDb(newTask))
-      .eq('id', id);
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw toClientSupabaseError(error);
-  }
+      .eq('id', id)
+  );
 }
 
 export async function softDeleteTask(id: string) {
@@ -68,14 +66,9 @@ export async function restoreTask(id: string) {
 export async function getLastPosition(parentTaskId?: string | null) {
   const supabase = createClient();
 
-  try {
-    const { data, error } = await supabase.rpc('get_last_position', {
+  return runClientSupabaseQuery(
+    supabase.rpc('get_last_position', {
       p_parent_id: parentTaskId ?? undefined,
-    });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw toClientSupabaseError(error);
-  }
+    })
+  );
 }

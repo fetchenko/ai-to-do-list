@@ -35,7 +35,7 @@ export async function* streamSubtasks(
 
   if (!response.body) {
     throw new ClientError(
-      ClientErrorCode.INVALID_RESPONSE,
+      ErrorCode.INVALID_RESPONSE,
       'Response body is missing.'
     );
   }

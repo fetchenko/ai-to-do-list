@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { ClientError } from '@/client/errors/client-error';
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
@@ -7,19 +8,28 @@ import {
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { ClientError } from '@/client/errors/client-error';
 import { fromSupabaseError } from '@/infrastructure/supabase/errors/from-supabase-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
-// Derived from taskKeyMap (not hardcoded) so this can't silently drift out
-// of sync with what mapDbTask actually reads. Explicit over '*' so a future
-// column added to the tasks table doesn't get pulled into every fetch by
-// default — it only ships once someone deliberately maps it here too.
 const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
+
+function toClientSupabaseError(error: {
+  code: string;
+  message: string;
+}): ClientError {
+  const mappedError = fromSupabaseError(error as never);
+
+  return new ClientError(mappedError.code, mappedError.message, {
+    cause: error,
+  });
+}
 
 /**
  * Accepts either a server or admin Supabase client, allowing the caller
  * to determine the authentication/authorization context.
+ *
+ * The raw Supabase error is propagated so the caller can translate it
+ * for its execution boundary (server or client).
  */
 export async function fetchTasks(supabase: SupabaseClient) {
   const { data, error } = await supabase
@@ -28,10 +38,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
     .order('position')
     .is('deleted_at', null);
 
-  if (error) {
-    const mappedError = fromSupabaseError(error);
-    throw new ClientError(mappedError.code, mappedError.message, { cause: error });
-  }
+  if (error) throw error;
 
   return data.map(mapDbTask);
 }
@@ -39,7 +46,14 @@ export async function fetchTasks(supabase: SupabaseClient) {
 export async function fetchTasksClient() {
   const supabase = createClient();
 
-  return fetchTasks(supabase);
+  try {
+    return await fetchTasks(supabase);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      throw toClientSupabaseError(error as { code: string; message: string });
+    }
+    throw error;
+  }
 }
 
 export async function updateTask(id: string, newTask: TaskUpdate) {
@@ -50,9 +64,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .update(mapTaskUpdateToDb(newTask))
     .eq('id', id);
 
-  if (error) {
-    throw fromSupabaseError(error);
-  }
+  if (error) throw toClientSupabaseError(error);
 
   return data;
 }
@@ -72,9 +84,7 @@ export async function getLastPosition(parentTaskId?: string | null) {
     p_parent_id: parentTaskId ?? undefined,
   });
 
-  if (error) {
-    throw fromSupabaseError(error);
-  }
+  if (error) throw toClientSupabaseError(error);
 
   return data;
 }

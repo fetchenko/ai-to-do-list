@@ -8,8 +8,6 @@ export const ClientErrorCode = {
 export type ClientErrorCode =
   (typeof ClientErrorCode)[keyof typeof ClientErrorCode];
 
-export type ClientErrorCodeValue = ErrorCode | ClientErrorCode;
-
 export interface ClientErrorOptions {
   /** HTTP response status, when the error came from an HTTP response. */
   status?: number;
@@ -21,7 +19,7 @@ export class ClientError extends Error {
   public readonly status?: number;
 
   constructor(
-    public readonly code: ClientErrorCodeValue,
+    public readonly code: ErrorCode | ClientErrorCode,
     message: string,
     options: ClientErrorOptions = {}
   ) {

@@ -14,7 +14,8 @@ import {
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
 import { ErrorCode } from '@/shared/errors/code';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
+import { ClientError } from '@/client/errors/client-error';
+import { fromSupabaseError } from '@/infrastructure/supabase/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
@@ -106,6 +107,7 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw fromSupabaseError(error);
+  if (error) const mappedError = fromSupabaseError(error);
+    throw new ClientError(mappedError.code, mappedError.message, { cause: error });
   return data;
 }

@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
 import { ClientError, ClientErrorCode } from '@/client/errors/client-error';
+import { parseApiError } from '@/client/errors/parse-api-error';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
@@ -15,7 +16,6 @@ import {
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/infrastructure/supabase/errors/from-supabase-error';
 import { ErrorCode } from '@/shared/errors/code';
-import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 export async function* streamSubtasks(

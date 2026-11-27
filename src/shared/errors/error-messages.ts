@@ -9,8 +9,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.FORBIDDEN]: "You don't have permission to do that.",
   [ErrorCode.DATABASE_ERROR]:
     'We had trouble saving your changes. Please try again.',
-  [ErrorCode.INVALID_RESPONSE]:
-    'Something went wrong on our end. Please try again.',
   [ErrorCode.AI_LOCK_ACTIVE]:
     'AI is generating a response. Please wait and try again later.',
   [ErrorCode.AI_LOCK_REQUEST_FAILED]:
@@ -27,8 +25,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.AI_EMPTY_RESPONSE]:
     'No subtasks could be generated. Try rewording the task.',
   [ErrorCode.AI_REQUEST_LIMIT]: "You've reached your AI request limit for now.",
-  [ErrorCode.NETWORK_ERROR]:
-    'Network error — check your connection and try again.',
   [ErrorCode.INTERNAL_SERVER_ERROR]:
     'Something went wrong on our end. Please try again.',
   [ErrorCode.UNKNOWN]: 'Something went wrong. Please try again.',
@@ -39,7 +35,7 @@ export function getFriendlyErrorMessage(error: unknown): string {
     return ERROR_MESSAGES[error.code] ?? ERROR_MESSAGES[ErrorCode.UNKNOWN];
   }
   if (error instanceof TypeError) {
-    return ERROR_MESSAGES[ErrorCode.NETWORK_ERROR];
+    return 'Network error — check your connection and try again.';
   }
   return ERROR_MESSAGES[ErrorCode.UNKNOWN];
 }

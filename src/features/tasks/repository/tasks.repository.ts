@@ -13,17 +13,6 @@ import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
 const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
 
-function toClientSupabaseError(error: {
-  code: string;
-  message: string;
-}): ClientError {
-  const mappedError = fromSupabaseError(error);
-
-  return new ClientError(mappedError.code, mappedError.message, {
-    cause: error,
-  });
-}
-
 /**
  * Accepts either a server or admin Supabase client, allowing the caller
  * to determine the authentication/authorization context.
@@ -55,8 +44,13 @@ export async function fetchTasksClient() {
       'code' in error &&
       'message' in error
     ) {
-      throw toClientSupabaseError(error as { code: string; message: string });
+      const mappedError = fromSupabaseError(error as { code: string });
+
+      throw new ClientError(mappedError.code, mappedError.message, {
+        cause: error,
+      });
     }
+
     throw error;
   }
 }
@@ -69,7 +63,13 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .update(mapTaskUpdateToDb(newTask))
     .eq('id', id);
 
-  if (error) throw toClientSupabaseError(error);
+  if (error) {
+    const mappedError = fromSupabaseError(error);
+
+    throw new ClientError(mappedError.code, mappedError.message, {
+      cause: error,
+    });
+  }
 
   return data;
 }
@@ -89,7 +89,13 @@ export async function getLastPosition(parentTaskId?: string | null) {
     p_parent_id: parentTaskId ?? undefined,
   });
 
-  if (error) throw toClientSupabaseError(error);
+  if (error) {
+    const mappedError = fromSupabaseError(error);
+
+    throw new ClientError(mappedError.code, mappedError.message, {
+      cause: error,
+    });
+  }
 
   return data;
 }

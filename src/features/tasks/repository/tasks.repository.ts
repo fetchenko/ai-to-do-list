@@ -12,6 +12,7 @@ import {
   fromSupabaseError,
   isPostgrestError,
 } from '@/infrastructure/supabase/errors/from-supabase-error';
+import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
 import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
 
 const TASK_COLUMNS = Object.keys(taskKeyMap).join(',');
@@ -41,11 +42,13 @@ export async function fetchTasksClient() {
   try {
     return await fetchTasks(supabase);
   } catch (error) {
-    if (!isPostgrestError(error)) throw error;
+    const mappedError = isPostgrestError(error)
+      ? fromSupabaseError(error)
+      : fromUnknownError(error);
 
-    const mappedError = fromSupabaseError(error);
     throw new ClientError(mappedError.code, mappedError.message, {
       cause: error,
+      status: 'status' in mappedError ? mappedError.status : undefined,
     });
   }
 }

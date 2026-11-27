@@ -7,6 +7,19 @@ export interface SupabaseErrorInfo {
   message: string;
 }
 
+export function isPostgrestError(error: unknown): error is PostgrestError {
+  if (!error || typeof error !== 'object') return false;
+
+  const candidate = error as Record<string, unknown>;
+
+  return (
+    typeof candidate.code === 'string' &&
+    typeof candidate.message === 'string' &&
+    typeof candidate.details === 'string' &&
+    typeof candidate.hint === 'string'
+  );
+}
+
 export function fromSupabaseError(
   error: Pick<PostgrestError, 'code'>
 ): SupabaseErrorInfo {

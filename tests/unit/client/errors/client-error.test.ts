@@ -16,7 +16,7 @@ describe('ClientError', () => {
     expect(error).toBeInstanceOf(Error);
     expect(error).toBeInstanceOf(ClientError);
     expect(error.name).toBe('ClientError');
-    expect(error.code).toBe(ClientErrorCode.NETWORK_ERROR);
+    expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
     expect(error.message).toBe('The request could not be completed.');
     expect(error.status).toBeUndefined();
   });

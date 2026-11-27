@@ -8,6 +8,7 @@ export const ErrorHttpStatus: Record<ErrorCode, number> = {
   FORBIDDEN: 403,
 
   DATABASE_ERROR: 500,
+  INVALID_RESPONSE: 422,
 
   AI_RATE_LIMIT: 429,
   AI_GENERATION_FAILED: 502,
@@ -21,6 +22,8 @@ export const ErrorHttpStatus: Record<ErrorCode, number> = {
   AI_GENERATION_TIMEOUT: 504,
   AI_GENERATION_SERVER_SHUTDOWN: 503,
   AI_STREAM_ENDED_WITHOUT_TERMINAL_EVENT: 503,
+
+  NETWORK_ERROR: 503,
 
   UNKNOWN: 500,
 

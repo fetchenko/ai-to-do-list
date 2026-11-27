@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { ClientError } from '@/client/errors/client-error';
 import {
   runClientSupabaseQuery,
   toClientSupabaseError,
 } from '@/client/errors/from-supabase-error';
-import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
 
 describe('client Supabase error normalization', () => {
@@ -34,9 +34,7 @@ describe('client Supabase error normalization', () => {
 
   it('normalizes rejected network requests', async () => {
     await expect(
-      runClientSupabaseQuery(
-        Promise.reject(new TypeError('Failed to fetch'))
-      )
+      runClientSupabaseQuery(Promise.reject(new TypeError('Failed to fetch')))
     ).rejects.toMatchObject({
       code: ErrorCode.NETWORK_ERROR,
       status: 503,

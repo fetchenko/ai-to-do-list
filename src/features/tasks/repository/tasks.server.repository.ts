@@ -6,8 +6,8 @@ import {
   fromSupabaseError,
   isPostgrestError,
 } from '@/infrastructure/supabase/errors/from-supabase-error';
-import { AppError } from '@/shared/errors/app-error';
 import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
+import { AppError } from '@/shared/errors/app-error';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
 export async function fetchTasksServer() {

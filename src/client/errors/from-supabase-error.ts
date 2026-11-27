@@ -1,5 +1,8 @@
 import { ClientError } from '@/client/errors/client-error';
-import { fromSupabaseError, isPostgrestError } from '@/infrastructure/supabase/errors/from-supabase-error';
+import {
+  fromSupabaseError,
+  isPostgrestError,
+} from '@/infrastructure/supabase/errors/from-supabase-error';
 import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
 
 /**

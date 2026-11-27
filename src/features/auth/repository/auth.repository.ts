@@ -1,5 +1,6 @@
 import type { AuthError } from '@supabase/supabase-js';
 
+import { ClientError } from '@/client/errors/client-error';
 import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
 import {
   LoginInput,
@@ -10,7 +11,6 @@ import {
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseAuthError } from '@/infrastructure/supabase/errors/from-supabase-auth-error';
 import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
-import { ClientError } from '@/client/errors/client-error';
 
 type AuthRequestResult<T> = {
   error: AuthError | null;

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { ClientError } from '@/client/errors/client-error';
+
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { streamSubtasks } from '@/features/tasks/services/subtasks.service';
 import { AiGeneratedTask } from '@/features/tasks/types/tasks.types';
-import { ClientError, ClientErrorCode } from '@/client/errors/client-error';
 import { getFriendlyErrorMessage } from '@/shared/errors/error-messages';
+import { ErrorCode } from '@/shared/errors/code';
 import { isAbortError } from '@/shared/errors/utils/is-abort-error';
 import { parseApiEventError } from '@/client/errors/parse-api-event-error';
 
@@ -19,7 +21,7 @@ export function useSubtaskDrafts(
   const { error, isPending, mutate, reset } = useMutation({
     mutationFn: async (signal: AbortSignal) => {
       if (!taskId) {
-        throw new ClientError(ClientErrorCode.CLIENT_INTERNAL_ERROR, 'Missing task id.');
+        throw new ClientError(ErrorCode.INVALID_REQUEST, 'Missing task id.');
       }
 
       for await (const chunk of streamSubtasks(taskId, signal)) {

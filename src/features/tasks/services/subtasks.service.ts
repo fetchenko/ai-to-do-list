@@ -13,7 +13,6 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { ValidationRequestError } from '@/shared/errors/app-error';
 import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
@@ -93,7 +92,11 @@ export async function saveSubtasks(
   const rows = subtasks.map(({ id, ...subtask }) => {
     const result = taskSchema.safeParse(subtask);
     if (!result.success) {
-      throw new ValidationRequestError(z.treeifyError(result.error));
+      throw new ClientError(
+        ErrorCode.INVALID_REQUEST,
+        'Invalid subtask data.',
+        { cause: z.treeifyError(result.error) }
+      );
     }
 
     const next = generateKeyBetween(prev, null);

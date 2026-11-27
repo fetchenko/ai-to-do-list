@@ -7,6 +7,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.AUTHORIZATION_ERROR]: "You're not authorized to do that.",
   [ErrorCode.UNAUTHORIZED]: 'Please sign in to continue.',
   [ErrorCode.FORBIDDEN]: "You don't have permission to do that.",
+  [ErrorCode.AUTH_RATE_LIMITED]:
+    'Too many authentication attempts. Please try again later.',
   [ErrorCode.DATABASE_ERROR]:
     'We had trouble saving your changes. Please try again.',
   [ErrorCode.INVALID_RESPONSE]:

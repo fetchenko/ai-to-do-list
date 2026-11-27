@@ -52,7 +52,7 @@ describe('ClientError', () => {
   it('preserves the original error as cause', () => {
     const cause = new TypeError('Failed to fetch');
     const error = new ClientError(
-      ClientErrorCode.NETWORK_ERROR,
+      ErrorCode.NETWORK_ERROR,
       'The request could not be completed.',
       { cause }
     );

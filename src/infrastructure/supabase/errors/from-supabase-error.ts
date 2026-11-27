@@ -15,8 +15,8 @@ export function isPostgrestError(error: unknown): error is PostgrestError {
   return (
     typeof candidate.code === 'string' &&
     typeof candidate.message === 'string' &&
-    typeof candidate.details === 'string' &&
-    typeof candidate.hint === 'string'
+    (candidate.details === null || typeof candidate.details === 'string') &&
+    (candidate.hint === null || typeof candidate.hint === 'string')
   );
 }
 

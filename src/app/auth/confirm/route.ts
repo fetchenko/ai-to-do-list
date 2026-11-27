@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { type NextRequest } from 'next/server';
 
-import { type EmailOtpType } from '@supabase/supabase-js';
+import { type AuthError, type EmailOtpType } from '@supabase/supabase-js';
 
 import { ROUTES } from '@/app/config/routes.config';
 import { fromSupabaseAuthError } from '@/infrastructure/supabase/errors/from-supabase-auth-error';
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   if (token_hash && type) {
     const supabase = await createClient();
 
-    let authError;
+    let authError: AuthError | null = null;
 
     try {
       const { error } = await supabase.auth.verifyOtp({

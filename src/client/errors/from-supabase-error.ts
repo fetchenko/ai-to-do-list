@@ -16,3 +16,20 @@ export function toClientSupabaseError(error: unknown): ClientError {
     status: 'status' in mapped ? mapped.status : undefined,
   });
 }
+
+/**
+ * Executes a browser Supabase query and normalizes both returned API errors
+ * and rejected transport promises.
+ */
+export async function runClientSupabaseQuery<T>(
+  query: PromiseLike<{ data: T; error: unknown }>
+): Promise<T> {
+  try {
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    throw toClientSupabaseError(error);
+  }
+}

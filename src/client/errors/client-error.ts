@@ -1,7 +1,9 @@
 import type { ErrorCode } from '@/shared/errors/code';
 
 export const ClientErrorCode = {
+  NETWORK_ERROR: 'NETWORK_ERROR',
   REQUEST_ABORTED: 'REQUEST_ABORTED',
+  INVALID_RESPONSE: 'INVALID_RESPONSE',
   CLIENT_INTERNAL_ERROR: 'CLIENT_INTERNAL_ERROR',
 } as const;
 

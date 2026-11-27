@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
 import { ClientError } from '@/client/errors/client-error';
+import { toClientSupabaseError } from '@/client/errors/from-supabase-error';
 import { parseApiError } from '@/client/errors/parse-api-error';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
@@ -14,7 +15,7 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { fromSupabaseError } from '@/infrastructure/supabase/errors/from-supabase-error';
+
 import { ErrorCode } from '@/shared/errors/code';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
@@ -105,12 +106,7 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) {
-    const mappedError = fromSupabaseError(error);
-    throw new ClientError(mappedError.code, mappedError.message, {
-      cause: error,
-    });
-  }
+  if (error) throw toClientSupabaseError(error);
 
   return data;
 }

@@ -37,7 +37,13 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function getFriendlyErrorMessage(error: unknown): string {
-  if (error instanceof AppError) {
+  if (
+    error instanceof AppError ||
+    (typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      typeof error.code === 'string')
+  ) {
     return ERROR_MESSAGES[error.code] ?? ERROR_MESSAGES[ErrorCode.UNKNOWN];
   }
   if (error instanceof TypeError) {

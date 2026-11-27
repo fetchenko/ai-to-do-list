@@ -7,7 +7,9 @@ export interface SupabaseErrorInfo {
   message: string;
 }
 
-export function fromSupabaseError(error: PostgrestError): SupabaseErrorInfo {
+export function fromSupabaseError(
+  error: Pick<PostgrestError, 'code'>
+): SupabaseErrorInfo {
   switch (error.code) {
     case '23505':
       return {

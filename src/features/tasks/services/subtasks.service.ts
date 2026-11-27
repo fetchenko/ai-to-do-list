@@ -60,7 +60,7 @@ export async function generateSubtasks(
 
   if (!result.success) {
     throw new ClientError(
-      ClientErrorCode.INVALID_RESPONSE,
+      ErrorCode.INVALID_RESPONSE,
       'Invalid AI response format.',
       { cause: result.error }
     );

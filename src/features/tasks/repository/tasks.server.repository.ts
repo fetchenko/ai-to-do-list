@@ -7,6 +7,7 @@ import {
   isPostgrestError,
 } from '@/infrastructure/supabase/errors/from-supabase-error';
 import { AppError } from '@/shared/errors/app-error';
+import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
 import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
 export async function fetchTasksServer() {
@@ -15,12 +16,15 @@ export async function fetchTasksServer() {
   try {
     return await fetchTasks(supabase);
   } catch (error) {
-    if (!isPostgrestError(error)) throw error;
+    const mappedError = isPostgrestError(error)
+      ? fromSupabaseError(error)
+      : fromUnknownError(error);
 
-    const mappedError = fromSupabaseError(error);
     throw new AppError(
       mappedError.code,
-      ErrorHttpStatus[mappedError.code],
+      'status' in mappedError
+        ? mappedError.status
+        : ErrorHttpStatus[mappedError.code],
       mappedError.message,
       error
     );

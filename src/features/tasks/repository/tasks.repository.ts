@@ -17,7 +17,7 @@ function toClientSupabaseError(error: {
   code: string;
   message: string;
 }): ClientError {
-  const mappedError = fromSupabaseError(error as never);
+  const mappedError = fromSupabaseError(error);
 
   return new ClientError(mappedError.code, mappedError.message, {
     cause: error,
@@ -49,7 +49,12 @@ export async function fetchTasksClient() {
   try {
     return await fetchTasks(supabase);
   } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      'message' in error
+    ) {
       throw toClientSupabaseError(error as { code: string; message: string });
     }
     throw error;

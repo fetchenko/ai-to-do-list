@@ -1,4 +1,5 @@
-import { ClientError } from '@/client/errors/client-error';
+import type { AuthError } from '@supabase/supabase-js';
+
 import { DEFAULT_REDIRECTS, ROUTES } from '@/app/config/routes.config';
 import {
   LoginInput,
@@ -9,10 +10,16 @@ import {
 import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseAuthError } from '@/infrastructure/supabase/errors/from-supabase-auth-error';
 import { fromUnknownError } from '@/infrastructure/supabase/errors/from-unknown-error';
+import { ClientError } from '@/client/errors/client-error';
+
+type AuthRequestResult<T> = {
+  error: AuthError | null;
+  data?: T;
+};
 
 async function runAuthRequest<T>(
-  request: () => Promise<{ data: T; error: unknown }>
-): Promise<T> {
+  request: () => Promise<AuthRequestResult<T>>
+): Promise<T | undefined> {
   try {
     const { data, error } = await request();
 

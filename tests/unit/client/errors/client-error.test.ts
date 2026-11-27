@@ -9,7 +9,7 @@ import { ErrorCode } from '@/shared/errors/code';
 describe('ClientError', () => {
   it('stores the error code and message', () => {
     const error = new ClientError(
-      ClientErrorCode.NETWORK_ERROR,
+      ErrorCode.NETWORK_ERROR,
       'The request could not be completed.'
     );
 
@@ -42,7 +42,7 @@ describe('ClientError', () => {
 
   it('supports malformed client response codes', () => {
     const error = new ClientError(
-      ClientErrorCode.INVALID_RESPONSE,
+      ErrorCode.INVALID_RESPONSE,
       'The server returned an invalid response.'
     );
 

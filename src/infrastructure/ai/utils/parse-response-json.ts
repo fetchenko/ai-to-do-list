@@ -10,7 +10,10 @@ import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 export async function parseResponseJson(response: Response): Promise<unknown> {
   if (!response.ok) {
     const error = await response.text();
-    const errorDetails = `Failed with error: ${error}, status: ${response.status} `;
+    const errorDetails = {
+      upstreamStatus: response.status,
+      responseBody: error,
+    };
 
     if (response.status === ErrorHttpStatus[ErrorCode.AI_RATE_LIMIT]) {
       throw new AiRateLimitsError(errorDetails);

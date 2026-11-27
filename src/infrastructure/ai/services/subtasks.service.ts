@@ -13,6 +13,7 @@ import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
 import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
+import { logError } from '@/shared/logging/log-error';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';
 
@@ -40,7 +41,10 @@ export async function generateSubtasksForTask({
 
     aiGenerationLog = generationId ? new AiGenerationLog(generationId) : null;
   } catch (error) {
-    console.error('Failed to create AI generation log', error);
+    logError(error, {
+      source: 'ai',
+      operation: 'create-generation-log',
+    });
   }
 
   try {

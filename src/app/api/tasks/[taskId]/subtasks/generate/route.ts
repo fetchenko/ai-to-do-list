@@ -8,6 +8,7 @@ import { checkAiQuotaLimit } from '@/infrastructure/ai/services/ai-quota-limit.a
 import { generateSubtasksForTask } from '@/infrastructure/ai/services/subtasks.service';
 import { parseAiParams } from '@/infrastructure/ai/utils/ai-params.utils';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
+import { logError } from '@/shared/logging/log-error';
 import { getHttpStatusCode } from '@/shared/errors/utils/get-http-status-code';
 
 const AI_TIMEOUT_MS = 60_000;
@@ -16,6 +17,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<RequestGenSubtasks> }
 ) {
+  let providerName: string | undefined;
+
   const signal = AbortSignal.any([
     request.signal,
     AbortSignal.timeout(AI_TIMEOUT_MS),
@@ -25,6 +28,7 @@ export async function POST(
     const { user } = await getCurrentUser();
 
     const provider = getAIProvider();
+    providerName = provider.constructor.name;
 
     if (provider.quotaLimit !== undefined) {
       await checkAiQuotaLimit(user.id, provider.quotaLimit);
@@ -50,6 +54,12 @@ export async function POST(
       }
     );
   } catch (err: unknown) {
+    logError(err, {
+      source: 'api',
+      operation: 'generate-subtasks',
+      ...(providerName ? { provider: providerName } : {}),
+    });
+
     const error = normalizeApiError(err);
     const status = getHttpStatusCode(error.code);
 

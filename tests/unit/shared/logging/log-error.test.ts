@@ -1,0 +1,88 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
+
+import { AppError } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
+import { logError } from '@/shared/logging/log-error';
+
+describe('logError', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('logs error causes and context without logging arbitrary error details', () => {
+    const logger = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const cause = new Error('Connection refused');
+    const error = new AppError(
+      ErrorCode.AI_UNAVAILABLE,
+      503,
+      'AI provider unavailable',
+      {
+        authorization: 'Bearer secret-token',
+        upstreamStatus: 503,
+        responseBody: 'provider response containing private data',
+      },
+      cause
+    );
+
+    logError(error, {
+      source: 'ai',
+      operation: 'generate-subtasks',
+      provider: 'DeepSeekProvider',
+    });
+
+    expect(logger).toHaveBeenCalledOnce();
+
+    const entry = JSON.parse(logger.mock.calls[0][0] as string) as {
+      errorCode: string;
+      upstreamStatus: number;
+      source: string;
+      operation: string;
+      provider: string;
+      error: {
+        name: string;
+        message: string;
+        cause: { name: string; message: string };
+      };
+    };
+
+    expect(entry).toMatchObject({
+      errorCode: ErrorCode.AI_UNAVAILABLE,
+      upstreamStatus: 503,
+      source: 'ai',
+      operation: 'generate-subtasks',
+      provider: 'DeepSeekProvider',
+      error: {
+        name: 'AppError',
+        message: 'AI provider unavailable',
+        cause: {
+          name: 'Error',
+          message: 'Connection refused',
+        },
+      },
+    });
+
+    expect(JSON.stringify(entry)).not.toContain('secret-token');
+    expect(JSON.stringify(entry)).not.toContain('private data');
+  });
+
+  it('logs non-Error thrown values without serializing their contents', () => {
+    const logger = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    logError({ token: 'secret-token' }, {
+      source: 'api',
+      operation: 'generate-subtasks',
+    });
+
+    const entry = JSON.parse(logger.mock.calls[0][0] as string);
+
+    expect(entry).toMatchObject({
+      error: {
+        name: 'NonErrorThrown',
+        message: 'A non-Error value was thrown',
+      },
+    });
+    expect(JSON.stringify(entry)).not.toContain('secret-token');
+  });
+});

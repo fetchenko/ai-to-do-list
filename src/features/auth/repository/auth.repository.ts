@@ -17,9 +17,15 @@ type AuthRequestResult<T> = {
   data?: T;
 };
 
+function runAuthRequest<T>(
+  request: () => Promise<{ data: T; error: AuthError | null }>
+): Promise<T>;
+function runAuthRequest(
+  request: () => Promise<{ error: AuthError | null }>
+): Promise<void>;
 async function runAuthRequest<T>(
   request: () => Promise<AuthRequestResult<T>>
-): Promise<T | undefined> {
+): Promise<T | void> {
   try {
     const { data, error } = await request();
 

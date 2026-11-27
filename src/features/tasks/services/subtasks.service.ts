@@ -2,6 +2,9 @@ import { generateKeyBetween } from 'fractional-indexing';
 import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
+import { ClientError } from '@/client/errors/client-error';
+import { runClientSupabaseQuery } from '@/client/errors/from-supabase-error';
+import { parseApiError } from '@/client/errors/parse-api-error';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
@@ -12,13 +15,7 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import {
-  AiEmptyResponseError,
-  AiInvalidResponseFormat,
-} from '@/shared/errors/ai-app-error';
-import { ValidationRequestError } from '@/shared/errors/app-error';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
-import { parseApiError } from '@/shared/errors/utils/parse-api-error';
+import { ErrorCode } from '@/shared/errors/code';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
 export async function* streamSubtasks(
@@ -37,7 +34,10 @@ export async function* streamSubtasks(
   }
 
   if (!response.body) {
-    throw new AiEmptyResponseError('Response body is missing');
+    throw new ClientError(
+      ErrorCode.INVALID_RESPONSE,
+      'Response body is missing.'
+    );
   }
 
   yield* readJsonStream<SubtaskStreamEvent>(response.body);
@@ -52,16 +52,24 @@ export async function generateSubtasks(
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-
     throw parseApiError(body?.error, res.status);
   }
 
   const { data } = await res.json();
-  const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
+  const result = subtasksResponseSchema.safeParse(data);
 
-  if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
+  if (!result.success) {
+    throw new ClientError(
+      ErrorCode.INVALID_RESPONSE,
+      'Invalid AI response format.',
+      { cause: result.error }
+    );
+  }
+
+  const parsed = result.data;
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
+    throw new ClientError(
+      ErrorCode.AI_EMPTY_RESPONSE,
       'No meaningful subtasks could be generated.'
     );
   }
@@ -83,7 +91,11 @@ export async function saveSubtasks(
   const rows = subtasks.map(({ id, ...subtask }) => {
     const result = taskSchema.safeParse(subtask);
     if (!result.success) {
-      throw new ValidationRequestError(z.treeifyError(result.error));
+      throw new ClientError(
+        ErrorCode.INVALID_REQUEST,
+        'Invalid subtask data.',
+        { cause: z.treeifyError(result.error) }
+      );
     }
 
     const next = generateKeyBetween(prev, null);
@@ -92,7 +104,5 @@ export async function saveSubtasks(
     return mapTaskInsertToDb({ ...result.data, position: next, parentTaskId });
   });
 
-  const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw fromSupabaseError(error);
-  return data;
+  return runClientSupabaseQuery(supabase.from('tasks').insert(rows));
 }

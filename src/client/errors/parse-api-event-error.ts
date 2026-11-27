@@ -1,20 +1,18 @@
 import { apiEventErrorSchema } from '@/shared/errors/api-error.schema';
-import { AppError } from '@/shared/errors/app-error';
+import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
 
-export function parseApiEventError(error: unknown): AppError {
+export function parseApiEventError(error: unknown): ClientError {
   const result = apiEventErrorSchema.safeParse(error);
 
   if (!result.success) {
-    return new AppError(
+    return new ClientError(
       ErrorCode.UNKNOWN,
-      ErrorHttpStatus[ErrorCode.UNKNOWN],
       'Something went wrong.'
     );
   }
 
   const { code, message, status, details } = result.data;
 
-  return new AppError(code, status, message, details);
+  return new ClientError(code, message, { status, cause: details });
 }

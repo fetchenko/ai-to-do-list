@@ -7,6 +7,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   [ErrorCode.AUTHORIZATION_ERROR]: "You're not authorized to do that.",
   [ErrorCode.UNAUTHORIZED]: 'Please sign in to continue.',
   [ErrorCode.FORBIDDEN]: "You don't have permission to do that.",
+  [ErrorCode.AUTH_RATE_LIMITED]:
+    'Too many authentication attempts. Please try again later.',
   [ErrorCode.DATABASE_ERROR]:
     'We had trouble saving your changes. Please try again.',
   [ErrorCode.INVALID_RESPONSE]:
@@ -35,7 +37,13 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function getFriendlyErrorMessage(error: unknown): string {
-  if (error instanceof AppError) {
+  if (
+    error instanceof AppError ||
+    (typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      typeof error.code === 'string')
+  ) {
     return ERROR_MESSAGES[error.code] ?? ERROR_MESSAGES[ErrorCode.UNKNOWN];
   }
   if (error instanceof TypeError) {

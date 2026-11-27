@@ -6,6 +6,7 @@ export const ErrorHttpStatus: Record<ErrorCode, number> = {
   AUTHORIZATION_ERROR: 401,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
+  AUTH_RATE_LIMITED: 429,
 
   DATABASE_ERROR: 500,
   INVALID_RESPONSE: 422,

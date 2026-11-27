@@ -2,7 +2,7 @@ import { generateKeyBetween } from 'fractional-indexing';
 import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
-import { ClientError, ClientErrorCode } from '@/client/errors/client-error';
+import { ClientError } from '@/client/errors/client-error';
 import { parseApiError } from '@/client/errors/parse-api-error';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';

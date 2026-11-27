@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { AppError } from '@/shared/errors/app-error';
+import { ClientError } from '@/client/errors/client-error';
 import { ErrorCode } from '@/shared/errors/code';
-import { ErrorHttpStatus } from '@/shared/errors/http-status-map';
-import { parseApiEventError } from '@/shared/errors/utils/parse-api-event-error';
+import { parseApiEventError } from '@/client/errors/parse-api-event-error';
 
 describe('parseApiEventError', () => {
   it('parses a valid event error and preserves details', () => {
@@ -16,8 +15,11 @@ describe('parseApiEventError', () => {
         details: { provider: 'deepseek' },
       })
     ).toEqual(
-      new AppError(ErrorCode.AI_UNAVAILABLE, 503, 'AI unavailable', {
+      new ClientError(ErrorCode.AI_UNAVAILABLE, 'AI unavailable', {
+        status: 503,
+        cause: {
         provider: 'deepseek',
+      })
       })
     );
   });
@@ -31,11 +33,7 @@ describe('parseApiEventError', () => {
         message: 'AI unavailable',
       })
     ).toEqual(
-      new AppError(
-        ErrorCode.UNKNOWN,
-        ErrorHttpStatus[ErrorCode.UNKNOWN],
-        'Something went wrong.'
-      )
+      new ClientError(ErrorCode.UNKNOWN, 'Something went wrong.')
     );
   });
 

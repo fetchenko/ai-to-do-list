@@ -2,6 +2,7 @@ import { generateKeyBetween } from 'fractional-indexing';
 import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
+import { ClientError, ClientErrorCode } from '@/client/errors/client-error';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
@@ -12,11 +13,8 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import {
-  AiEmptyResponseError,
-  AiInvalidResponseFormat,
-} from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
+import { ErrorCode } from '@/shared/errors/code';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
@@ -37,7 +35,10 @@ export async function* streamSubtasks(
   }
 
   if (!response.body) {
-    throw new AiEmptyResponseError('Response body is missing');
+    throw new ClientError(
+      ClientErrorCode.INVALID_RESPONSE,
+      'Response body is missing.'
+    );
   }
 
   yield* readJsonStream<SubtaskStreamEvent>(response.body);
@@ -57,11 +58,20 @@ export async function generateSubtasks(
   }
 
   const { data } = await res.json();
-  const { data: parsed, success } = subtasksResponseSchema.safeParse(data);
+  const result = subtasksResponseSchema.safeParse(data);
 
-  if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
+  if (!result.success) {
+    throw new ClientError(
+      ClientErrorCode.INVALID_RESPONSE,
+      'Invalid AI response format.',
+      { cause: result.error }
+    );
+  }
+
+  const parsed = result.data;
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
+    throw new ClientError(
+      ErrorCode.AI_EMPTY_RESPONSE,
       'No meaningful subtasks could be generated.'
     );
   }

@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import { type NextRequest } from 'next/server';
 
 import { ROUTES } from '@/app/config/routes.config';
-import { createServerClient as createClient, type EmailOtpType } from '@/infrastructure/supabase';
+import { createServerClient as createClient } from '@/infrastructure/supabase-server';
+import type { EmailOtpType } from '@/infrastructure/supabase';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

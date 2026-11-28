@@ -36,7 +36,7 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/infrastructure/**/*'],
+    ignores: ['src/infrastructure/**/*', 'src/app/**/*'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -54,6 +54,36 @@ const eslintConfig = defineConfig([
               ],
               message:
                 'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
+              group: [
+                '@/infrastructure/supabase/*',
+                '@/infrastructure/supabase/**',
+              ],
+              message:
+                'Supabase internals are private. Import from "@/infrastructure/supabase".',
+            },
+            {
+              group: ['@supabase/*'],
+              message:
+                'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['./*', '../*'],
+              message:
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
             },
             {
               group: [

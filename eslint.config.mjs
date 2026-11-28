@@ -36,16 +36,75 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/infrastructure/ai/**/*'],
+    ignores: ['src/infrastructure/**/*', 'src/app/**/*'],
     rules: {
       'no-restricted-imports': [
-        'warn',
+        'error',
         {
           patterns: [
             {
-              group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
+              group: ['./*', '../*'],
               message:
-                'Avoid importing the AI infrastructure module outside src/infrastructure/ai. This dependency should be moved behind an appropriate abstraction.',
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
+            },
+            {
+              group: [
+                '@/infrastructure/ai',
+                '@/infrastructure/ai/**',
+              ],
+              message:
+                'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
+              group: [
+                '@/infrastructure/supabase/*',
+                '@/infrastructure/supabase/**',
+              ],
+              message:
+                'Supabase internals are private. Import from "@/infrastructure/supabase" or the dedicated server-only "@/infrastructure/supabase-admin" entry point.',
+            },
+            {
+              group: ['@supabase/*'],
+              message:
+                'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['./*', '../*'],
+              message:
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
+            },
+            {
+              group: [
+                '@/infrastructure/ai',
+                '@/infrastructure/ai/**',
+              ],
+              message:
+                'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
+              group: [
+                '@/infrastructure/supabase/*',
+                '@/infrastructure/supabase/**',
+              ],
+              message:
+                'Supabase internals are private. Import from "@/infrastructure/supabase" or the dedicated server-only "@/infrastructure/supabase-admin" entry point.',
+            },
+            {
+              group: ['@supabase/*'],
+              message:
+                'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
             },
           ],
         },

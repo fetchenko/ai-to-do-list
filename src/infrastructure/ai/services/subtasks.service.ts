@@ -11,7 +11,7 @@ import {
 import { createAiGenerationLog } from '@/infrastructure/ai/services/ai-log.admin.service';
 import { createSubtaskTool } from '@/infrastructure/ai/tools/create-subtask-tool';
 import { normalizeApiError } from '@/infrastructure/ai/utils/normalize-api-error';
-import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase/types/database-task.types';
+import { DbTaskForSubtaskGeneration } from '@/infrastructure/supabase';
 import { AiInvalidResponseFormat } from '@/shared/errors/ai-app-error';
 
 const SUBTASK_GENERATION_FEATURE = 'generate-subtasks';

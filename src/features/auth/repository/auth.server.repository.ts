@@ -1,7 +1,7 @@
-import { JwtPayload } from '@supabase/supabase-js';
 import 'server-only';
 
-import { createClient as createServerClient } from '@/infrastructure/supabase/server';
+import type { JwtPayload } from '@/infrastructure/supabase';
+import { createServerClient } from '@/infrastructure/supabase-server';
 import { AuthorizationError } from '@/shared/errors/app-error';
 
 export async function getCurrentUser() {

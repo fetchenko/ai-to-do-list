@@ -16,9 +16,7 @@ export type {
 export type { Database } from './types/database.types';
 
 export type {
-  AuthError,
   EmailOtpType,
   JwtPayload,
-  PostgrestError,
   SupabaseClient,
 } from '@supabase/supabase-js';

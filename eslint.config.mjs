@@ -36,16 +36,37 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/infrastructure/ai/**/*'],
+    ignores: ['src/infrastructure/**/*'],
     rules: {
       'no-restricted-imports': [
-        'warn',
+        'error',
         {
           patterns: [
             {
-              group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
+              group: ['./*', '../*'],
               message:
-                'Avoid importing the AI infrastructure module outside src/infrastructure/ai. This dependency should be moved behind an appropriate abstraction.',
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
+            },
+            {
+              group: [
+                '@/infrastructure/ai',
+                '@/infrastructure/ai/**',
+              ],
+              message:
+                'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
+              group: [
+                '@/infrastructure/supabase/*',
+                '@/infrastructure/supabase/**',
+              ],
+              message:
+                'Supabase internals are private. Import from "@/infrastructure/supabase".',
+            },
+            {
+              group: ['@supabase/*'],
+              message:
+                'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
             },
           ],
         },

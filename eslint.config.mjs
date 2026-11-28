@@ -56,6 +56,14 @@ const eslintConfig = defineConfig([
                 'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
             },
             {
+              group: [
+                '@/infrastructure/supabase/*',
+                '@/infrastructure/supabase/**',
+              ],
+              message:
+                'Supabase internals are private. Import from "@/infrastructure/supabase".',
+            },
+            {
               group: ['@supabase/*'],
               message:
                 'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',

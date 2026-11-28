@@ -12,13 +12,13 @@ import {
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { parseSupabaseError } from '@/infrastructure/supabase/errors/parse-supabase-error';
+import { parseDatabaseError } from '@/infrastructure/supabase/errors/database/parse-database-error';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
-import { toAppError } from '@/shared/errors/to-app-error';
+import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
@@ -94,6 +94,6 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw toAppError(parseSupabaseError(error));
+  if (error) throw toDatabaseAppError(parseDatabaseError(error));
   return data;
 }

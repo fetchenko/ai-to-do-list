@@ -6,9 +6,9 @@ import {
   taskKeyMap,
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase/client';
-import { parseDatabaseError } from '@/infrastructure/supabase/errors/database/parse-database-error';
-import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
+import { createClient } from '@/infrastructure/supabase';
+import { parseDatabaseError } from '@/infrastructure/supabase';
+import { DbTaskRow } from '@/infrastructure/supabase';
 import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out

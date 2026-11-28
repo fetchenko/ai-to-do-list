@@ -2,7 +2,6 @@ import 'server-only';
 
 import {
   createServerClient,
-  parseAuthError,
   type JwtPayload,
 } from '@/infrastructure/supabase';
 import { AuthorizationError } from '@/shared/errors/app-error';
@@ -16,12 +15,11 @@ export async function getCurrentUser() {
   } = await supabase.auth.getUser();
 
   if (error) {
-    throw new AuthorizationError(parseAuthError(error));
+    throw new AuthorizationError(error);
   }
 
   if (!user) {
     throw new AuthorizationError({
-      code: 'UNKNOWN',
       message: 'No authenticated user was returned.',
     });
   }

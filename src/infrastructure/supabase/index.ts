@@ -23,3 +23,5 @@ export type {
   DbTaskUpdate,
 } from './types/database-task.types';
 export type { Database } from './types/database.types';
+
+export type { EmailOtpType, JwtPayload, SupabaseClient } from '@supabase/supabase-js';

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/infrastructure/supabase';
+import { supabaseAdmin } from '@/infrastructure/supabase-admin';
 import { AiLockRequestFailedError } from '@/shared/errors/ai-app-error';
 
 export async function tryAcquireLock(userId: string) {

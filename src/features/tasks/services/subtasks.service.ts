@@ -3,7 +3,6 @@ import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
-import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
@@ -61,7 +60,7 @@ export async function generateSubtasks(
 
   if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
+    throw new AiEmptyResponseFormat(
       'No meaningful subtasks could be generated.'
     );
   }
@@ -93,6 +92,6 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw toDatabaseAppError(error);
+  if (error) throw error;
   return data;
 }

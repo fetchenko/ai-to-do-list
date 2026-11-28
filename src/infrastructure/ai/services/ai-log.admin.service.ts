@@ -1,6 +1,6 @@
 import { AiGenerationMetadata } from '@/infrastructure/ai/types/ai.types';
 import { mapAiGenerationMetadataToUpdate } from '@/infrastructure/ai/utils/map-ai-generation-usage';
-import { supabaseAdmin } from '@/infrastructure/supabase/admin';
+import { supabaseAdmin } from '@/infrastructure/supabase';
 
 export type CreateAiLogInput = {
   userId: string;

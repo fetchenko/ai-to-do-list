@@ -36,7 +36,7 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/infrastructure/supabase/**/*'],
+    ignores: ['src/infrastructure/**/*'],
     rules: {
       'no-restricted-imports': [
         'error',

@@ -60,7 +60,7 @@ export async function generateSubtasks(
 
   if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseFormat(
+    throw new AiEmptyResponseError(
       'No meaningful subtasks could be generated.'
     );
   }

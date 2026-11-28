@@ -2,7 +2,7 @@ import { JwtPayload } from '@supabase/supabase-js';
 import 'server-only';
 
 import { createClient as createServerClient } from '@/infrastructure/supabase/server';
-import { parseSupabaseAuthError } from '@/infrastructure/supabase/errors/parse-supabase-auth-error';
+import { parseAuthError } from '@/infrastructure/supabase/errors/auth/parse-auth-error';
 import { AuthorizationError } from '@/shared/errors/app-error';
 
 export async function getCurrentUser() {
@@ -14,7 +14,7 @@ export async function getCurrentUser() {
   } = await supabase.auth.getUser();
 
   if (error) {
-    throw new AuthorizationError(parseSupabaseAuthError(error));
+    throw new AuthorizationError(parseAuthError(error));
   }
 
   if (!user) {

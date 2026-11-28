@@ -61,7 +61,7 @@ const eslintConfig = defineConfig([
                 '@/infrastructure/supabase/**',
               ],
               message:
-                'Supabase internals are private. Import from "@/infrastructure/supabase".',
+                'Supabase internals are private. Import from "@/infrastructure/supabase" or the dedicated server-only "@/infrastructure/supabase-admin" entry point.',
             },
             {
               group: ['@supabase/*'],
@@ -87,11 +87,19 @@ const eslintConfig = defineConfig([
             },
             {
               group: [
+                '@/infrastructure/ai',
+                '@/infrastructure/ai/**',
+              ],
+              message:
+                'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
+              group: [
                 '@/infrastructure/supabase/*',
                 '@/infrastructure/supabase/**',
               ],
               message:
-                'Supabase internals are private. Import from "@/infrastructure/supabase".',
+                'Supabase internals are private. Import from "@/infrastructure/supabase" or the dedicated server-only "@/infrastructure/supabase-admin" entry point.',
             },
             {
               group: ['@supabase/*'],

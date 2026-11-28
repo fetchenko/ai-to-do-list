@@ -11,7 +11,7 @@ import {
   AiGeneratedTask,
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase/client';
+import { createClient } from '@/infrastructure/supabase';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,
@@ -61,7 +61,7 @@ export async function generateSubtasks(
 
   if (!success) throw new AiInvalidResponseFormat('Invalid AI response format');
   if (!parsed.subtasks?.length) {
-    throw new AiEmptyResponseError(
+    throw new AiEmptyResponseFormat(
       'No meaningful subtasks could be generated.'
     );
   }

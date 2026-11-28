@@ -60,6 +60,11 @@ const eslintConfig = defineConfig([
                 'Relative imports are not allowed. Please use absolute paths or aliases instead.',
             },
             {
+              group: ['@supabase/*'],
+              message:
+                'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
+            },
+            {
               group: [
                 '@/infrastructure/*/*',
                 '@/infrastructure/*/**',

@@ -41,18 +41,6 @@ const eslintConfig = defineConfig([
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            {
-              name: '@/infrastructure/ai',
-              message:
-                'Import infrastructure modules through their public API, not their internal implementation.',
-            },
-            {
-              name: '@/infrastructure/react-query',
-              message:
-                'Import infrastructure modules through their public API, not their internal implementation.',
-            },
-          ],
           patterns: [
             {
               group: ['./*', '../*'],
@@ -60,17 +48,17 @@ const eslintConfig = defineConfig([
                 'Relative imports are not allowed. Please use absolute paths or aliases instead.',
             },
             {
+              group: [
+                '@/infrastructure/ai',
+                '@/infrastructure/ai/**',
+              ],
+              message:
+                'Imports from infrastructure/ai are restricted. Expose required functionality through an approved public API.',
+            },
+            {
               group: ['@supabase/*'],
               message:
                 'Import Supabase SDK types and utilities through the public API at "@/infrastructure/supabase".',
-            },
-            {
-              group: [
-                '@/infrastructure/*/*',
-                '@/infrastructure/*/**',
-              ],
-              message:
-                'Infrastructure internals are private. Import from the module public API (for Supabase: "@/infrastructure/supabase").',
             },
           ],
         },

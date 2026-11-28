@@ -4,9 +4,12 @@ import {
   taskKeyMap,
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
-import { createClient, type SupabaseClient } from '@/infrastructure/supabase';
-import { parseDatabaseError } from '@/infrastructure/supabase';
-import { DbTaskRow } from '@/infrastructure/supabase';
+import {
+  createClient,
+  parseDatabaseError,
+  type DbTaskRow,
+  type SupabaseClient,
+} from '@/infrastructure/supabase';
 import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out

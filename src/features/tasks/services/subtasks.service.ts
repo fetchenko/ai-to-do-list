@@ -17,7 +17,6 @@ import {
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
-import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
@@ -93,6 +92,6 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw fromSupabaseError(error);
+  if (error) throw error;
   return data;
 }

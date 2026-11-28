@@ -11,8 +11,7 @@ import {
   AiGeneratedTask,
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase';
-import { parseDatabaseError } from '@/infrastructure/supabase';
+import { createClient, parseDatabaseError } from '@/infrastructure/supabase';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,

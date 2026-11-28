@@ -1,5 +1,5 @@
 import { Task } from '@/features/tasks/types/tasks.types';
-import { DbTask } from '@/infrastructure/supabase/types/database-task.types';
+import { DbTask } from '@/infrastructure/supabase';
 
 export function mapDbTask(dbTask: DbTask): Task {
   return {

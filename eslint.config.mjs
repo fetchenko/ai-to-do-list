@@ -36,16 +36,36 @@ const eslintConfig = defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/infrastructure/ai/**/*'],
+    ignores: ['src/infrastructure/supabase/**/*'],
     rules: {
       'no-restricted-imports': [
-        'warn',
+        'error',
         {
+          paths: [
+            {
+              name: '@/infrastructure/ai',
+              message:
+                'Import infrastructure modules through their public API, not their internal implementation.',
+            },
+            {
+              name: '@/infrastructure/react-query',
+              message:
+                'Import infrastructure modules through their public API, not their internal implementation.',
+            },
+          ],
           patterns: [
             {
-              group: ['@/infrastructure/ai', '@/infrastructure/ai/**'],
+              group: ['./*', '../*'],
               message:
-                'Avoid importing the AI infrastructure module outside src/infrastructure/ai. This dependency should be moved behind an appropriate abstraction.',
+                'Relative imports are not allowed. Please use absolute paths or aliases instead.',
+            },
+            {
+              group: [
+                '@/infrastructure/*/*',
+                '@/infrastructure/*/**',
+              ],
+              message:
+                'Infrastructure internals are private. Import from the module public API (for Supabase: "@/infrastructure/supabase").',
             },
           ],
         },

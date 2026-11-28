@@ -5,7 +5,7 @@ import {
   SignupInput,
   UpdatePasswordInput,
 } from '@/features/auth/schema/auth';
-import { createClient } from '@/infrastructure/supabase/client';
+import { createClient } from '@/infrastructure/supabase';
 
 export async function signInWithPassword({ email, password }: LoginInput) {
   const supabase = createClient();

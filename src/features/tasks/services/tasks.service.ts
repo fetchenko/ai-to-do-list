@@ -5,8 +5,8 @@ import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskInsert } from '@/features/tasks/types/tasks.types';
 import { createClient } from '@/infrastructure/supabase/client';
-import { parseSupabaseError } from '@/infrastructure/supabase/errors/parse-supabase-error';
-import { toAppError } from '@/shared/errors/to-app-error';
+import { parseDatabaseError } from '@/infrastructure/supabase/errors/database/parse-database-error';
+import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 
 export async function addTask(newTask: TaskInsert): Promise<Task> {
   const supabase = createClient();
@@ -22,7 +22,7 @@ export async function addTask(newTask: TaskInsert): Promise<Task> {
     .single();
 
   if (error) {
-    throw toAppError(parseSupabaseError(error));
+    throw toDatabaseAppError(parseDatabaseError(error));
   }
 
   return mapDbTask(data);

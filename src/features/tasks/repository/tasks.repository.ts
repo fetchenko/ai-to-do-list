@@ -3,7 +3,6 @@ import {
   mapTaskUpdateToDb,
   taskKeyMap,
 } from '@/features/tasks/mappers/map-task-to-db';
-import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
 import {
   createClient,
@@ -29,7 +28,7 @@ export async function fetchTasks(supabase: SupabaseClient) {
     .is('deleted_at', null);
 
   if (error) {
-    throw toDatabaseAppError(error);
+    throw error;
   }
 
   return data.map(mapDbTask);
@@ -50,7 +49,7 @@ export async function updateTask(id: string, newTask: TaskUpdate) {
     .eq('id', id);
 
   if (error) {
-    throw toDatabaseAppError(error);
+    throw error;
   }
 
   return data;
@@ -72,7 +71,7 @@ export async function getLastPosition(parentTaskId?: string | null) {
   });
 
   if (error) {
-    throw toDatabaseAppError(error);
+    throw error;
   }
 
   return data;

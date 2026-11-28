@@ -1,1 +1,1 @@
-export { makeQueryClient } from './query-client';
+export { makeQueryClient } from '@/infrastructure/react-query/query-client';

@@ -1,12 +1,10 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
   taskKeyMap,
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase';
+import { createClient, type SupabaseClient } from '@/infrastructure/supabase';
 import { parseDatabaseError } from '@/infrastructure/supabase';
 import { DbTaskRow } from '@/infrastructure/supabase';
 import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';

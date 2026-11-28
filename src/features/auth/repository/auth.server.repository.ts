@@ -12,8 +12,14 @@ export async function getCurrentUser() {
     error,
   } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    throw new AuthorizationError({ error });
+  if (error) {
+    throw new AuthorizationError(error);
+  }
+
+  if (!user) {
+    throw new AuthorizationError({
+      message: 'No authenticated user was returned.',
+    });
   }
 
   return { user };

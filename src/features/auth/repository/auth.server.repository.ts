@@ -1,7 +1,6 @@
-import { JwtPayload } from '@supabase/supabase-js';
 import 'server-only';
 
-import { createServerClient } from '@/infrastructure/supabase';
+import { createServerClient, type JwtPayload } from '@/infrastructure/supabase';
 import { parseAuthError } from '@/infrastructure/supabase';
 import { AuthorizationError } from '@/shared/errors/app-error';
 

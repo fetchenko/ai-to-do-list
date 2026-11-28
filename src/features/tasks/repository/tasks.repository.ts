@@ -1,14 +1,15 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import {
   mapTaskUpdateToDb,
   taskKeyMap,
 } from '@/features/tasks/mappers/map-task-to-db';
 import { TaskUpdate } from '@/features/tasks/types/tasks.types';
-import { createClient } from '@/infrastructure/supabase/client';
 import { fromSupabaseError } from '@/shared/errors/from-supabase-error';
-import { DbTaskRow } from '@/infrastructure/supabase/types/database-task.types';
+import {
+  createClient,
+  type DbTaskRow,
+  type SupabaseClient,
+} from '@/infrastructure/supabase';
 
 // Derived from taskKeyMap (not hardcoded) so this can't silently drift out
 // of sync with what mapDbTask actually reads. Explicit over '*' so a future

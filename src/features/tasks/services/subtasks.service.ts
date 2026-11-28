@@ -3,6 +3,7 @@ import z from 'zod';
 
 import { API_ROUTES } from '@/app/config/api-routes';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
+import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { taskSchema } from '@/features/tasks/schema/tasks';
 import { SubtaskStreamEvent } from '@/features/tasks/types/subtask-stream-event.types';
@@ -11,13 +12,12 @@ import {
   AiGeneratedTask,
   TaskInsert,
 } from '@/features/tasks/types/tasks.types';
-import { createClient, parseDatabaseError } from '@/infrastructure/supabase';
+import { createClient } from '@/infrastructure/supabase';
 import {
   AiEmptyResponseError,
   AiInvalidResponseFormat,
 } from '@/shared/errors/ai-app-error';
 import { ValidationRequestError } from '@/shared/errors/app-error';
-import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { parseApiError } from '@/shared/errors/utils/parse-api-error';
 import { readJsonStream } from '@/shared/streams/read-json-stream';
 
@@ -93,6 +93,6 @@ export async function saveSubtasks(
   });
 
   const { data, error } = await supabase.from('tasks').insert(rows);
-  if (error) throw toDatabaseAppError(parseDatabaseError(error));
+  if (error) throw toDatabaseAppError(error);
   return data;
 }

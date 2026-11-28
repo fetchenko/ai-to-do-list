@@ -2,6 +2,7 @@ import { JwtPayload } from '@supabase/supabase-js';
 import 'server-only';
 
 import { createClient as createServerClient } from '@/infrastructure/supabase/server';
+import { parseSupabaseAuthError } from '@/infrastructure/supabase/errors/parse-supabase-auth-error';
 import { AuthorizationError } from '@/shared/errors/app-error';
 
 export async function getCurrentUser() {
@@ -12,8 +13,15 @@ export async function getCurrentUser() {
     error,
   } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    throw new AuthorizationError({ error });
+  if (error) {
+    throw new AuthorizationError(parseSupabaseAuthError(error));
+  }
+
+  if (!user) {
+    throw new AuthorizationError({
+      code: 'UNKNOWN',
+      message: 'No authenticated user was returned.',
+    });
   }
 
   return { user };

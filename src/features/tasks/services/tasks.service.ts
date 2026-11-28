@@ -2,10 +2,10 @@ import { generateKeyBetween } from 'fractional-indexing';
 
 import { mapDbTask } from '@/features/tasks/mappers/map-db-task';
 import { mapTaskInsertToDb } from '@/features/tasks/mappers/map-task-to-db';
+import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
 import { getLastPosition } from '@/features/tasks/repository/tasks.repository';
 import { Task, TaskInsert } from '@/features/tasks/types/tasks.types';
-import { createClient, parseDatabaseError } from '@/infrastructure/supabase';
-import { toDatabaseAppError } from '@/features/tasks/errors/to-database-app-error';
+import { createClient } from '@/infrastructure/supabase';
 
 export async function addTask(newTask: TaskInsert): Promise<Task> {
   const supabase = createClient();
@@ -21,7 +21,7 @@ export async function addTask(newTask: TaskInsert): Promise<Task> {
     .single();
 
   if (error) {
-    throw toDatabaseAppError(parseDatabaseError(error));
+    throw toDatabaseAppError(error);
   }
 
   return mapDbTask(data);

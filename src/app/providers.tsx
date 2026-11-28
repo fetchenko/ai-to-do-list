@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from 'next-themes';
 
-import { makeQueryClient } from '@/infrastructure/react-query/query-client';
+import { makeQueryClient } from '@/infrastructure/react-query';
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState<QueryClient>(() => makeQueryClient());

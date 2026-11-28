@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/infrastructure/supabase/admin';
+import { supabaseAdmin } from '@/infrastructure/supabase';
 import { AiRequestLimitError } from '@/shared/errors/ai-app-error';
 
 export async function checkAiQuotaLimit(userId: string, quotaLimit: number) {

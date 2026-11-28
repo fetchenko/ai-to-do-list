@@ -1,4 +1,3 @@
-export { supabaseAdmin } from '@/infrastructure/supabase/admin';
 export { createClient } from '@/infrastructure/supabase/client';
 export { updateSession } from '@/infrastructure/supabase/proxy';
 export { createClient as createServerClient } from '@/infrastructure/supabase/server';
